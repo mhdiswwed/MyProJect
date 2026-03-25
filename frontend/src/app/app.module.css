@@ -1,0 +1,15 @@
+/* app.module.css
+   Main application wrapper (RTL friendly)
+*/
+
+.app{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0f172a, #1f2933);
+  color: #fff;
+  direction: rtl;
+}
+
+
+

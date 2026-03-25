@@ -1,0 +1,552 @@
+/* ======================
+   עמוד ראשי
+   הגדרת רקע כהה + גובה מסך מלא
+====================== */
+.page {
+  min-height: 100vh; /* גובה מינימלי = גובה מסך */
+  background: radial-gradient(circle at top, #0b1220, #020617); /* רקע גרדיאנט כהה */
+  color: #f8fafc; /* צבע טקסט בהיר */
+  padding-bottom: 120px; /* רווח תחתון */
+}
+
+/* ======================
+   HERO - אזור תמונה ראשית
+====================== */
+.hero {
+  position: relative; /* מאפשר שכבות */
+  height: 60vh; /* 60% מגובה המסך */
+  width: 100%;
+  overflow: hidden; /* מסתיר חריגות */
+}
+
+/* תמונת הרקע הראשית */
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* התאמה מלאה בלי עיוות */
+  filter: brightness(0.65); /* כהות לתמונה */
+}
+
+/* שכבת הצללה מעל התמונה */
+.heroOverlay {
+  position: absolute;
+  inset: 0; /* תופס את כל השטח */
+  background: linear-gradient(
+    to bottom,
+    rgba(2,6,23,0.2),
+    rgba(2,6,23,0.95)
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* טקסט למטה */
+  padding: 60px;
+}
+
+/* כותרת מסלול */
+.hero h1 {
+  font-size: 44px;
+  margin: 0;
+  font-weight: 800;
+}
+
+/* סוג מסלול */
+.hero p {
+  opacity: .8;
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+/* ======================
+   כרטיס מרכזי (Card)
+====================== */
+.card {
+  max-width: 1000px;
+  margin: 50px auto 0; /* מרכז העמוד */
+  background: rgba(15, 23, 42, 0.92); /* אפקט זכוכית */
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 28px;
+  padding: 48px;
+  backdrop-filter: blur(14px); /* טשטוש */
+  box-shadow: 0 50px 100px rgba(0,0,0,.7); /* צל חזק */
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ======================
+   כותרות סקשנים
+====================== */
+.sectionTitle {
+  font-size: 24px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  border-right: 4px solid #22c55e; /* קו ירוק */
+  padding-right: 12px;
+}
+
+/* ======================
+   גלריית תמונות
+====================== */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
+}
+
+/* תמונות קטנות */
+.thumb {
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: .25s;
+  opacity: .85;
+}
+
+.thumb:hover {
+  opacity: 1;
+  transform: scale(1.04); /* זום */
+}
+
+/* ======================
+   תיאור מסלול
+====================== */
+.desc {
+  font-size: 17px;
+  line-height: 1.8; /* מרווח שורות */
+  opacity: .9;
+  max-width: 780px;
+}
+
+/* ======================
+   מפה
+====================== */
+.map {
+  width: 100%;
+  height: 420px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: #000;
+}
+
+/* ======================
+   גריד מידע
+====================== */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* תיבת מידע */
+.infoBox {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* כותרת קטנה */
+.infoBox span {
+  font-size: 13px;
+  opacity: .6;
+}
+
+/* ערך */
+.infoBox strong {
+  font-size: 19px;
+  display: block;
+  margin-top: 6px;
+}
+
+/* ======================
+   כפתור פעולה (CTA)
+====================== */
+.cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.cta button {
+  padding: 16px 46px;
+  border-radius: 999px;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #022c22;
+  transition: .25s;
+}
+
+.cta button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* ======================
+   כפתור חזרה
+====================== */
+.backBtn {
+  position: fixed;
+  top: 160px;
+  right: 24px; /* RTL */
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.25);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  font-size: 15px;
+  transition: .2s;
+}
+
+.backBtn:hover {
+  background: rgba(255,255,255,.08);
+  transform: translateY(-1px);
+}
+
+/* אייקון חזרה */
+.backIcon {
+  font-size: 16px;
+}
+
+/* ======================
+   מסך טעינה
+====================== */
+.loading {
+  text-align: center;
+  margin-top: 200px;
+  font-size: 24px;
+  opacity: .8;
+}
+
+/* ======================
+   גלריית מפה
+====================== */
+.mapGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+/* עטיפת תמונה */
+.mapItem {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: #000;
+}
+
+/* תמונה בתוך גלריה */
+.mapItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ======================
+   MODAL - שכבת רקע
+====================== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* ======================
+   MODAL - כרטיס
+====================== */
+.modalCard {
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(
+    180deg,
+    rgba(18,22,28,.92),
+    rgba(10,14,18,.92)
+  );
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,.6),
+    inset 0 0 40px rgba(255,255,255,.04);
+  backdrop-filter: blur(10px);
+  position: relative;
+  animation: modalIn .25s ease;
+}
+
+/* אנימציית פתיחה */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ======================
+   כפתור סגירה
+====================== */
+.modalClose {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: .7;
+}
+.modalClose:hover {
+  opacity: 1;
+}
+
+/* ======================
+   כותרת חלון
+====================== */
+.modalTitle {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: white;
+}
+
+/* ======================
+   טופס
+====================== */
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* שדות קלט */
+.modalForm input,
+.modalForm select,
+.modalForm textarea {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(0,0,0,.35);
+  color: white;
+  font-size: 15px;
+}
+
+/* textarea */
+.modalForm textarea {
+  resize: none;
+  min-height: 80px;
+}
+
+/* ======================
+   כפתור שליחה
+====================== */
+.submitBtn {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #022c22;
+  transition: .2s;
+}
+.submitBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* ======================
+   התאמת DatePicker ל-RTL
+====================== */
+.react-datepicker {
+  direction: rtl;
+  text-align: right;
+}
+
+.react-datepicker__header {
+  text-align: center;
+}
+
+.react-datepicker__current-month {
+  direction: rtl;
+}
+
+.react-datepicker__day-names,
+.react-datepicker__week {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.react-datepicker__triangle {
+  display: none;
+}
+
+/* עטיפת שדה תאריך */
+.dateWrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* שדה תאריך */
+.dateInput {
+  width: 100%;
+  padding: 14px 80px 14px 14px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.25);
+  color: white;
+  font-size: 15px;
+}
+
+/* אייקון תאריך */
+.dateIcon {
+  position: absolute;
+  top: 50%;
+  right: 95px;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,.7);
+  pointer-events: none;
+  font-size: 18px;
+}
+
+/* dropdown */
+.modalForm select {
+  background: rgba(0,0,0,.35);
+  color: white;
+}
+
+/* אפשרויות dropdown */
+.modalForm select option {
+  background: #0b1220;
+  color: white;
+}
+
+
+/* הודעות למשתמש (הצלחה / שגיאה) */
+.success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #bbf7d0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.error {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #fecaca;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+
+/* ======================
+   הודעה בתוך המסך (פס רוחבי)
+====================== */
+.inlineMsg {
+  width: 100%;
+  margin: 0 0 24px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  animation: slideDown .3s ease;
+}
+
+/* הצלחה */
+.inlineSuccess {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+/* שגיאה */
+.inlineError {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fecaca;
+  border: 1px solid rgba(220, 38, 38, 0.4);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+
+/* מעטפת לכפתור ניווט מתחת למפה */
+.navigationBtnWrapper {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+/* כפתור "התחל ניווט בשטח" */
+.navigationBtn {
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #111827;
+  color: #ffffff;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.navigationBtn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.navigationBtn:active {
+  transform: translateY(0px);
+  opacity: 0.85;
+}
+
+small{
+  display:block;
+  font-size:12px;
+  opacity:0.7;
+}

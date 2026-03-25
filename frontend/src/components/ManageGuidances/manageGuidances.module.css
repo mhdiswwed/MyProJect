@@ -1,0 +1,517 @@
+/**
+------------------------------------------------
+עמוד ניהול הדרכות (מבוסס על ניהול בקשות)
+------------------------------------------------
+*/
+
+.page{
+  padding:30px 40px;
+  color:white;
+}
+
+/* כותרת */
+.title{
+  font-size:32px;
+  margin-bottom:2px;
+
+}
+
+/* שורת עליונה */
+.topBar{
+  display:flex;
+  flex-direction:column;
+  margin-bottom:25px;
+}
+
+/**
+------------------------------------------------
+שורת עליונה מסודרת לפי שורות
+------------------------------------------------
+*/
+
+.topBarRow{
+  display:flex;
+  flex-direction:column; /* 🔥 הכי חשוב */
+  align-items:center;   /* מרכז */
+  gap:10px;             /* רווחים יפים */
+}
+.topBarRow h1{
+    white-space: nowrap; /* לא יורד שורה */
+  margin-left: auto;
+  
+}
+/* קופסת סינון */
+.filterBox{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  
+}
+
+/* טקסט סינון */
+.filterLabel{
+  font-size:14px;
+  color:#9ca3af;
+}
+
+/* שדה חיפוש */
+.input{
+  padding:8px 14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.35);
+  color:white;
+}
+
+/* dropdown */
+.filterSelect{
+  padding:8px 14px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.35);
+  color:white;
+  cursor:pointer;
+}
+
+/**
+------------------------------------------------
+טבלה
+------------------------------------------------
+*/
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+  background:rgba(18,22,28,.9);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+
+/* כותרת טבלה */
+th{
+  text-align:right;
+  padding:14px;
+  background:#111827;
+  color:#7dd3fc;
+}
+
+/* תאים */
+td{
+  padding:14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+/* hover */
+tr:hover{
+  background:rgba(255,255,255,.05);
+}
+
+/**
+------------------------------------------------
+אייקונים (כמו בבקשות)
+------------------------------------------------
+*/
+
+.iconBtn{
+  font-size:16px;
+  margin-left:10px;
+  color:#7dd3fc;
+  cursor:pointer;
+  transition:.2s;
+}
+
+/* hover */
+.iconBtn:hover{
+  color:#38bdf8;
+}
+
+/**
+------------------------------------------------
+מודאל (אותו סטייל)
+------------------------------------------------
+*/
+
+.modalOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  z-index: 9999; /* 🔥 זה הפתרון */
+}
+.modal{
+  width:420px;
+  max-height:80vh;
+  overflow-y:auto;
+
+  background:linear-gradient(
+    180deg,
+    rgba(18,22,28,.92),
+    rgba(10,14,18,.92)
+  );
+
+  border:1px solid rgba(255,255,255,.18);
+  padding:28px;
+  border-radius:20px;
+  color:white;
+}
+
+/* שדות */
+.modal input,
+.modal select,
+.modal textarea{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:rgba(0,0,0,.35);
+  color:white;
+}
+
+/* כפתור שמירה */
+.saveBtn{
+  background:#22c55e;
+  color:white;
+  padding:10px;
+  margin-top:10px;
+
+}
+
+/* כפתור סגירה */
+.closeBtn{
+  margin-top:10px;
+  border:1px solid rgba(255,255,255,.25);
+  background:transparent;
+  color:white;
+  padding:10px;
+
+}
+.btnRow {
+  display: flex;
+  justify-content: center; /* מרכז באמצע */
+  gap: 10px; /* רווח בין כפתורים */
+}
+
+/*כפתור ביטול*/
+.cancellation{
+  background:#ef4444;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+
+.cancellation:hover{
+  background:#dc2626;
+}
+
+/* ======================
+   הודעות טופס
+====================== */
+.formMsg {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  animation: fadeIn .25s ease;
+}
+
+/* הצלחה */
+.successMsg {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+/* שגיאה */
+.errorMsg {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.notes{
+  word-break: break-word;
+}
+
+
+/* תמונה קטנה בתוך המודאל */
+.smallImage{
+  width:120px;
+  height:80px;
+  object-fit:cover;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:10px;
+  transition:0.2s;
+}
+
+/* אפקט hover קטן */
+.smallImage:hover{
+  transform:scale(1.05);
+}
+
+/* רקע כהה לתמונה המוגדלת */
+.imageOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:10000;
+}
+
+/* התמונה הגדולה */
+.fullImage{
+  max-width:90%;
+  max-height:90%;
+  border-radius:16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6);
+}
+
+.modal{
+  max-height:80vh;
+  overflow-y:auto;
+
+  /* 🔥 זה מה שחסר לך */
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
+}
+
+/* Chrome / Safari */
+.modal::-webkit-scrollbar{
+  display:none;
+}
+
+/*צבע האיקונים*/
+.icon {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+
+/* סטטוס ירוק */
+.statusSuccess {
+  color: #22c55e; /* ירוק יפה */
+}
+
+/* סטטוס אדום */
+.statusError {
+  color: #ef4444; /* אדום יפה */
+}
+
+.planning,
+.acting {
+  background: linear-gradient(145deg, #1f2937, #111827);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  /* עומק */
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  transition: all 0.2s ease;
+}
+
+/* hover קטן */
+.planning:hover,
+.acting:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* כותרת */
+.planning h4,
+.acting h4 {
+  color: #e5e7eb;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+/* טקסט */
+.planning p,
+.acting p {
+  color: #d1d5db;
+  margin: 6px 0;
+}
+
+/* אייקונים */
+.icon {
+  color: #9ca3af;
+}
+
+.resultBox {
+  background: linear-gradient(145deg, #1f2937, #111827);
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* hover */
+.resultBox:hover {
+  transform: translateY(-3px);
+  transition: 0.2s;
+}
+
+.planning,
+.acting,
+.resultBox {
+  padding: 1px 10px 1px; /* למעלה קטן יותר */
+}
+
+
+
+
+.dateTimeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.dateBlock,
+.timeBlock {
+  background: rgba(255, 255, 255, 0.08); /* אפור שקוף */
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.separator {
+  opacity: 0.5;
+}
+
+/* שורת פעולות */
+.actionsRow{
+  display:flex; /* הכל בשורה */
+  align-items:center; /* יישור לגובה */
+  gap:10px; /* רווחים */
+  flex-wrap:nowrap; /* לא ירד שורה */
+}
+
+.modal button{
+  padding:6px 12px;   /* 🔥 קטן יותר */
+  font-size:13px;     /* 🔥 טקסט קטן */
+  font-weight:500;    /* פחות "כבד" */
+  border-radius:8px;  /* קצת פחות עגול */
+}
+
+/* ===============================
+   שורת סטטיסטיקות
+=============================== */
+
+/* קונטיינר שמכיל את כל העיגולים */
+.statsRow{
+  display:flex;
+  justify-content:center; /* 🔥 מרכז למסך */
+  align-items:center;
+
+  gap:20px;
+
+  margin:20px auto; /* מרכז גם מבחינת בלוק */
+
+  flex-wrap:nowrap; /* שלא ירד שורה */
+}
+
+/* קופסה בודדת */
+.statBox{
+  width:110px; /* גודל קבוע */
+  height:110px;
+
+  border-radius:50%;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+
+  background:rgba(18,22,28,.9);
+  border:1px solid rgba(255,255,255,.15);
+
+  transition:.3s;
+}
+
+.statBox:hover{
+  transform:scale(1.05); /* אפקט קטן יפה */
+}
+
+/* אפקט hover */
+.statBox:hover{
+  transform:translateY(-3px); /* קופץ קצת למעלה */
+}
+
+/* מספר גדול */
+.statNumber{
+  font-size:26px; /* גודל גדול */
+  font-weight:bold; /* מודגש */
+}
+
+/* טקסט קטן מתחת */
+.statLabel{
+  font-size:13px; /* קטן */
+  color:#9ca3af; /* אפור */
+  margin-top:5px; /* רווח מהמספר */
+}
+
+/* ===============================
+   צבעים לפי סטטוס
+=============================== */
+
+/* מתוכנן - כחול */
+.plannedBox{
+  border-right:4px solid #f59e0b;
+}
+
+/* בתהליך */
+.inProgressBox{
+  border-right:4px solid #22c55e;
+}
+
+/* הסתיים -*/
+.finishedBox{
+
+    border-right:4px solid #3b82f6;
+}
+
+/* בוטל -*/
+.cancelledBox{
+  border-right:4px solid #6b7280;
+}
+/* נדחה-*/
+.cancelledsBox{
+  border-right:4px solid #c4151b;
+}
+
+.statBox{
+  border-radius:50%; /* הופך לעיגול */
+  height:100px; /* גובה קבוע */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+/* סטופר מתחת לסטטוס */
+.timer{
+  margin-top:5px; /* רווח קטן מהסטטוס */
+  font-size:12px; /* קטן ונקי */
+  color:#22c55e; /* ירוק יפה */
+  font-weight:600;
+}

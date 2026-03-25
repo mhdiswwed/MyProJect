@@ -1,0 +1,107 @@
+/* =====================================================
+   כרטיס מסלול – מבנה כללי
+   ===================================================== */
+.card {
+  background: rgba(20, 25, 30, 0.75); /* רקע כהה שקוף */
+  backdrop-filter: blur(10px);        /* טשטוש זכוכית */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  overflow: hidden;
+  width: 270px;
+  color: white;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* Flex כדי שכל הכרטיסים יהיו באותו גובה */
+  display: flex;
+  flex-direction: column;
+}
+
+/* אפקט ריחוף לכרטיס */
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+}
+
+/* =====================================================
+   תמונת המסלול
+   ===================================================== */
+.image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  opacity: 0.85;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* =====================================================
+   גוף הכרטיס (התוכן)
+   ===================================================== */
+.body {
+  padding: 14px;
+
+  /* מאפשר דחיפת כפתור לתחתית */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* כותרת שם המסלול */
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: var(--gold);
+}
+
+/* =====================================================
+   תיאור המסלול – מוגבל ל-2 שורות + ...
+   ===================================================== */
+.desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+
+  line-clamp: 2;        /* תקן (חלקי) */
+  -webkit-line-clamp: 2;
+
+  overflow: hidden;
+}
+/* =====================================================
+   אזור נתונים (סוג, קושי, אורך)
+   ===================================================== */
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.meta p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta svg {
+  color: var(--green);
+}
+
+/* =====================================================
+   אזור כפתור פעולה
+   ===================================================== */
+.actions {
+  margin-top: auto; /* דוחף את הכפתור לתחתית הכרטיס */
+}
+
+/* כפתור "צפה בפרטים" */
+.btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: #0f1a14;
+  background: linear-gradient(90deg, #6be3a5, #9be7c4);
+}

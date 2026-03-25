@@ -1,0 +1,200 @@
+/* =========================================================
+   authForm.module.css
+   עיצוב טופס התחברות / הרשמה (Glass UI)
+   קומפוננטה אחת המשמשת גם ל־Login וגם ל־Register
+   ========================================================= */
+
+/* מעטפת כללית של הטופס */
+.wrapper{
+  /* רוחב רספונסיבי – מקסימום 420px או 92% מרוחב המסך */
+  width: min(420px, 92vw);
+
+  /* ריווח ועיגול פינות */
+  border-radius: 16px;
+  padding: 18px;
+
+  /* רקע בסגנון Glass (זכוכית כהה) */
+  background: linear-gradient(
+    180deg,
+    rgba(18,22,28,.86),
+    rgba(10,14,18,.86)
+  );
+
+  /* מסגרת וצל */
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 12px 30px rgba(0,0,0,.45);
+
+  /* טשטוש רקע מאחורי הקומפוננטה */
+  backdrop-filter: blur(10px);
+
+  /* יישור טקסט */
+  text-align: center;
+
+  /* הגבלת רוחב ומרכז במסך */
+  max-width: 360px;
+  margin: 90px auto;
+}
+
+/* כותרת הטופס (Login / Register) */
+.wrapper h2{
+  margin: 0 0 16px;
+  font-size: 25px;
+  color: aliceblue;
+}
+
+/* תיבת הודעת שגיאה */
+/* =========================
+   Messages
+========================= */
+.error {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #fecaca;
+  font-size: 13px;
+}
+
+.success {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #bbf7d0;
+  font-size: 13px;
+}
+
+
+
+/* מבנה הטופס – סידור אנכי עם רווחים */
+form{
+  display: grid;
+  gap: 10px;
+}
+
+/* שדות קלט (שם משתמש / סיסמה וכו') */
+input{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  /* צבעים כהים בהתאם לעיצוב הכללי */
+  border: 1px solid #6e8b74;
+  background: #2a2f26;
+  color: #f3f1e7;
+
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* טקסט placeholder */
+input::placeholder{
+  color: #c9c3a6;
+  text-align: right;
+}
+
+/* מצב פוקוס – הדגשת שדה פעיל */
+input:focus{
+  border-color: #c9b458;
+  box-shadow: 0 0 0 2px rgba(201,180,88,.35);
+}
+
+/* כפתורים כלליים (התחבר / הרשם) */
+button{
+  padding: 10px 16px;
+  border-radius: 10px;
+
+  border: 1px solid #6e8b74;
+  background: #2a2f26;
+  color: #f3f1e7;
+
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+
+  transition: background .2s ease;
+}
+
+/* מעבר עכבר על כפתור */
+button:hover{
+  background: #333a2f;
+}
+
+/* לחיצה על כפתור */
+button:active{
+  background: #242821;
+}
+
+/* כפתור מעבר בין Login ל־Register */
+.switch{
+  margin-top: 12px;
+  width: 100%;
+ font-size: 16px;
+  /* עיצוב משני – שקוף */
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.18);
+}
+
+.submitButton{
+  font-size: 18px;
+}
+
+
+
+/* שכבת רקע כהה */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* חלון קופץ */
+.loaderBox {
+  background: linear-gradient(180deg, rgba(18,22,28,.9), rgba(10,14,18,.9));
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 16px;
+  padding: 30px 40px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
+
+/* טקסט */
+.loaderBox p {
+  margin-top: 16px;
+  font-size: 16px;
+}
+
+/* ספינר */
+.spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid rgba(255,255,255,.2);
+  border-top-color: #c9b458;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+/*עצוב הלוגו*/
+.titleLogo {
+  display: block;
+  margin: 0 auto 12px auto; /* מרכז + רווח למטה */
+  width: 100px;
+  height: 45px;
+}
+
+
+/* אנימציה */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

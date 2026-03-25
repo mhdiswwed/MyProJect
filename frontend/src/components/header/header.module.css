@@ -1,0 +1,254 @@
+/* מעטפת ה־Header */
+.header {
+  /*position: sticky;/*משאיר הדיר למעלה בגלילה למטה */
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 12;
+  pointer-events: none;
+  height: 106px;
+}
+
+/* פס עליון */
+.container {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 106px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 22, 28, 0.86),
+    rgba(10, 14, 18, 0.86)
+  );
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  direction: ltr;
+  justify-content: flex-start;
+}
+
+/* לוגו */
+.logo {
+  flex-shrink: 0;
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.nav {
+  display: flex;
+  /* flex-wrap: wrap;ניוט לא ימחץ*/
+  gap: 14px;
+  align-items: center;
+  margin-top: 50px;
+}
+
+/* כפתור ORG */
+.navBtn {
+  padding: 6px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e7eb;
+  background: #0f172a;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap; /* ❗ הכי חשוב */
+  flex-direction: row; /* לוודא שורה */
+  /* עומק – הכפתור "עולה" מהמסך */
+  box-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.08),
+    0 6px 14px rgba(0, 0, 0, 0.6);
+
+  transition: all 0.12s ease;
+}
+
+/* ריחוף – קצת יותר גבוה */
+.navBtn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(255, 255, 255, 0.1),
+    0 10px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* לחיצה – שוקע פנימה */
+.navBtn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.08);
+}
+
+/* כפתור פעיל (נשאר לחוץ) */
+.active {
+  /* מסגרת */
+  border: 2px solid #eaece1;
+
+  color: #eafff5;
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.userArea {
+  pointer-events: auto;
+}
+
+/*עצוב כפתור יציאה ומשתמש*/
+.userArea {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* רווח בין הכפתורים */
+  margin-left: auto;
+}
+
+.userBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  white-space: nowrap; /* ❗ הכי חשוב */
+  flex-direction: row; /* לוודא שורה */
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ff4d4d;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.logoutBtn:hover {
+  background: #e63b3b;
+}
+
+/* Button reset for clickable logo */
+.logoBtn {
+  all: unset; /* מבטל לגמרי כל עיצוב של button */
+  cursor: pointer; /* עדיין יד עכבר */
+  display: flex;
+  align-items: center;
+}
+
+.logoBtn:hover,
+.logoBtn:active,
+.logoBtn:focus {
+  background: transparent !important;
+}
+
+.logo {
+  filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.role {
+  font-size: 15px;
+  color: #7dd3fc;
+}
+
+.fullName {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+/* ==============================
+   מעטפת dropdown משתמש
+   ============================== */
+.userMenu {
+  position: relative;
+}
+
+/* ==============================
+   תפריט נפתח
+   ============================== */
+.dropdown {
+  position: absolute;
+
+  top: 99%;
+
+  left: 50%;
+
+  transform: translate(-50%, -10px);
+
+  width: 180px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 8px;
+
+  border-radius: 14px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(18, 22, 28, 0.95),
+    rgba(10, 14, 18, 0.95)
+  );
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+  backdrop-filter: blur(10px);
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: all 0.18s ease;
+}
+
+/* הופעת התפריט */
+.userMenu:hover .dropdown {
+  opacity: 1;
+
+  transform: translate(-50%, 0);
+
+  pointer-events: auto;
+}
+
+/* כפתורים בתפריט */
+.dropdown button {
+  background: transparent;
+
+  border: none;
+
+  color: white;
+
+  text-align: right;
+
+  padding: 10px 12px;
+
+  font-size: 14px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  transition: 0.15s;
+}
+
+/* hover בתפריט */
+.dropdown button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}

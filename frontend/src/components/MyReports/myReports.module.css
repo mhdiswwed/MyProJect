@@ -1,0 +1,195 @@
+/**
+------------------------------------------------
+עיצוב עמוד הדיווחים
+------------------------------------------------
+*/
+
+.page {
+  padding: 120px 40px;
+  color: white;
+}
+
+/* כותרת העמוד */
+
+.title {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+/**
+------------------------------------------------
+טבלת הדיווחים
+------------------------------------------------
+*/
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(18, 22, 28, 0.9);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+th {
+  text-align: right;
+  padding: 14px;
+  background: #111827;
+  color: #7dd3fc;
+  font-size: 14px;
+}
+
+td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/**
+------------------------------------------------
+סטטוסים
+------------------------------------------------
+*/
+
+.status {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+}
+
+/* חדש */
+
+.new {
+  background: #f59e0b;
+}
+
+/* בטיפול */
+
+.processing {
+  background: #3b82f6;
+}
+
+/* טופל */
+
+.done {
+  background: #22c55e;
+}
+
+/**
+------------------------------------------------
+כפתור ביטול דיווח
+------------------------------------------------
+*/
+
+.cancelBtn {
+  background: #ef4444;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: #dc2626;
+}
+
+/**
+------------------------------------------------
+תמונה קטנה בטבלה
+------------------------------------------------
+*/
+
+.reportImage {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.reportImage:hover {
+  transform: scale(1.1);
+}
+
+/**
+------------------------------------------------
+שכבת רקע לפופאפ
+------------------------------------------------
+*/
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/**
+------------------------------------------------
+חלון פופאפ ביטול
+------------------------------------------------
+*/
+
+.modal {
+  background: rgba(18, 22, 28, 0.95);
+  padding: 28px;
+  border-radius: 16px;
+  color: white;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+/**
+------------------------------------------------
+כפתורי פופאפ
+------------------------------------------------
+*/
+
+.modalButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.confirmBtn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 999px;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+.closeBtn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+/**
+------------------------------------------------
+תמונה גדולה בפופאפ
+------------------------------------------------
+*/
+
+.largeImage {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+}

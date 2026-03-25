@@ -1,0 +1,82 @@
+/* ================================
+   Sidebar Container
+================================ */
+
+.sidebar {
+  width: 260px;
+  min-width: 200px;  /* 🔥 לא יקטן */
+  max-width: 200px;  /* 🔥 לא יגדל */
+
+  flex-shrink: 0;    /* 🔥 לא יתכווץ בתוך flex */
+
+  display: flex;
+  flex-direction: column;
+
+  direction: rtl;
+
+  background: linear-gradient(
+    180deg,
+    rgba(18, 22, 28, 0.95),
+    rgba(10, 14, 18, 0.95)
+  );
+
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+
+/* ================================
+   Title
+================================ */
+
+.title {
+  color: white;
+  text-align: center;
+  padding: 25px 0;
+  font-size: 20px;
+}
+
+/* ================================
+   Links
+================================ */
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+white-space: nowrap;
+  color: white;
+  text-decoration: none;
+
+  padding: 16px 22px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: 0.25s;
+}
+
+/* Hover */
+.link:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ================================
+   Active Link 🔥
+================================ */
+
+.active {
+  background: linear-gradient(135deg, #0f172a, #1f2933);
+  font-weight: bold;
+
+  border-right: 4px solid #a4adb0;
+
+ /* box-shadow: 0 0 10px rgba(0, 198, 255, 0.4);*/
+}
+
+/* שינוי צבע לאייקון */
+.active svg {
+  color: white;
+  flex-shrink: 0;
+}

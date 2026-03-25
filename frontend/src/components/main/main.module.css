@@ -1,0 +1,10 @@
+/* main.module.css
+   Main content area
+*/
+.main {
+  flex: 1;              /* זה הסוד */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
