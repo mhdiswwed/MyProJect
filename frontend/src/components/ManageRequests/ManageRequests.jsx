@@ -193,7 +193,6 @@ export default function ManageRequests() {
   ===================================================== */
   useEffect(() => {
     loadRequests();
-    loadGuides();
   }, []);
 
   /* =====================================================
@@ -261,24 +260,19 @@ export default function ManageRequests() {
   /* =====================================================
      שליפת מדריכים
   ===================================================== */
-  async function loadGuides() {
-    try {
-      const res = await fetch(`${API_BASE}/api/manageRequests/guides`);
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setGuides(data);
-      } else {
-        setGuides([]);
-      }
-    } catch (error) {
-      console.error("שגיאה בטעינת מדריכים:", error);
-      setMsg({
-        type: "error",
-        text: "שגיאה בטעינת המדריכים",
-      });
-    }
+async function loadAvailableGuides(date, time, duration) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/manageRequests/available-guides?trip_date=${date}&trip_time=${time}&duration_minutes=${duration}`,
+    );
+    const data = await res.json();
+    //console.log("GUIDES:", data); // לבדיקה
+    setGuides(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("שגיאה בשליפת מדריכים פנויים:", error);
   }
+}
+
 
   /* =====================================================
      פתיחת חלון אישור בקשה
@@ -312,6 +306,14 @@ export default function ManageRequests() {
     });
 
     setShowApproveModal(true);
+
+setTimeout(() => {
+  loadAvailableGuides(
+    formattedDate,
+    request.trip_time?.slice(0, 5),
+    request.duration_minutes,
+  );
+}, 0);
   }
   /* =====================================================
      אישור בקשה
@@ -363,13 +365,15 @@ export default function ManageRequests() {
     const somethingChanged = dateOrTimeChanged || guideChanged;
 
     /* אם נעשה שינוי חייבים סיבה */
-    if (somethingChanged && !approveData.change_reason.trim()) {
-      setMsg({
-        type: "error",
-        text: "חובה לכתוב סיבה לשינוי שביצעת",
-      });
-      return;
-    }
+if (dateOrTimeChanged && !approveData.change_reason.trim()) {
+  setMsg({ type: "error", text: "חובה סיבה לשינוי תאריך/שעה" });
+  return;
+}
+
+if (guideChanged && !guideChangeReason.trim()) {
+  setMsg({ type: "error", text: "חובה סיבה להחלפת מדריך" });
+  return;
+}
 
     try {
       const res = await fetch(
@@ -379,7 +383,10 @@ export default function ManageRequests() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(approveData),
+          body: JSON.stringify({
+            ...approveData,
+            guide_change_reason: guideChangeReason,
+          }),
         },
       );
 
@@ -554,6 +561,19 @@ export default function ManageRequests() {
 
     // פתיחת מודאל approve במקום reject
     setShowApproveModal(true);
+
+    // =========================================
+    // חשוב:
+    // בדחיית ביטול גם צריך לטעון מדריכים פנויים
+    // בדיוק כמו באישור בקשה רגילה
+    // =========================================
+    setTimeout(() => {
+      loadAvailableGuides(
+        formattedDate,
+        request.trip_time?.slice(0, 5),
+        request.duration_minutes,
+      );
+    }, 0);
   }
 
   /* =====================================================
@@ -1021,24 +1041,40 @@ export default function ManageRequests() {
                         className={styles.input}
                         type="date"
                         value={approveData.trip_date}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const newDate = e.target.value;
+
                           setApproveData({
                             ...approveData,
-                            trip_date: e.target.value,
-                          })
-                        }
+                            trip_date: newDate,
+                          });
+
+                         loadAvailableGuides(
+                           newDate,
+                           approveData.trip_time,
+                           selectedRequest.duration_minutes,
+                         );
+                        }}
                       />
 
                       <input
                         className={styles.input}
                         type="time"
                         value={approveData.trip_time}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const newTime = e.target.value;
+
                           setApproveData({
                             ...approveData,
-                            trip_time: e.target.value,
-                          })
-                        }
+                            trip_time: newTime,
+                          });
+
+                         loadAvailableGuides(
+                           approveData.trip_date,
+                           newTime,
+                           selectedRequest.duration_minutes,
+                         );
+                        }}
                       />
 
                       <textarea

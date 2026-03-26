@@ -37,6 +37,88 @@ if (!fs.existsSync(invoicesDir)) {
 }
 
 /**
+ * =========================================
+ * המרת דקות לפורמט קריא (שעות/דקות)
+ * לדוגמה:
+ * 180 → "3 שעות"
+ * 150 → "2 שעות ו-30 דקות"
+ * =========================================
+ */
+function formatDuration(duration_minutes) {
+  const hours = Math.floor(duration_minutes / 60);
+  const minutes = duration_minutes % 60;
+
+  if (minutes === 0) return `${hours} שעות`;
+  if (hours === 0) return `${minutes} דקות`;
+
+  return `${hours} שעות ו-${minutes} דקות`;
+}
+
+/**
+ * =========================================
+ * המרת דקות לפורמט שעה HH:MM
+ * לדוגמה:
+ * 90 → "01:30"
+ * =========================================
+ */
+function minutesToTime(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+/**
+ * =========================================
+ * בדיקת תקינות תאריך ושעה לטיול
+ *
+ * בודק:
+ * - לא תאריך/שעה בעבר
+ * - התחלה בין 08:00 ל-18:00
+ * - סיום לא עובר את 18:00 לפי משך המסלול
+ *
+ * מחזיר:
+ * - null אם תקין
+ * - הודעת שגיאה אם לא תקין
+ * =========================================
+ */
+function validateTripDateTime(trip_date, trip_time, duration_minutes) {
+  const now = new Date();
+  const tripDateTime = new Date(`${trip_date}T${trip_time}`);
+
+  // ❌ תאריך בעבר
+  if (tripDateTime < now) {
+    return "לא ניתן לבחור תאריך/שעה שכבר עברו";
+  }
+
+  const [hours, minutes] = trip_time.split(":").map(Number);
+
+  // ❌ לפני 08:00
+  if (hours < 8) {
+    return "שעת התחלה חייבת להיות אחרי 08:00";
+  }
+
+  // ❌ אחרי 18:00
+  if (hours >= 18) {
+    return "שעת התחלה חייבת להיות לפני 18:00";
+  }
+
+  const startMinutes = hours * 60 + minutes;
+  const endMinutes = startMinutes + Number(duration_minutes);
+
+  const END_LIMIT = 18 * 60; // 18:00
+
+  // ❌ חורג משעות פעילות
+  if (endMinutes > END_LIMIT) {
+    const endTime = minutesToTime(endMinutes);
+
+    return `הטיול נמשך ${formatDuration(duration_minutes)} ולכן מסתיים ב־${endTime} — חורג משעות הפעילות (עד 18:00)`;
+  }
+
+  return null; // ✅ תקין
+}
+
+/**
  * ------------------------------------------------
  * שליפת המע״מ מהמערכת
  * ------------------------------------------------
@@ -81,18 +163,6 @@ function timeToMinutes(timeStr) {
 
 /**
  * ------------------------------------------------
- * פונקציה להמרת דקות לפורמט שעה HH:MM
- * ------------------------------------------------
- */
-function minutesToTime(totalMinutes) {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-}
-
-/**
- * ------------------------------------------------
  * בדיקת חפיפה בין טיולים של מדריך
  * ------------------------------------------------
  *
@@ -109,22 +179,24 @@ function checkGuideAvailability(
 ) {
   const requestedStart = timeToMinutes(tripTime);
 
-  /* מוסיפים 15 דקות זמן מעבר בין טיולים */
-  const requestedEnd = requestedStart + Number(durationMinutes) + 15;
+  /* מוסיפים 30 דקות זמן מעבר בין טיולים */
+  const BUFFER_MINUTES = 30;
+  const requestedEnd =
+    requestedStart + Number(durationMinutes) + BUFFER_MINUTES;
 
   const sql = `
-    SELECT
-      g.group_id,
-      g.trip_time,
-      t.duration_minutes
-    FROM groups g
-    JOIN trails t
-      ON g.trail_id = t.trail_id
-    WHERE g.guide_id = ?
-      AND g.trip_date = ?
-      AND g.status = 'פעיל'
-      AND (? IS NULL OR g.group_id <> ?)
-  `;
+  SELECT
+    g.group_id,
+    g.trip_time,
+    t.duration_minutes
+  FROM groups g
+  JOIN trails t
+    ON g.trail_id = t.trail_id
+  WHERE g.guide_id = ?
+    AND DATE(g.trip_date) = DATE(?)   -- 🔥 תיקון כאן
+    AND g.status = 'פעיל'
+    AND (? IS NULL OR g.group_id <> ?)
+`;
 
   db.query(
     sql,
@@ -136,7 +208,8 @@ function checkGuideAvailability(
 
       for (const row of rows) {
         const existingStart = timeToMinutes(row.trip_time);
-        const existingEnd = existingStart + Number(row.duration_minutes || 0);
+        const existingEnd =
+          existingStart + Number(row.duration_minutes || 0) + BUFFER_MINUTES;
 
         const overlap =
           requestedStart < existingEnd && existingStart < requestedEnd;
@@ -483,24 +556,53 @@ ORDER BY
 /**
  * ------------------------------------------------
  * GET
- * שליפת מדריכים לבחירה
+ * שליפת מדריכים פנויים לפי זמן
  * ------------------------------------------------
  */
-router.get("/guides", (req, res) => {
+router.get("/available-guides", (req, res) => {
+  const { trip_date, trip_time, duration_minutes, ignore_group_id } = req.query;
+
+  if (!trip_date || !trip_time || !duration_minutes) {
+    return res.status(400).json({
+      message: "חובה לשלוח תאריך, שעה ומשך טיול",
+    });
+  }
+
   const sql = `
     SELECT user_id, full_name, phone, email
     FROM users
-    WHERE role = 'guide'
-    ORDER BY full_name ASC
+    WHERE role = 'מדריך'
   `;
 
-  db.query(sql, (err, results) => {
+  db.query(sql, async (err, guides) => {
     if (err) {
-      console.error("שגיאה בשליפת מדריכים:", err);
       return res.status(500).json({ message: "שגיאה בשליפת מדריכים" });
     }
 
-    res.json(results);
+    const availableGuides = [];
+
+    let checked = 0;
+
+    for (const guide of guides) {
+      checkGuideAvailability(
+        guide.user_id,
+        trip_date,
+        trip_time,
+        duration_minutes,
+        ignore_group_id || null,
+        (err, isAvailable) => {
+          checked++;
+
+          if (isAvailable) {
+            availableGuides.push(guide);
+          }
+
+          if (checked === guides.length) {
+            res.json(availableGuides);
+          }
+        },
+      );
+    }
   });
 });
 
@@ -520,8 +622,14 @@ router.get("/guides", (req, res) => {
 router.put("/approve/:requestId", (req, res) => {
   const requestId = req.params.requestId;
 
-  const { trip_date, trip_time, meeting_point, guide_id, change_reason } =
-    req.body;
+  const {
+    trip_date,
+    trip_time,
+    meeting_point,
+    guide_id,
+    change_reason,
+    guide_change_reason,
+  } = req.body;
 
   if (!trip_date || !trip_time || !meeting_point || !guide_id) {
     return res.status(400).json({
@@ -566,6 +674,16 @@ router.put("/approve/:requestId", (req, res) => {
     }
 
     const request = requestRows[0];
+    // בדיקת תאריך ושעה
+    const error = validateTripDateTime(
+      trip_date,
+      trip_time,
+      request.duration_minutes,
+    );
+
+    if (error) {
+      return res.status(400).json({ message: error });
+    }
 
     /**
      * מותר לאשר רק בקשה שממתינה
@@ -591,14 +709,22 @@ router.put("/approve/:requestId", (req, res) => {
     const originalGuideId = Number(request.guide_id || 0);
     const newGuideId = Number(guide_id);
 
-    const somethingChanged =
-      originalDate !== newDate ||
-      originalTime !== newTime ||
-      originalGuideId !== newGuideId;
+    const dateOrTimeChanged =
+      originalDate !== newDate || originalTime !== newTime;
 
-    if (somethingChanged && (!change_reason || !change_reason.trim())) {
+    const guideChanged = originalGuideId !== newGuideId;
+
+    // בדיקה לתאריך/שעה
+    if (dateOrTimeChanged && (!change_reason || !change_reason.trim())) {
       return res.status(400).json({
-        message: "אם שינית תאריך, שעה או מדריך חובה לכתוב סיבה לשינוי",
+        message: "חובה לכתוב סיבה לשינוי תאריך או שעה",
+      });
+    }
+
+    // בדיקה למדריך
+    if (guideChanged && (!guide_change_reason || !guide_change_reason.trim())) {
+      return res.status(400).json({
+        message: "חובה לכתוב סיבה להחלפת מדריך",
       });
     }
 
@@ -638,12 +764,11 @@ router.put("/approve/:requestId", (req, res) => {
           const updateRequestSql = `
             UPDATE trip_requests
             SET
-              status = 'מאושר',
-              guide_id = ?
+              status = 'מאושר'
             WHERE request_id = ?
           `;
 
-          db.query(updateRequestSql, [newGuideId, requestId], (err) => {
+          db.query(updateRequestSql, [requestId], (err) => {
             if (err) {
               return db.rollback(() => {
                 console.error("שגיאה בעדכון הבקשה:", err);
@@ -655,19 +780,20 @@ router.put("/approve/:requestId", (req, res) => {
              * יצירת קבוצה
              */
             const insertGroupSql = `
-              INSERT INTO groups
-              (
-                request_id,
-                trail_id,
-                guide_id,
-                trip_date,
-                trip_time,
-                meeting_point,
-                status,
-                change_reason
-              )
-              VALUES (?, ?, ?, ?, ?, ?, 'פעיל', ?)
-            `;
+            INSERT INTO groups
+            (
+              request_id,
+              trail_id,
+              guide_id,
+              trip_date,
+              trip_time,
+              meeting_point,
+              status,
+              change_reason,
+              guide_change_reason
+            )
+            VALUES (?, ?, ?, ?, ?, ?, 'פעיל', ?, ?)
+          `;
 
             db.query(
               insertGroupSql,
@@ -678,7 +804,8 @@ router.put("/approve/:requestId", (req, res) => {
                 trip_date,
                 trip_time,
                 meeting_point.trim(),
-                somethingChanged ? change_reason.trim() : null,
+                dateOrTimeChanged ? change_reason.trim() : null,
+                guideChanged ? guide_change_reason.trim() : null,
               ],
               (err, groupResult) => {
                 if (err) {
@@ -819,10 +946,10 @@ router.put("/approve/:requestId", (req, res) => {
                             );
 
                             const updateGroupInvoiceSql = `
-      UPDATE groups
-      SET invoice_file = ?
-      WHERE group_id = ?
-    `;
+                              UPDATE groups
+                              SET invoice_file = ?
+                              WHERE group_id = ?
+                            `;
 
                             db.query(
                               updateGroupInvoiceSql,
@@ -881,6 +1008,7 @@ router.put("/approve/:requestId", (req, res) => {
     );
   });
 });
+
 /**
  * ------------------------------------------------
  * PUT
@@ -1113,6 +1241,17 @@ router.put("/rejectCancel/:requestId", (req, res) => {
           });
         }
 
+        // בדיקת תאריך ושעה
+        const error = validateTripDateTime(
+          trip_date,
+          trip_time,
+          request.duration_minutes,
+        );
+
+        if (error) {
+          return res.status(400).json({ message: error });
+        }
+
         // ===== בדיקות שינוי (העתקה מ-approve)
         const originalDate = new Date(request.trip_date).toLocaleDateString(
           "sv-SE",
@@ -1176,10 +1315,9 @@ router.put("/rejectCancel/:requestId", (req, res) => {
                 `UPDATE trip_requests
                  SET status='מאושר',
                      cancel_requested=0,
-                     cancel_reject_reason=?,
-                     guide_id=?
+                     cancel_reject_reason=?
                  WHERE request_id=?`,
-                [reason.trim(), newGuideId, requestId],
+                [reason.trim(), requestId],
                 (err) => {
                   if (err) {
                     return db.rollback(() =>

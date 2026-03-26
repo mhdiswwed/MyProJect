@@ -89,6 +89,9 @@ function getVatRate(callback) {
   });
 }
 
+
+
+
 /* =====================================================
    שליפת כל ההדרכות
 ===================================================== */
@@ -163,30 +166,113 @@ ORDER BY
   });
 });
 
-/* =====================================================
-   שליפת מדריכים פנויים לפי תאריך ושעה
-===================================================== */
-router.get("/available-guides", (req, res) => {
-  const { date, time } = req.query;
 
-  const sql = `
-    SELECT user_id, full_name
-    FROM users
-    WHERE role = 'מדריך'
-    AND user_id NOT IN (
-      SELECT guide_id
-      FROM groups
-      WHERE trip_date = ? AND trip_time = ?
-    )
+/**
+ * ------------------------------------------------
+ * שליפת מדריכים פנויים אמיתית (כולל חפיפות)
+ * ------------------------------------------------
+ */
+// שליפת מדריכים פנויים לפי תאריך, שעה, משך וחפיפות כולל 30 דקות הפסקה
+router.get("/available-guides", (req, res) => {
+  const { date, time, group_id } = req.query;
+
+  // בדיקת נתונים
+  if (!date || !time || !group_id) {
+    return res.status(400).json({ message: "חסר נתונים" });
+  }
+
+  // תיקון תאריך לישראל (בלי UTC)
+  const localDate = new Date(date);
+  const cleanDate = localDate.toLocaleDateString("en-CA"); // YYYY-MM-DD
+
+  // שליפת משך המסלול לפי הקבוצה
+  const durationSql = `
+    SELECT t.duration_minutes
+    FROM groups g
+    JOIN trails t ON g.trail_id = t.trail_id
+    WHERE g.group_id = ?
   `;
 
-  db.query(sql, [date, time], (err, results) => {
-    if (err) {
-      console.error("שגיאה בשליפת מדריכים:", err);
-      return res.status(500).json([]);
+  db.query(durationSql, [group_id], (err, durationResult) => {
+    if (err || !durationResult.length) {
+      return res.status(500).json({ message: "שגיאה במסלול" });
     }
 
-    res.json(results);
+    const duration = durationResult[0].duration_minutes;
+
+    // יצירת זמן התחלה נכון (בלי בעיות timezone)
+    const [hours, minutes] = time.split(":");
+    const newStart = new Date(cleanDate);
+    newStart.setHours(hours, minutes, 0, 0);
+
+    const newEnd = new Date(newStart.getTime() + duration * 60000);
+
+    const buffer = 30 * 60000;
+
+    // שליפת כל המדריכים
+    db.query(
+      `SELECT user_id, full_name FROM users WHERE role='מדריך'`,
+      (err, guides) => {
+        if (err) return res.status(500).json([]);
+
+        const availableGuides = [];
+        let checked = 0;
+
+        guides.forEach((guide) => {
+          const checkSql = `
+            SELECT g.trip_time, t.duration_minutes
+            FROM groups g
+            JOIN trails t ON g.trail_id = t.trail_id
+            WHERE g.guide_id = ?
+            AND DATE(g.trip_date) = ?
+            AND g.status != 'בוטל'
+            AND g.group_id <> ?
+          `;
+
+          db.query(
+            checkSql,
+            [guide.user_id, cleanDate, group_id],
+            (err, trips) => {
+              if (err) return;
+
+              let isAvailable = true;
+
+              for (let trip of trips) {
+                const [h, m] = trip.trip_time.split(":");
+
+                const existingStart = new Date(cleanDate);
+                existingStart.setHours(h, m, 0, 0);
+
+                const existingEnd = new Date(
+                  existingStart.getTime() +
+                    trip.duration_minutes * 60000
+                );
+
+                const existingEndWithBuffer = new Date(
+                  existingEnd.getTime() + buffer
+                );
+
+                // בדיקת חפיפה
+                if (newStart < existingEndWithBuffer && newEnd > existingStart) {
+                  isAvailable = false;
+                  break;
+                }
+              }
+
+              if (isAvailable) {
+                availableGuides.push(guide);
+              }
+
+              checked++;
+
+              if (checked === guides.length) {
+                res.json(availableGuides);
+              }
+            }
+          );
+        });
+      }
+    );
   });
 });
 

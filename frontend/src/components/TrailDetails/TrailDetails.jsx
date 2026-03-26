@@ -1,3 +1,7 @@
+//==========================================================
+//קומפוננטה להצגת פרטים מסלול מסויים כולל חלון פופה לפקשות ליציאה לטיול כולל נייוט
+//=========================================================
+
 // קומפוננטה לבחירת תאריך ושעה
 import DatePicker from "react-datepicker";
 
@@ -77,12 +81,26 @@ export default function TrailDetails({ user }) {
       .catch(() => console.log("שגיאה בשליפת המע״מ"));
   }, []);
 
-  // טעינת רשימת מדריכים מהשרת (רק פעם אחת)
+
+
+
+  // ===============================
+  // שליפת מדריכים פנויים לפי בחירה
+  // ===============================
   useEffect(() => {
-    fetch(`${API_BASE}/api/TrailDetailsAndrequests/guides`)
+    if (!tripDate || !tripTime) return;
+
+    const date = format(tripDate, "yyyy-MM-dd");
+    const time = tripTime.toTimeString().slice(0, 5);
+
+    fetch(
+      `${API_BASE}/api/TrailDetailsAndrequests/available-guides?trip_date=${date}&trip_time=${time}&trail_id=${id}`,
+    )
       .then((res) => res.json())
       .then((data) => setGuides(data));
-  }, []);
+  }, [tripDate, tripTime]);
+
+
 
   // טעינת פרטי המסלול לפי id
   useEffect(() => {
@@ -198,6 +216,12 @@ export default function TrailDetails({ user }) {
 
     return `${hours} שעות ו-${mins} דקות`;
   }
+
+  // ===============================
+  // חישוב תאריך מחר (לחסום היום)
+  // ===============================
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
   return (
     <div className={styles.page} dir="rtl">
@@ -352,6 +376,9 @@ export default function TrailDetails({ user }) {
               )}
 
               {/* בחירת תאריך */}
+              {/* ===============================
+               DatePicker תאריך (חוסם היום והעבר)
+               =============================== */}
               <div className={styles.dateWrapper}>
                 <DatePicker
                   selected={tripDate}
@@ -360,6 +387,7 @@ export default function TrailDetails({ user }) {
                   dateFormat="dd/MM/yyyy"
                   placeholderText="בחר תאריך"
                   className={styles.dateInput}
+                  minDate={tomorrow} // 🔥 זה המקום הנכון!
                 />
                 <FaCalendarAlt className={styles.dateIcon} />
               </div>
@@ -367,6 +395,7 @@ export default function TrailDetails({ user }) {
               {/* בחירת שעה */}
               <div className={styles.dateWrapper}>
                 <FaClock className={styles.dateIcon} />
+
                 <DatePicker
                   selected={tripTime}
                   onChange={(date) => setTripTime(date)}
@@ -376,6 +405,15 @@ export default function TrailDetails({ user }) {
                   dateFormat="HH:mm"
                   placeholderText="בחר שעה"
                   className={styles.dateInput}
+                  minTime={new Date().setHours(8, 0, 0, 0)}
+                  maxTime={
+                    trail
+                      ? new Date(
+                          new Date().setHours(18, 0, 0, 0) -
+                            trail.duration_minutes * 60000,
+                        )
+                      : new Date().setHours(18, 0, 0, 0)
+                  }
                 />
               </div>
 

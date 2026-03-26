@@ -172,8 +172,9 @@ export default function ManageGuidances() {
 
     try {
       const res = await fetch(
-        `${API_BASE}/api/ManageGuidances/available-guides?date=${g.trip_date}&time=${g.trip_time}`,
+        `${API_BASE}/api/ManageGuidances/available-guides?date=${g.trip_date}&time=${g.trip_time.slice(0, 5)}&group_id=${g.group_id}`,
       );
+
       const data = await res.json();
       setAvailableGuides(data);
     } catch {
