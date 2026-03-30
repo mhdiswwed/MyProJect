@@ -1,3 +1,7 @@
+//==================================
+// רוותיר לניהול המסלולים (צד המנהל)
+//===================================
+
 const express = require("express");
 const router = express.Router();
 
@@ -291,18 +295,18 @@ router.put(
   (req, res) => {
     const { id } = req.params;
 
-  const {
-    trail_name,
-    trail_type,
-    difficulty_level,
-    length_km,
-    duration_minutes,
-    start_point,
-    end_point,
-    price_per_person,
-    price_per_vehicle,
-    description,
-  } = req.body;
+    const {
+      trail_name,
+      trail_type,
+      difficulty_level,
+      length_km,
+      duration_minutes,
+      start_point,
+      end_point,
+      price_per_person,
+      price_per_vehicle,
+      description,
+    } = req.body;
 
     /* =========================
         ניקוי משתנים (חשוב מאוד!)
@@ -338,12 +342,12 @@ router.put(
     /* =========================
    2. בדיקות מספרים (לעדכון)
 ========================= */
-// בדיקת זמן המסלול
-if (duration_minutes !== undefined) {
-  if (isNaN(duration_minutes) || Number(duration_minutes) <= 0) {
-    errors.push("משך זמן המסלול לא תקין");
-  }
-}
+    // בדיקת זמן המסלול
+    if (duration_minutes !== undefined) {
+      if (isNaN(duration_minutes) || Number(duration_minutes) <= 0) {
+        errors.push("משך זמן המסלול לא תקין");
+      }
+    }
     // בודקים רק אם השדה נשלח
     if (length_km !== undefined) {
       if (isNaN(length_km) || Number(length_km) < 0) {

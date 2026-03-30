@@ -1,5 +1,8 @@
+//=================================
 // routes/manageGuidances.js
 // ראוטר מלא לניהול הדרכות על ידי מנהל
+//=================================
+
 const express = require("express");
 const router = express.Router();
 const dbSingleton = require("../dbSingleton");

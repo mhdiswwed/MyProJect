@@ -4,17 +4,17 @@
  * ---------------------------------------------------------
  * ראוטר צד שרת עבור קומפוננטת "ההדרכות שלי" (MyGuidances)
  *
- * 📌 שייך למדריכים (Guide)
+ *  שייך למדריכים (Guide)
  *
- * 📌 מה עושה:
+ * מה עושה:
  * - שליפת הדרכות של מדריך
  * - התחלת טיול
  * - סיום טיול
  *
- * 📌 טבלאות:
+ * טבלאות:
  * groups, guidances, trails, trip_requests
  *
- * 📌 API:
+ *  API:
  * GET    /api/myGuidances/:guideId
  * PUT    /api/myGuidances/start/:groupId
  * PUT    /api/myGuidances/end/:groupId

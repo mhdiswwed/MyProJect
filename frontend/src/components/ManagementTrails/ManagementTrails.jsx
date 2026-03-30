@@ -1,3 +1,7 @@
+//==================================
+// קומפוננטה לניהול המסלולים (צד המנהל)
+//===================================
+
 import { useEffect, useState } from "react";
 import styles from "./managementTrails.module.css";
 // אייקונים לכפתורים

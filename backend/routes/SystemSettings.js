@@ -1,3 +1,7 @@
+//=======================
+//רוותיר  לניהול הגדרות מערכת
+//=======================
+
 const express = require("express");
 const router = express.Router();
 const dbSingleton = require("../dbSingleton");
