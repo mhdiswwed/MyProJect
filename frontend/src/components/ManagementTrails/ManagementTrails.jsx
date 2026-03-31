@@ -27,8 +27,8 @@ export default function ManagementTrails() {
   // =========================
   const [page, setPage] = useState(1);
 
-  // כמה מסלולים יוצגו בכל עמוד
-  const rowsPerPage = 5;
+  // משתנה מצב שקובע כמה מסלולים יוצגו בכל עמוד
+  const [rowsPerPage, setRowsPerPage] = useState(6);
 
   // האם להציג את חלון המודאל
   const [showModal, setShowModal] = useState(false);
@@ -94,6 +94,38 @@ export default function ManagementTrails() {
   const filteredTrails = trails.filter((t) =>
     (t.trail_name || "").toLowerCase().includes(search.toLowerCase()),
   );
+
+
+//================================
+  // useEffect שמתעדכן בכל שינוי גודל מסך
+  //==============================
+  useEffect(() => {
+    // פונקציה שבודקת את רוחב המסך
+    function handleResize() {
+      // קבלת רוחב החלון הנוכחי
+      const width = window.innerWidth;
+      // אם המסך גדול מאוד (מחשב גדול)
+      if (width > 1400) {
+        setRowsPerPage(8); // מציג 8 מסלולים
+      }
+      // אם המסך בינוני (לפטופ רגיל)
+      else if (width > 1000) {
+        setRowsPerPage(6); // מציג 6 מסלולים
+      }
+      // אם המסך קטן (טלפון / טאבלט)
+      else {
+        setRowsPerPage(4); // מציג 4 מסלולים
+      }
+    }
+    // קריאה ראשונית לפונקציה (כדי שיפעל מיד)
+    handleResize();
+    // מאזין לשינוי גודל המסך
+    window.addEventListener("resize", handleResize);
+
+    // ניקוי מאזין כשהקומפוננטה נסגרת (חשוב מאוד)
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
 
   // =========================
   // חישוב העמוד הנוכחי
@@ -261,6 +293,29 @@ export default function ManagementTrails() {
   }
 
   // =========================
+  // סטטיסטיקות לפי סוג מסלול
+  // =========================
+  const stats = trails.reduce(
+    (acc, t) => {
+      acc.total++;
+
+      if (t.trail_type === "רגלי") acc.walking++;
+      else if (t.trail_type === "גיפים") acc.jeeps++;
+      else if (t.trail_type === "טרקטורונים") acc.atv++;
+      else if (t.trail_type === "סוסים") acc.horses++;
+
+      return acc;
+    },
+    {
+      total: 0,
+      walking: 0,
+      jeeps: 0,
+      atv: 0,
+      horses: 0,
+    },
+  );
+
+  // =========================
   // מחיקת כל המסלולים
   // =========================
   /*async function handleDeleteAll() {
@@ -312,7 +367,37 @@ export default function ManagementTrails() {
           </div>
         )}
         <h1>ניהול מסלולים</h1>
+        <div className={styles.statsRow}>
+          {/* סה״כ */}
+          <div className={styles.statBox}>
+            <div className={styles.statNumber}>{stats.total}</div>
+            <div className={styles.statLabel}>סה״כ</div>
+          </div>
 
+          {/* רגלי */}
+          <div className={`${styles.statBox} ${styles.walkingBox}`}>
+            <div className={styles.statNumber}>{stats.walking}</div>
+            <div className={styles.statLabel}>רגלי</div>
+          </div>
+
+          {/* גיפים */}
+          <div className={`${styles.statBox} ${styles.jeepsBox}`}>
+            <div className={styles.statNumber}>{stats.jeeps}</div>
+            <div className={styles.statLabel}>ג׳יפים</div>
+          </div>
+
+          {/* טרקטורונים */}
+          <div className={`${styles.statBox} ${styles.atvBox}`}>
+            <div className={styles.statNumber}>{stats.atv}</div>
+            <div className={styles.statLabel}>טרקטורונים</div>
+          </div>
+
+          {/* סוסים */}
+          <div className={`${styles.statBox} ${styles.horsesBox}`}>
+            <div className={styles.statNumber}>{stats.horses}</div>
+            <div className={styles.statLabel}>סוסים</div>
+          </div>
+        </div>
         <div className={styles.buttonsRow}>
           <button
             className={styles.addBtn}
