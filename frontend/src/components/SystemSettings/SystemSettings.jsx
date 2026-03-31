@@ -126,6 +126,7 @@ export default function SystemSettings() {
                   setVatInput(vat);
                   setShowModal(true);
                 }}
+                title="עדכן"
               >
                 <FaEdit />
               </button>

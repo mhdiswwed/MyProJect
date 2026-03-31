@@ -1,4 +1,6 @@
-// לניהול הדרכות על ידי מנהל
+//==============================
+// קומפוננטה לניהול הדרכות על ידי מנהל
+//================================
 
 import { useEffect, useState } from "react";
 import styles from "./manageGuidances.module.css";
@@ -9,7 +11,12 @@ import {
   FaCompass,
   FaCalendarAlt,
   FaFlagCheckered,
+  FaPhone,
+  FaEnvelope,
+  FaWhatsapp,
 } from "react-icons/fa";
+
+
 import { MdTimer } from "react-icons/md";
 import { BsGraphUp } from "react-icons/bs";
 import {
@@ -60,6 +67,44 @@ export default function ManageGuidances() {
      הודעות
   ========================= */
   const [msg, setMsg] = useState({ type: "", text: "" });
+
+  // =========================
+  // מדריך שנבחר
+  // =========================
+  const [selectedGuide, setSelectedGuide] = useState(null);
+
+  // =========================
+  // מודאל פרטי מדריך
+  // =========================
+  const [showGuideModal, setShowGuideModal] = useState(false);
+
+  /**
+   * =========================================
+   * פתיחת חלון פרטי מדריך
+   * =========================================
+   */
+  function openGuideDetails(g) {
+    setSelectedGuide(g); // שומר מדריך
+    setShowGuideModal(true); // פותח מודאל
+  }
+
+  /**
+   * =========================================
+   * המרת מספר ל-WhatsApp
+   * =========================================
+   */
+  function formatPhoneForWhatsapp(phone) {
+    if (!phone) return "";
+
+    let clean = phone.replace(/\D/g, "");
+
+    if (clean.startsWith("0")) {
+      return "972" + clean.substring(1);
+    }
+
+    return clean;
+  }
+
   //===============================
   // פתיחת ביטול הדרכה
   //===============================
@@ -477,7 +522,15 @@ export default function ManageGuidances() {
           ) : (
             filtered.map((g) => (
               <tr key={g.guidance_id}>
-                <td>{g.guide_name}</td>
+                <td>
+                  {/* שם מדריך לחיץ */}
+                  <span
+                    style={{ cursor: "pointer", color: "#38bdf8" }}
+                    onClick={() => openGuideDetails(g)}
+                  >
+                    {g.guide_name}
+                  </span>
+                </td>
                 <td>{g.group_id}</td>
                 <td>{g.trail_name}</td>
                 <td>{new Date(g.trip_date).toLocaleDateString("he-IL")}</td>
@@ -810,6 +863,77 @@ export default function ManageGuidances() {
             src={`${API_BASE}/uploads/guidances/${selectedGuidance.image}`}
             className={styles.fullImage}
           />
+        </div>
+      )}
+
+      {/* =========================================
+   מודאל פרטי מדריך
+========================================= */}
+      {showGuideModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2>פרטי מדריך</h2>
+
+            {/* שם */}
+            <p>
+              <strong>שם:</strong> {selectedGuide?.guide_name}
+            </p>
+
+            {/* =========================
+         טלפון
+      ========================= */}
+            <p>
+              <strong>טלפון:</strong>{" "}
+              {selectedGuide?.guide_phone ? (
+                <>
+                  {/* חיוג */}
+                  <a href={`tel:${selectedGuide.guide_phone}`}>
+                    <FaPhone className={styles.phoneIcon} />
+                  </a>{" "}
+                  {/* מספר */}
+                  {selectedGuide.guide_phone} {/* WhatsApp */}
+                  <a
+                    href={`https://wa.me/${formatPhoneForWhatsapp(
+                      selectedGuide.guide_phone,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <FaWhatsapp className={styles.whatsappIcon} />
+                  </a>
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            {/* =========================
+         אימייל
+      ========================= */}
+            <p>
+              <strong>אימייל:</strong>{" "}
+              {selectedGuide?.guide_email ? (
+                <>
+                  <a href={`mailto:${selectedGuide.guide_email}`}>
+                    <FaEnvelope className={styles.emailIcon} />
+                  </a>{" "}
+                  {selectedGuide.guide_email}
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            {/* סגירה */}
+            <div className={styles.btnRow}>
+            <button
+              className={styles.closeBtn}
+              onClick={() => setShowGuideModal(false)}
+            >
+              סגור
+            </button>
+          </div>
+          </div>
         </div>
       )}
     </div>

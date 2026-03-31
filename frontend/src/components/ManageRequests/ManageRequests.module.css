@@ -778,3 +778,34 @@ tr:hover{
   font-size:12px;     /* קטן יותר */
   white-space:nowrap; /* 🔥 לא שוברים שורה */
 }
+
+.btnRow {
+  display: flex;
+  justify-content: center; /* מרכז באמצע */
+  gap: 10px; /* רווח בין כפתורים */
+}
+
+
+.phoneIcon {
+  color: #22c55e;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.whatsappIcon {
+  color: #25D366;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.emailIcon {
+  color: #38bdf8;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.phoneIcon:hover,
+.whatsappIcon:hover,
+.emailIcon:hover {
+  transform: scale(1.2);
+}

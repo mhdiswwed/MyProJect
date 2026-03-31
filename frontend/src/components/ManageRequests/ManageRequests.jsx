@@ -18,7 +18,14 @@ import { useEffect, useState } from "react";
 import styles from "./manageRequests.module.css";
 import API_BASE from "../../config/api";
 // אייקונים להצגת שינוי ואייקון עין להצגת הודעות
-import { FaExchangeAlt, FaEye } from "react-icons/fa";
+import {
+  FaExchangeAlt,
+  FaEye,
+  FaPhone,
+  FaEnvelope,
+  FaWhatsapp,
+} from "react-icons/fa";
+
 
 export default function ManageRequests() {
   /* =========================
@@ -96,6 +103,44 @@ export default function ManageRequests() {
     guide_id: "",
     change_reason: "",
   });
+
+  /* =========================
+   פרטי לקוח (פופאפ)
+========================= */
+
+  // לקוח שנבחר
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // האם להציג מודאל
+  const [showUserModal, setShowUserModal] = useState(false);
+
+  /**
+   * =========================================
+   * פתיחת חלון פרטי לקוח
+   * =========================================
+   */
+  function openUserDetails(req) {
+    setSelectedUser(req); // שומר את הבקשה (כוללת פרטי משתמש)
+    setShowUserModal(true); // פותח מודאל
+  }
+
+  /**
+   * =========================================
+   * המרת מספר ל-WhatsApp
+   * =========================================
+   */
+  function formatPhoneForWhatsapp(phone) {
+    if (!phone) return "";
+
+    let clean = phone.replace(/\D/g, "");
+
+    // המרה מ-0 ל-972
+    if (clean.startsWith("0")) {
+      return "972" + clean.substring(1);
+    }
+
+    return clean;
+  }
 
   /* =====================================================
    פתיחת חלון ההודעות של הבקשה
@@ -260,19 +305,18 @@ export default function ManageRequests() {
   /* =====================================================
      שליפת מדריכים
   ===================================================== */
-async function loadAvailableGuides(date, time, duration) {
-  try {
-    const res = await fetch(
-      `${API_BASE}/api/manageRequests/available-guides?trip_date=${date}&trip_time=${time}&duration_minutes=${duration}`,
-    );
-    const data = await res.json();
-    //console.log("GUIDES:", data); // לבדיקה
-    setGuides(Array.isArray(data) ? data : []);
-  } catch (error) {
-    console.error("שגיאה בשליפת מדריכים פנויים:", error);
+  async function loadAvailableGuides(date, time, duration) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/manageRequests/available-guides?trip_date=${date}&trip_time=${time}&duration_minutes=${duration}`,
+      );
+      const data = await res.json();
+      //console.log("GUIDES:", data); // לבדיקה
+      setGuides(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("שגיאה בשליפת מדריכים פנויים:", error);
+    }
   }
-}
-
 
   /* =====================================================
      פתיחת חלון אישור בקשה
@@ -307,13 +351,13 @@ async function loadAvailableGuides(date, time, duration) {
 
     setShowApproveModal(true);
 
-setTimeout(() => {
-  loadAvailableGuides(
-    formattedDate,
-    request.trip_time?.slice(0, 5),
-    request.duration_minutes,
-  );
-}, 0);
+    setTimeout(() => {
+      loadAvailableGuides(
+        formattedDate,
+        request.trip_time?.slice(0, 5),
+        request.duration_minutes,
+      );
+    }, 0);
   }
   /* =====================================================
      אישור בקשה
@@ -365,15 +409,15 @@ setTimeout(() => {
     const somethingChanged = dateOrTimeChanged || guideChanged;
 
     /* אם נעשה שינוי חייבים סיבה */
-if (dateOrTimeChanged && !approveData.change_reason.trim()) {
-  setMsg({ type: "error", text: "חובה סיבה לשינוי תאריך/שעה" });
-  return;
-}
+    if (dateOrTimeChanged && !approveData.change_reason.trim()) {
+      setMsg({ type: "error", text: "חובה סיבה לשינוי תאריך/שעה" });
+      return;
+    }
 
-if (guideChanged && !guideChangeReason.trim()) {
-  setMsg({ type: "error", text: "חובה סיבה להחלפת מדריך" });
-  return;
-}
+    if (guideChanged && !guideChangeReason.trim()) {
+      setMsg({ type: "error", text: "חובה סיבה להחלפת מדריך" });
+      return;
+    }
 
     try {
       const res = await fetch(
@@ -728,7 +772,6 @@ if (guideChanged && !guideChangeReason.trim()) {
 ===================================================== */
   const hasGroup = selectedRequest?.group_id != null;
 
-
   // ==============================
   // חישוב סטטיסטיקות בקשות
   // ==============================
@@ -756,7 +799,6 @@ if (guideChanged && !guideChangeReason.trim()) {
       cancelled: 0, // מבוטל בפועל
     },
   );
-
 
   return (
     <div className={styles.page} dir="rtl">
@@ -866,7 +908,15 @@ if (guideChanged && !guideChangeReason.trim()) {
                   return shouldBlink ? styles.urgentRow : "";
                 })()}
               >
-                <td>{req.user_name}</td>
+                <td>
+                  {/* שם לקוח לחיץ */}
+                  <span
+                    style={{ cursor: "pointer", color: "#38bdf8" }}
+                    onClick={() => openUserDetails(req)}
+                  >
+                    {req.user_name}
+                  </span>
+                </td>
                 <td>{req.trail_name}</td>
                 <td>
                   <div>
@@ -931,6 +981,7 @@ if (guideChanged && !guideChangeReason.trim()) {
                   <div className={styles.actionsRow}>
                     {req.status === "ממתין" && (
                       <>
+                      
                         <button
                           className={styles.approveBtn}
                           onClick={() => openApproveModal(req)}
@@ -1049,11 +1100,11 @@ if (guideChanged && !guideChangeReason.trim()) {
                             trip_date: newDate,
                           });
 
-                         loadAvailableGuides(
-                           newDate,
-                           approveData.trip_time,
-                           selectedRequest.duration_minutes,
-                         );
+                          loadAvailableGuides(
+                            newDate,
+                            approveData.trip_time,
+                            selectedRequest.duration_minutes,
+                          );
                         }}
                       />
 
@@ -1069,11 +1120,11 @@ if (guideChanged && !guideChangeReason.trim()) {
                             trip_time: newTime,
                           });
 
-                         loadAvailableGuides(
-                           approveData.trip_date,
-                           newTime,
-                           selectedRequest.duration_minutes,
-                         );
+                          loadAvailableGuides(
+                            approveData.trip_date,
+                            newTime,
+                            selectedRequest.duration_minutes,
+                          );
                         }}
                       />
 
@@ -1302,8 +1353,8 @@ if (guideChanged && !guideChangeReason.trim()) {
       )}
 
       {/* =====================================================
-   מודאל להצגת כל ההודעות של הבקשה
-===================================================== */}
+       מודאל להצגת כל ההודעות של הבקשה
+      ===================================================== */}
 
       {showMessagesModal && (
         <div className={styles.modalOverlay}>
@@ -1321,14 +1372,88 @@ if (guideChanged && !guideChangeReason.trim()) {
                 <div>{m.text}</div>
               </div>
             ))}
+            <br/>
 
             {/* כפתור סגירה */}
+              <div className={styles.btnRow}>
             <button
               className={styles.closeBtn}
               onClick={() => setShowMessagesModal(false)}
             >
               סגור
             </button>
+          </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================
+   מודאל פרטי לקוח
+========================================= */}
+      {showUserModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2>פרטי לקוח</h2>
+
+            {/* שם */}
+            <p>
+              <strong>שם:</strong> {selectedUser?.user_name}
+            </p>
+
+            {/* =========================
+         טלפון
+      ========================= */}
+            <p>
+              <strong>טלפון:</strong>{" "}
+              {selectedUser?.user_phone ? (
+                <>
+                  {/* אייקון חיוג */}
+                  <a href={`tel:${selectedUser.user_phone}`}>
+                    <FaPhone className={styles.phoneIcon} />
+                  </a>{" "}
+                  {/* מספר */}
+                  {selectedUser.user_phone} {/* אייקון WhatsApp */}
+                  <a
+                    href={`https://wa.me/${formatPhoneForWhatsapp(
+                      selectedUser.user_phone,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <FaWhatsapp className={styles.whatsappIcon} />
+                  </a>
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            {/* =========================
+         אימייל
+      ========================= */}
+            <p>
+              <strong>אימייל:</strong>{" "}
+              {selectedUser?.user_email ? (
+                <>
+                  <a href={`mailto:${selectedUser.user_email}`}>
+                    <FaEnvelope className={styles.emailIcon} />
+                  </a>{" "}
+                  {selectedUser.user_email}
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            {/* כפתור סגירה */}
+              <div className={styles.btnRow}>
+            <button
+              className={styles.closeBtn}
+              onClick={() => setShowUserModal(false)}
+            >
+              סגור
+            </button>
+          </div>
           </div>
         </div>
       )}

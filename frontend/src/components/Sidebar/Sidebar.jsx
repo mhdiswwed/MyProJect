@@ -74,7 +74,7 @@ export default function Sidebar() {
 
       {/* קבוצות */}
       <NavLink
-        to="/admin/groups"
+        to="/admin/ManageGroups/"
         className={({ isActive }) =>
           isActive ? `${styles.link} ${styles.active}` : styles.link
         }

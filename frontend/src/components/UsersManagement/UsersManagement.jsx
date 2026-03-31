@@ -409,12 +409,12 @@ export default function UsersManagement({ currentUser }) {
                 <td>{u.active ? "פעיל" : "חסום"}</td>
 
                 <td className={styles.actions}>
-                  <button onClick={() => openEdit(u)}>
+                  <button onClick={() => openEdit(u)} title="עדכון פרטים">
                     <FaEdit />
                   </button>
 
                   {u.user_id !== currentUser.user_id && (
-                    <button onClick={() => toggleStatus(u)}>
+                    <button onClick={() => toggleStatus(u)} title={u.active ? "חסום":"הפעל"}>
                       {u.active ? <FaLock /> : <FaUnlock />}
                     </button>
                   )}
@@ -422,9 +422,10 @@ export default function UsersManagement({ currentUser }) {
                   {u.user_id !== currentUser.user_id && (
                     <button
                       onClick={() => {
-                        setMsg({ type: "", text: "" }); // 🔥
+                        setMsg({ type: "", text: "" }); 
                         setConfirmDelete(u);
                       }}
+                      title="מחק"
                     >
                       <FaTrash />
                     </button>

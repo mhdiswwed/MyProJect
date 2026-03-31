@@ -46,6 +46,7 @@ import UsersManagement from "../components/UsersManagement/UsersManagement";
 import ManageGuidances from "../components/ManageGuidances/ManageGuidances";
 import MyGuidances from "../components/MyGuidances/MyGuidances";
 import RequireRole from "../components/RequireRole/RequireRole";
+import ManageGroups from "../components/ManageGroups/ManageGroups";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -200,6 +201,8 @@ export default function App() {
             />
             {/*ניהול הדרכות*/}
             <Route path="ManageGuidances" element={<ManageGuidances />} />
+            {/*ניהול קבוצות*/}
+            <Route path="ManageGroups" element={<ManageGroups />} />
           </Route>
 
           {/* אזורר מדריך רק אם מדריך מחובר */}
@@ -207,7 +210,7 @@ export default function App() {
             path="/guide"
             element={
               <RequireRole user={user} allowedRoles={["מדריך"]}>
-                <MyGuidances user={user}/>
+                <MyGuidances user={user} />
               </RequireRole>
             }
           />

@@ -123,7 +123,9 @@ gd.images AS image,
 t.duration_minutes,
 
 t.trail_name,
-u.full_name AS guide_name
+u.full_name AS guide_name,
+u.phone AS guide_phone,
+u.email AS guide_email
 
 FROM groups g
 
