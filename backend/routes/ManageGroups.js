@@ -387,9 +387,9 @@ router.put("/rejectCancel/:requestId", (req, res) => {
                        * יצירת הדרכה (guidance)
                        */
                       const insertGuidanceSql = `
-  INSERT INTO guidances (group_id)
-  VALUES (?)
-`;
+                      INSERT INTO guidances (group_id)
+                      VALUES (?)
+                    `;
 
                       db.query(insertGuidanceSql, [groupId], (err) => {
                         if (err) {
@@ -529,6 +529,61 @@ router.put("/rejectCancel/:requestId", (req, res) => {
     );
   });
 });
+
+
+//==========================
+// ביטול קבוצה (הדרכה)
+//==========================
+// ביטול הדרכה + עדכון כל המערכת
+router.put("/cancel/:groupId", (req, res) => {
+  const { groupId } = req.params;
+  const { reason } = req.body;
+
+  // עדכון קבוצה
+  db.query(
+    `UPDATE groups 
+     SET status = 'בוטל', cancel_reason = ?
+     WHERE group_id = ?`,
+    [reason, groupId],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ message: "שגיאה בקבוצה" });
+      }
+
+      // עדכון הדרכה
+      db.query(
+        `UPDATE guidances 
+         SET status = 'בוטל'
+         WHERE group_id = ?`,
+        [groupId],
+        (err2) => {
+          if (err2) {
+            return res.status(500).json({ message: "שגיאה בהדרכה" });
+          }
+
+          // עדכון בקשה
+          db.query(
+            `UPDATE trip_requests 
+             SET status = 'מבוטל'
+             WHERE request_id = (
+               SELECT request_id FROM groups WHERE group_id = ?
+             )`,
+            [groupId],
+            (err3) => {
+              if (err3) {
+                return res.status(500).json({ message: "שגיאה בבקשה" });
+              }
+
+              // הצלחה
+              res.json({ message: "ההדרכה בוטלה בכל המערכת" });
+            },
+          );
+        },
+      );
+    },
+  );
+});
+
 
 
 module.exports = router;

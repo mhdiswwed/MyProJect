@@ -105,13 +105,12 @@ tr:hover{
 /* מאושר */
 
 .approved{
-
   background:#22c55e;
-
-  animation:blink 1.2s infinite;
-
 }
-
+/*ירוק מהבהב*/
+.blink {
+  animation: blink 1.2s infinite;
+}
 
 /* ממתין */
 
@@ -173,7 +172,7 @@ tr:hover{
 
   border:none;
 font-size: 13px;
-  padding:0px 7px;
+  padding:5px 7px;
 
   border-radius:6px;
 
@@ -764,4 +763,95 @@ border-top:1px solid #ccc;
   100% {
     box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
   }
+}
+
+/* ======================
+   הקבוצה כבר בטיול
+====================== */
+.tripInProgressText {
+  display: inline-block;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  background: rgba(59, 130, 246, 0.15); /* כחול */
+  border: 1px solid rgba(59, 130, 246, 0.4);
+
+  color: #60a5fa;
+}
+
+
+/* ======================
+   הטיול הסתיים
+====================== */
+.tripFinishedText {
+  display: inline-block;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  /* ירוק עדין כמו הצלחה */
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #4ade80;
+}
+
+.priceBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  font-size: 14px;
+}
+
+.priceBox p {
+  background: rgba(255,255,255,0.05);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* =========================================
+   עיצוב שורות מחיר בפופאפ
+========================================= */
+
+/* כל שורת מחיר */
+.priceRow {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+/* אייקונים בתוך שורות */
+.priceRow svg {
+  margin-left: 6px;
+  color: #7dd3fc;
+}
+
+/* מחיר סופי (מודגש בירוק) */
+.priceTotal {
+  color: #4ade80;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+/* =========================================
+   אייקון מחיר בטבלה
+========================================= */
+.priceTableIcon {
+  font-size: 18px;              /* גודל האייקון */
+  color: #facc15;               /* צבע זהוב */
+  cursor: pointer;              /* יד בלחיצה */
+  transition: 0.2s ease;        /* מעבר חלק */
+}
+
+/* ריחוף על האייקון */
+.priceTableIcon:hover {
+  color: #fde68a;               /* זהב בהיר יותר */
+  transform: scale(1.15);       /* הגדלה קלה */
 }

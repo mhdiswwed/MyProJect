@@ -159,12 +159,25 @@ white-space: nowrap;
   cursor:pointer;
 }
 
-/* ===============================
-   מצב "יצאו לטיול"
-=============================== */
-.inProgressText{
-  color:#22c55e;
-  font-weight:bold;
+/* ======================
+   קבוצה בטיול (בתהליך)
+====================== */
+.inProgressText {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  /* 🔥 צבע כחול-סגול שונה מהביטול */
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+
+  color: #93c5fd;
 }
 
 /* ===============================
@@ -442,4 +455,66 @@ th, td{
 
 .closeBtn:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   הודעה בתוך מודאל (בסיס)
+========================================= */
+.inlineMsg {
+  margin-top: 12px; /* רווח מהשדה מעל */
+  margin-bottom: 10px; /* רווח מהכפתורים */
+  
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  text-align: center;
+
+  /* רקע שקוף כמו כל המערכת */
+  background: rgba(0, 0, 0, 0.25);
+
+  /* מסגרת עדינה */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  /* אנימציה */
+  animation: fadeIn 0.25s ease;
+}
+
+/* =========================================
+   הצלחה (ירוק כמו בפרויקט שלך)
+========================================= */
+.inlineSuccess {
+  color: #22c55e;
+
+  border-color: rgba(34, 197, 94, 0.5);
+
+  background: rgba(34, 197, 94, 0.12);
+}
+
+/* =========================================
+   שגיאה (אדום כמו בפרויקט שלך)
+========================================= */
+.inlineError {
+  color: #ef4444;
+
+  border-color: rgba(239, 68, 68, 0.5);
+
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* =========================================
+   אנימציה
+========================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

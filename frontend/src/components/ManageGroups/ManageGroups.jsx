@@ -15,6 +15,7 @@ import {
   FaTrash,
   FaPhone,
   FaWhatsapp,
+  FaRoute,
 } from "react-icons/fa";
 
 
@@ -61,7 +62,6 @@ export default function ManageGroups() {
    שדות מודאלים
 ========================= */
   const [reason, setReason] = useState("");
-
 
   const [editData, setEditData] = useState({
     trip_date: "",
@@ -136,20 +136,21 @@ export default function ManageGroups() {
       // המרת תשובה ל-JSON
       const data = await res.json();
 
-      // הודעת הצלחה
-      setMsg({ type: "success", text: data.message });
+    setMsg({
+      type: res.ok ? "success" : "error",
+      text: data.message,
+    });
 
-      // טעינה מחדש של הקבוצות
+    if (res.ok) {
       loadGroups();
 
-      // סגירת מודאל
-      setShowRejectCancelModal(false);
-
-      // ניקוי קבוצה
-      setSelectedGroup(null);
-
-      // ניקוי הסיבה
-      setReason("");
+      setTimeout(() => {
+        setShowRejectCancelModal(false);
+        setSelectedGroup(null);
+        setReason("");
+        clearMsg();
+      }, 2000);
+    }
     } catch (err) {
       // טיפול בשגיאה
       setMsg({ type: "error", text: "שגיאה בדחיית ביטול" });
@@ -179,20 +180,82 @@ export default function ManageGroups() {
       const data = await res.json();
 
       // הצגת הודעת הצלחה למשתמש
-      setMsg({ type: "success", text: data.message });
+     setMsg({
+       type: res.ok ? "success" : "error",
+       text: data.message,
+     });
 
-      // טעינה מחדש של הקבוצות כדי לעדכן את הטבלה
-      loadGroups();
+     if (res.ok) {
+       loadGroups();
 
-      // סגירת מודאל אישור ביטול
-      setShowApproveCancelModal(false);
-
-      // ניקוי קבוצה נבחרת
-      setSelectedGroup(null);
+       setTimeout(() => {
+         setShowApproveCancelModal(false);
+         setSelectedGroup(null);
+         clearMsg();
+       }, 2000);
+     }
     } catch (err) {
       // במקרה של שגיאה
       setMsg({ type: "error", text: "שגיאה באישור ביטול" });
     }
+  }
+
+  // =========================================
+  // ביטול קבוצה (מנהל)
+  // =========================================
+  async function cancelGroup() {
+    // בדיקה: אם אין סיבה → לא מאפשרים שליחה
+    if (!reason.trim()) {
+      setMsg({ type: "error", text: "חובה להזין סיבה" });
+      return;
+    }
+
+    try {
+      // שליחת בקשת PUT לשרת
+      const res = await fetch(
+        `${API_BASE}/api/ManageGroups/cancel/${selectedGroup.group_id}`,
+        {
+          method: "PUT", // סוג הבקשה
+          headers: {
+            "Content-Type": "application/json", // שליחת JSON
+          },
+          body: JSON.stringify({
+            reason, // שליחת הסיבה
+          }),
+        },
+      );
+
+      // המרת תשובת השרת ל-JSON
+      const data = await res.json();
+
+      // הצגת הודעת הצלחה בתוך המודאל
+      setMsg({ type: "success", text: data.message });
+
+      // רענון הנתונים בטבלה
+      loadGroups();
+
+      // ❗ חשוב: לא סוגרים מיד → מחכים כדי לראות הודעה
+      setTimeout(() => {
+        setShowCancelModal(false); // סגירת מודאל
+        setSelectedGroup(null); // ניקוי קבוצה
+        setReason(""); // ניקוי סיבה
+        setMsg({ type: "", text: "" }); // ניקוי הודעה
+      }, 2300);
+    } catch (err) {
+      // במקרה של שגיאה
+      setMsg({ type: "error", text: "שגיאה בביטול קבוצה" });
+    }
+  }
+
+  // =========================================
+  // פתיחת מודאל ביטול קבוצה
+  // =========================================
+  function openCancelModal(group) {
+    clearMsg(); //ניקוי הודעות
+    setSelectedGroup(group); // שמירת הקבוצה שנבחרה
+    setReason(""); // איפוס סיבה
+    setMsg({ type: "", text: "" }); // איפוס הודעות
+    setShowCancelModal(true); // פתיחת המודאל
   }
 
   /**
@@ -335,14 +398,6 @@ export default function ManageGroups() {
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }
 
-  /* =========================
-   פתיחת מודאל ביטול
-========================= */
-  function openCancelModal(group) {
-    setSelectedGroup(group);
-    setShowCancelModal(true);
-  }
-
 
 
   /* =========================
@@ -365,9 +420,9 @@ export default function ManageGroups() {
   // פתיחת מודאל אישור ביטול
   // =====================================
   function openApproveCancelModal(group) {
+    clearMsg(); //ניקוי הודעות
     // שמירת הקבוצה שנבחרה
     setSelectedGroup(group);
-
     // פתיחת המודאל
     setShowApproveCancelModal(true);
   }
@@ -376,14 +431,20 @@ export default function ManageGroups() {
   // פתיחת מודאל דחיית ביטול
   // =====================================
   function openRejectCancelModalSimple(group) {
+    clearMsg(); //ניקוי הודעות
     // שמירת הקבוצה שנבחרה
     setSelectedGroup(group);
-
     // ניקוי סיבה קודמת
     setReason("");
-
     // פתיחת המודאל
     setShowRejectCancelModal(true);
+  }
+
+  // =========================================
+  // ניקוי הודעת מערכת
+  // =========================================
+  function clearMsg() {
+    setMsg({ type: "", text: "" });
   }
 
   return (
@@ -553,7 +614,7 @@ export default function ManageGroups() {
                       {g.status === "פעיל" &&
                         g.guidance_status === "בתהליך" && (
                           <span className={styles.inProgressText}>
-                            הקבוצה נמצאת בטיול
+                            <FaRoute /> הקבוצה נמצאת בטיול
                           </span>
                         )}
 
@@ -718,15 +779,42 @@ export default function ManageGroups() {
       {showCancelModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
+            {/* כותרת */}
             <h2>ביטול קבוצה</h2>
 
+            {/* שדה סיבה */}
             <textarea
               placeholder="סיבה"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
+
+            {/* =========================================
+             הודעת מערכת בתוך המודאל
+             מוצגת מעל הכפתורים
+            ========================================= */}
+            {msg.text && (
+              <div
+                className={`${styles.inlineMsg} ${
+                  msg.type === "success"
+                    ? styles.inlineSuccess
+                    : styles.inlineError
+                }`}
+              >
+                {msg.text}
+              </div>
+            )}
+
+            {/* =========================================
+             כפתורים
+              ========================================= */}
             <div className={styles.btnRow}>
-              <button className={styles.saveBtn}>שלח</button>
+              {/* כפתור שליחה */}
+              <button className={styles.saveBtn} onClick={cancelGroup}>
+                שלח
+              </button>
+
+              {/* כפתור סגירה */}
               <button
                 className={styles.closeBtn}
                 onClick={() => setShowCancelModal(false)}
@@ -739,8 +827,8 @@ export default function ManageGroups() {
       )}
 
       {/* =========================================
-   מודאל להצגת הודעות הקבוצה
-========================================= */}
+       מודאל להצגת הודעות הקבוצה
+      ========================================= */}
       {showMessagesModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -772,8 +860,8 @@ export default function ManageGroups() {
       )}
 
       {/* =========================================
-   מודאל פרטי נציג קבוצה
-========================================= */}
+       מודאל פרטי נציג קבוצה
+      ========================================= */}
       {showUserModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -845,16 +933,7 @@ export default function ManageGroups() {
         </div>
       )}
 
-      {/* הודעות */}
-      {msg.text && (
-        <div
-          className={`${styles.toast} ${
-            msg.type === "success" ? styles.toastSuccess : styles.toastError
-          }`}
-        >
-          {msg.text}
-        </div>
-      )}
+
     </div>
   );
 }

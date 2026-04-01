@@ -20,9 +20,16 @@ import {
   FaExchangeAlt,
   FaBell,
   FaMapMarkerAlt,
+  FaCheckCircle,
+  FaRoute,
+  FaShekelSign,
+  FaCar,
+  FaUsers,
+  FaReceipt,
 } from "react-icons/fa";
+
 // אייקונים להתראות, מיקום וזמן
-import { MdAccessTime } from "react-icons/md";
+import { MdAccessTime, MdAttachMoney } from "react-icons/md";
 
 
 export default function MyRequests({ user }) {
@@ -60,6 +67,12 @@ export default function MyRequests({ user }) {
 
   // שומר את ה-ID של הבקשה שעליה נלחץ כדי להדגיש אותה בטבלה
   const [highlightedId, setHighlightedId] = useState(null);
+
+  /* מצב לפתיחת חלון מחירים */
+  const [showPriceModal, setShowPriceModal] = useState(false);
+
+  /* הבקשה שנבחרה להצגת מחירים */
+  const [selectedPrice, setSelectedPrice] = useState(null);
 
   /**
    * שליפת פרטי קבוצה מהשרת לפי מזהה הבקשה
@@ -162,7 +175,7 @@ export default function MyRequests({ user }) {
    * מחזיר מחלקת CSS לפי סטטוס
    */
   function getStatusClass(status) {
-    if (status === "מאושר") return styles.approved;
+    if (status === "מאושר") return "";
 
     if (status === "ממתין") return styles.pending;
 
@@ -277,7 +290,6 @@ export default function MyRequests({ user }) {
     return true;
   });
 
-  
   //==============================================================
   // מסנן את כל הבקשות ומחזיר רק מסלולים מאושרים שמתקיימים מחר או מחרתיים
   //========================================================
@@ -305,7 +317,7 @@ export default function MyRequests({ user }) {
 
     return "";
   }
-//==========================================
+  //==========================================
   // כאשר לוחצים על התראה → מדגיש שורה + גולל אליה
   //=====================================
   function handleAlertClick(trip) {
@@ -323,8 +335,14 @@ export default function MyRequests({ user }) {
     }, 7000);
   }
 
-
-
+  /**
+   * פתיחת חלון מחירים
+   * מקבלת את הבקשה ושומרת אותה
+   */
+  function openPriceModal(request) {
+    setSelectedPrice(request); // שמירת הבקשה
+    setShowPriceModal(true); // פתיחת הפופאפ
+  }
 
   return (
     <div className={styles.page}>
@@ -378,7 +396,6 @@ export default function MyRequests({ user }) {
           </div>
         </div>
       </div>
-
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -389,11 +406,8 @@ export default function MyRequests({ user }) {
               <th>מספר משתתפים</th>
               <th>שם המדריך</th>
               <th>כלים</th>
-              <th>מחיר כלי ליחיד</th>
-              <th>מחיר השתתפות ליחיד</th>
-              <th>מחיר לפני מע״מ</th>
-              <th>מע״מ</th>
-              <th>מחיר כולל מע״מ</th>
+              <th>פירוט המחיר</th>
+
               <th>סטטוס</th>
               <th>פעולה</th>
               <th>פרטים</th>
@@ -459,25 +473,32 @@ export default function MyRequests({ user }) {
                       )}
                   </td>
 
-                  <td>{r.number_of_vehicles}</td>
-
                   <td>
-                    {r.price_per_vehicle ? `₪${r.price_per_vehicle}` : "—"}
+                    {r.price_per_vehicle > 0 ? r.number_of_vehicles : "—"}
                   </td>
 
-                  <td>₪{Number(r.price_per_person || 0).toFixed(2)}</td>
-
-                  <td>₪{Number(r.total_before_vat || 0).toFixed(2)}</td>
-
-                  <td>₪{Number(r.vat_amount || 0).toFixed(2)}</td>
-
-                  <td>₪{Number(r.total_with_vat || 0).toFixed(2)}</td>
+                  {/* פירוט המחיר*/}
+                  <td>
+                    <FaShekelSign
+                      className={styles.priceTableIcon}
+                      title="פירוט מחיר"
+                      onClick={() => openPriceModal(r)}
+                    />
+                  </td>
 
                   {/* סטטוס */}
-
                   <td>
                     <span
-                      className={`${styles.status} ${getStatusClass(r.status)}`}
+                      className={`${styles.status} ${
+                        r.status === "מאושר"
+                          ? styles.approved
+                          : getStatusClass(r.status)
+                      } ${
+                        r.status === "מאושר" &&
+                        (!r.guidance_status || r.guidance_status === "מתוכנן")
+                          ? styles.blink
+                          : ""
+                      }`}
                     >
                       {r.status}
                     </span>
@@ -492,24 +513,88 @@ export default function MyRequests({ user }) {
                   </td>
 
                   {/* כפתור פעולה */}
-
                   <td>
-                    {r.cancel_requested === 1 ? (
-                      <span className={styles.pendingCancelText}>
-                        בקשת הביטול נשלחה
-                      </span>
-                    ) : r.cancel_reject_reason ? (
-                      <span className={styles.cancelRejectedText}>
-                        בקשת הביטול נדחתה
-                      </span>
-                    ) : r.status === "ממתין" || r.status === "מאושר" ? (
-                      <button
-                        className={styles.cancelBtn}
-                        onClick={() => openCancelModal(r.request_id)}
-                      >
-                        בקש ביטול
-                      </button>
-                    ) : null}
+                    {(() => {
+                      /**
+                       * אם כבר נשלחה בקשת ביטול
+                       */
+                      if (r.cancel_requested === 1) {
+                        return (
+                          <span className={styles.pendingCancelText}>
+                            בקשת הביטול נשלחה
+                          </span>
+                        );
+                      }
+
+                      /**
+                       * אם המנהל דחה את בקשת הביטול
+                       */
+                      if (r.cancel_reject_reason) {
+                        return (
+                          <span className={styles.cancelRejectedText}>
+                            בקשת הביטול נדחתה
+                          </span>
+                        );
+                      }
+
+                      /**
+                       * אם הבקשה עדיין ממתינה → תמיד אפשר לבטל
+                       */
+                      if (r.status === "ממתין") {
+                        return (
+                          <button
+                            className={styles.cancelBtn}
+                            onClick={() => openCancelModal(r.request_id)}
+                          >
+                            בקש ביטול
+                          </button>
+                        );
+                      }
+
+                      /**
+                       * אם הבקשה מאושרת
+                       */
+                      if (r.status === "מאושר") {
+                        /**
+                         * אם הקבוצה בתהליך → כבר יצאו לטיול
+                         */
+                        if (r.guidance_status === "בתהליך") {
+                          return (
+                            <span className={styles.tripInProgressText}>
+                              <FaRoute /> אתם בטיול עכשיו
+                            </span>
+                          );
+                        }
+
+                        /**
+                         * אם הקבוצה הסתיימה
+                         */
+                        if (r.guidance_status === "הסתיים") {
+                          return (
+                            <span className={styles.tripFinishedText}>
+                              <FaCheckCircle /> הטיול שלכם הסתיים
+                            </span>
+                          );
+                        }
+
+                        /**
+                         * אם אין סטטוס או עדיין לא התחיל → אפשר לבטל
+                         */
+                        return (
+                          <button
+                            className={styles.cancelBtn}
+                            onClick={() => openCancelModal(r.request_id)}
+                          >
+                            בקש ביטול
+                          </button>
+                        );
+                      }
+
+                      /**
+                       * ברירת מחדל
+                       */
+                      return null;
+                    })()}
                   </td>
 
                   <td>
@@ -525,7 +610,6 @@ export default function MyRequests({ user }) {
           </tbody>
         </table>
       </div>
-
       {/* ------------------------------------------------ */}
       {/* חלון פופ-אפ להצגת פרטים לפי סטטוס הבקשה */}
       {/* ------------------------------------------------ */}
@@ -704,9 +788,7 @@ export default function MyRequests({ user }) {
           </div>
         </div>
       )}
-
       {/* חלון פופ-אפ לביטול */}
-
       {showCancelModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -730,6 +812,94 @@ export default function MyRequests({ user }) {
                 onClick={() => setShowCancelModal(false)}
               >
                 ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*חלון פופה לפירוט המחיר */}
+      {showPriceModal && selectedPrice && (
+        <div className={styles.modalOverlay}>
+          {/* הקופסה המרכזית של הפופאפ */}
+          <div className={styles.modal} dir="rtl">
+            {/* כותרת עם אייקון */}
+            <h3 className={styles.priceTitle}>
+              <FaShekelSign /> פירוט מחירים
+            </h3>
+
+            {/* שם המסלול */}
+            <h4 className={styles.priceSubtitle}>{selectedPrice.trail_name}</h4>
+
+            {/* ================= כלי רכב ================= */}
+            {/* מוצג רק אם יש מחיר כלי */}
+            {selectedPrice.price_per_vehicle > 0 && (
+              <>
+                {/* מחיר כלי ללא מע״מ */}
+                <p className={styles.priceRow}>
+                  <FaCar className={styles.priceIcon} />
+                  מחיר כלי ליחיד: ₪{selectedPrice.price_per_vehicle}
+                </p>
+
+                {/* מחיר כלי עם מע״מ */}
+                <p className={styles.priceRow}>
+                  <FaCar className={styles.priceIcon} />
+                  מחיר כלי ליחיד כולל מע״מ: ₪
+                  {selectedPrice.price_per_vehicle_with_vat != null
+                    ? Number(selectedPrice.price_per_vehicle_with_vat).toFixed(
+                        2,
+                      )
+                    : "—"}
+                </p>
+              </>
+            )}
+
+            {/* ================= משתתפים ================= */}
+            {/* מחיר משתתף ללא מע״מ */}
+            <p className={styles.priceRow}>
+              <FaUsers className={styles.priceIcon} />
+              מחיר השתתפות ליחיד: ₪{selectedPrice.price_per_person}
+            </p>
+
+            {/* מחיר משתתף עם מע״מ */}
+            <p className={styles.priceRow}>
+              <FaUsers className={styles.priceIcon} />
+              מחיר השתתפות ליחיד כולל מע״מ: ₪
+              {selectedPrice.price_per_person_with_vat != null
+                ? Number(selectedPrice.price_per_person_with_vat).toFixed(2)
+                : "—"}
+            </p>
+
+            {/* קו הפרדה */}
+            <hr className={styles.priceDivider} />
+
+            {/* ================= סיכום ================= */}
+            {/* מחיר לפני מע״מ */}
+            <p className={styles.priceRow}>
+              <MdAttachMoney className={styles.priceIcon} />
+              מחיר כולל לפני מע״מ: ₪
+              {Number(selectedPrice.total_before_vat).toFixed(2)}
+            </p>
+
+            {/* סכום מע״מ */}
+            <p className={styles.priceRow}>
+              <FaReceipt className={styles.priceIcon} />
+              מע״מ: ₪{Number(selectedPrice.vat_amount).toFixed(2)}
+            </p>
+
+            {/* ================= מחיר סופי ================= */}
+            <p className={styles.priceTotal}>
+              <FaShekelSign className={styles.priceIcon} /> מחיר כולל: ₪
+              {Number(selectedPrice.total_with_vat).toFixed(2)}
+            </p>
+
+            {/* ================= כפתור סגירה ================= */}
+            <div className={styles.modalButtons}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowPriceModal(false)}
+              >
+                סגור
               </button>
             </div>
           </div>

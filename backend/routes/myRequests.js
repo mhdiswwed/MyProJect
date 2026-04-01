@@ -20,12 +20,6 @@ const db = dbSingleton.getConnection();
 
 
 
-
-
-
-
-
-
 /**
  * ------------------------------------------------
  * פונקציה לשליפת המע״מ מהמערכת
@@ -100,6 +94,10 @@ tr.trip_time,
 grp.trip_date AS changed_trip_date,
 grp.trip_time AS changed_trip_time,
 
+/* סטטוס ההדרכה */
+gd.status AS guidance_status,
+
+
 /* סיבת שינוי */
 grp.change_reason,
 grp.cancel_reason AS group_cancel_reason,
@@ -135,6 +133,10 @@ ON tr.trail_id = t.trail_id
 LEFT JOIN groups grp
 ON tr.request_id = grp.request_id
 
+/* טבלת הדרכות (הסטטוס) */
+LEFT JOIN guidances gd
+ON grp.group_id = gd.group_id
+
 /* מדריך מקורי */
 LEFT JOIN users g
 ON tr.guide_id = g.user_id
@@ -155,14 +157,20 @@ ORDER BY
       AND TIMESTAMPDIFF(HOUR, NOW(), CONCAT(tr.trip_date, ' ', tr.trip_time)) BETWEEN 0 AND 48
     THEN 2
 
-    /* 3️⃣ מאושר רגיל */
-    WHEN tr.status = 'מאושר' THEN 3
+    /* 3️⃣ מאושר רגיל (עוד לא התחיל) */
+    WHEN tr.status = 'מאושר' AND gd.status ='מתוכנן'THEN 3
+
+    /* 4️⃣ הקבוצה בטיול */
+    WHEN tr.status = 'מאושר' AND gd.status = 'בתהליך' THEN 4
+
+    /* 5️⃣ הטיול הסתיים */
+    WHEN tr.status = 'מאושר' AND gd.status = 'הסתיים' THEN 5
 
     /* 4️⃣ נדחה */
-    WHEN tr.status = 'נדחה' THEN 4
+    WHEN tr.status = 'נדחה' THEN 6
 
     /* 5️⃣ מבוטל */
-    ELSE 5
+    ELSE 7
   END,
 
   /* בתוך כל קבוצה – מיון לפי זמן */
@@ -187,6 +195,18 @@ ORDER BY
          */
         const pricePerPerson = Number(r.price_per_person || 0);
         const pricePerVehicle = Number(r.price_per_vehicle || 0);
+
+                /**
+         * מחירים ליחיד כולל מע״מ
+         */
+    const pricePerPersonWithVat = Number(
+      (pricePerPerson * (1 + VAT_RATE)).toFixed(2),
+    );
+
+    const pricePerVehicleWithVat = Number(
+      (pricePerVehicle * (1 + VAT_RATE)).toFixed(2),
+    );
+
 
         /**
          * נתוני הבקשה
@@ -246,6 +266,9 @@ ORDER BY
         price_per_person: pricePerPerson,
         price_per_vehicle: pricePerVehicle,
 
+        price_per_person_with_vat: pricePerPersonWithVat,
+        price_per_vehicle_with_vat: pricePerVehicleWithVat,
+
         total_before_vat: totalBeforeVat,
         vat_amount: vatAmount,
         total_with_vat: totalWithVat,
@@ -256,6 +279,11 @@ ORDER BY
         cancel_requested: r.cancel_requested,
 
         group_cancel_reason: r.group_cancel_reason,
+
+        /**
+         * סטטוס ההדרכה (בתהליך / הסתיים)
+         */
+        guidance_status: r.guidance_status,
 
         reject_reason: r.reject_reason,
         cancel_reject_reason: r.cancel_reject_reason,
