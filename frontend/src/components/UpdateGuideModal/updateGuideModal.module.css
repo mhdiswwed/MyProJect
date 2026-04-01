@@ -1,0 +1,122 @@
+/* =========================================
+   רקע כהה + blur
+========================================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+/* =========================================
+   חלון מודאל
+========================================= */
+.modal {
+  width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+
+  background: rgba(18,22,28,0.95);
+  border-radius: 18px;
+
+  padding: 25px;
+
+  color: white;
+
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* כותרת */
+.title {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* בלוק */
+.section {
+  margin-bottom: 15px;
+}
+
+/* כפתור פעולה */
+.actionBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+
+  background: #374151;
+  color: white;
+  cursor: pointer;
+}
+
+/* אזור עריכה */
+.editBox {
+  margin-top: 10px;
+}
+
+/* שדות */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+
+  background: rgba(0,0,0,0.3);
+  color: white;
+}
+
+/* textarea */
+.textarea {
+  min-height: 70px;
+}
+
+/* הודעה */
+.msg {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.success {
+  color: #22c55e;
+  background: rgba(34,197,94,0.1);
+}
+
+.error {
+  color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+
+/* כפתורים */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.saveBtn {
+  background: #22c55e;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  color: white;
+}
+
+.closeBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+}

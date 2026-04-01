@@ -419,6 +419,22 @@ export default function ManageGuidances() {
     },
   );
 
+  // =========================
+  // חישוב שעת סיום
+  // =========================
+  function calculateEndTime(startTime, duration) {
+    if (!startTime || !duration) return "";
+
+    const [h, m] = startTime.split(":").map(Number);
+    const total = h * 60 + m + duration;
+
+    const endH = Math.floor(total / 60);
+    const endM = total % 60;
+
+    return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+  }
+
+
   return (
     <div className={styles.page} dir="rtl">
       {/* כותרת */}
@@ -505,8 +521,7 @@ export default function ManageGuidances() {
             <th>מדריך</th>
             <th>קבוצה</th>
             <th>מסלול</th>
-            <th>תאריך</th>
-            <th>שעה</th>
+            <th>תאריך ושעה</th>
             <th>סטטוס</th>
             <th>פרטים</th>
             <th>פעולות</th>
@@ -533,8 +548,18 @@ export default function ManageGuidances() {
                 </td>
                 <td>{g.group_id}</td>
                 <td>{g.trail_name}</td>
-                <td>{new Date(g.trip_date).toLocaleDateString("he-IL")}</td>
-                <td>{g.trip_time?.slice(0, 5)}</td>
+               <td>
+              <div>
+                <div>
+                  {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                </div>
+
+                <div className={styles.timeRow}>
+                  {g.trip_time?.slice(0, 5)} -{" "}
+                  {calculateEndTime(g.trip_time?.slice(0, 5), g.duration_minutes)}
+                </div>
+              </div>
+            </td>
                 <td>{g.status}</td>
 
                 <td>
@@ -926,13 +951,13 @@ export default function ManageGuidances() {
 
             {/* סגירה */}
             <div className={styles.btnRow}>
-            <button
-              className={styles.closeBtn}
-              onClick={() => setShowGuideModal(false)}
-            >
-              סגור
-            </button>
-          </div>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowGuideModal(false)}
+              >
+                סגור
+              </button>
+            </div>
           </div>
         </div>
       )}

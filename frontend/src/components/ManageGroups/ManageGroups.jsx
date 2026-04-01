@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import styles from "./manageGroups.module.css";
 import API_BASE from "../../config/api";
+import UpdateGroupModal from "../UpdateGuideModal/UpdateGuideModal";
 
 import {
   FaEye,
@@ -90,6 +91,9 @@ export default function ManageGroups() {
   // =========================
   const [showUserModal, setShowUserModal] = useState(false);
 
+  // מצב האם הפופאפ פתוח
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
   /* =========================
      טעינת קבוצות
   ========================= */
@@ -136,21 +140,21 @@ export default function ManageGroups() {
       // המרת תשובה ל-JSON
       const data = await res.json();
 
-    setMsg({
-      type: res.ok ? "success" : "error",
-      text: data.message,
-    });
+      setMsg({
+        type: res.ok ? "success" : "error",
+        text: data.message,
+      });
 
-    if (res.ok) {
-      loadGroups();
+      if (res.ok) {
+        loadGroups();
 
-      setTimeout(() => {
-        setShowRejectCancelModal(false);
-        setSelectedGroup(null);
-        setReason("");
-        clearMsg();
-      }, 2000);
-    }
+        setTimeout(() => {
+          setShowRejectCancelModal(false);
+          setSelectedGroup(null);
+          setReason("");
+          clearMsg();
+        }, 2000);
+      }
     } catch (err) {
       // טיפול בשגיאה
       setMsg({ type: "error", text: "שגיאה בדחיית ביטול" });
@@ -180,20 +184,20 @@ export default function ManageGroups() {
       const data = await res.json();
 
       // הצגת הודעת הצלחה למשתמש
-     setMsg({
-       type: res.ok ? "success" : "error",
-       text: data.message,
-     });
+      setMsg({
+        type: res.ok ? "success" : "error",
+        text: data.message,
+      });
 
-     if (res.ok) {
-       loadGroups();
+      if (res.ok) {
+        loadGroups();
 
-       setTimeout(() => {
-         setShowApproveCancelModal(false);
-         setSelectedGroup(null);
-         clearMsg();
-       }, 2000);
-     }
+        setTimeout(() => {
+          setShowApproveCancelModal(false);
+          setSelectedGroup(null);
+          clearMsg();
+        }, 2000);
+      }
     } catch (err) {
       // במקרה של שגיאה
       setMsg({ type: "error", text: "שגיאה באישור ביטול" });
@@ -398,22 +402,22 @@ export default function ManageGroups() {
     return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
   }
 
+  // =========================================
+  // שליפת מדריכים פנויים לפי תאריך ושעה
+  // =========================================
+  async function loadAvailableGuides(date, time, duration) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/ManageGroups/available-guides?trip_date=${date}&trip_time=${time}&duration_minutes=${duration}`,
+      );
 
+      const data = await res.json();
 
-  /* =========================
-   פתיחת עריכה
-========================= */
-  function openEditModal(group) {
-    setSelectedGroup(group);
-
-    setEditData({
-      trip_date: group.trip_date,
-      trip_time: group.trip_time?.slice(0, 5),
-      meeting_point: group.meeting_point,
-      guide_id: group.guide_id,
-    });
-
-    setShowEditModal(true);
+      // שומר מדריכים
+      setGuides(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("שגיאה בשליפת מדריכים", err);
+    }
   }
 
   // =====================================
@@ -507,8 +511,8 @@ export default function ManageGroups() {
             <th>מס׳ קבוצה</th>
             <th>נציג קבוצה</th>
             <th>טיול</th>
-            <th>תאריך</th>
-            <th>שעות</th>
+            <th>מדריך</th>
+            <th>תאריך ושעה</th>
             <th>נקודת מפגש</th>
             <th>סטטוס</th>
             <th>הודעות</th>
@@ -542,10 +546,17 @@ export default function ManageGroups() {
                   </td>
                   <td>{g.trail_name}</td>
 
-                  <td>{new Date(g.trip_date).toLocaleDateString("he-IL")}</td>
+                  <td>{g.guide_name || "לא שובץ"}</td>
 
                   <td>
-                    {g.trip_time?.slice(0, 5)} - {endTime}
+                    <div>
+                      <div>
+                        {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                      </div>
+                      <div className={styles.timeRow}>
+                        {g.trip_time?.slice(0, 5)} - {endTime}
+                      </div>
+                    </div>
                   </td>
 
                   <td>{g.meeting_point}</td>
@@ -595,7 +606,13 @@ export default function ManageGroups() {
                             <button
                               className={`${styles.actionBtn} ${styles.editBtn}`}
                               title="עדכן קבוצה"
-                              onClick={() => openEditModal(g)}
+                              onClick={() => {
+                                // שומר את הקבוצה שנבחרה
+                                setSelectedGroup(g);
+
+                                // פותח את הפופאפ
+                                setShowUpdateModal(true);
+                              }}
                             >
                               <FaEdit />
                             </button>
@@ -733,48 +750,6 @@ export default function ManageGroups() {
         </div>
       )}
 
-      {/* מודאל עדכון קבוצה*/}
-      {showEditModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2>עדכון קבוצה</h2>
-
-            <input
-              type="date"
-              value={editData.trip_date}
-              onChange={(e) =>
-                setEditData({ ...editData, trip_date: e.target.value })
-              }
-            />
-
-            <input
-              type="time"
-              value={editData.trip_time}
-              onChange={(e) =>
-                setEditData({ ...editData, trip_time: e.target.value })
-              }
-            />
-
-            <input
-              placeholder="נקודת מפגש"
-              value={editData.meeting_point}
-              onChange={(e) =>
-                setEditData({ ...editData, meeting_point: e.target.value })
-              }
-            />
-            <div className={styles.btnRow}>
-              <button className={styles.saveBtn}>שמור</button>
-              <button
-                className={styles.closeBtn}
-                onClick={() => setShowEditModal(false)}
-              >
-                סגור
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* מודאל ביטול קבוצה*/}
       {showCancelModal && (
         <div className={styles.modalOverlay}>
@@ -902,8 +877,8 @@ export default function ManageGroups() {
             </p>
 
             {/* =========================
-   אימייל
-========================= */}
+             אימייל
+            ========================= */}
             <p>
               <strong>אימייל:</strong>{" "}
               {selectedUser?.email ? (
@@ -933,7 +908,24 @@ export default function ManageGroups() {
         </div>
       )}
 
-
+      {/* =========================
+         פופאפ עדכון קבוצה
+      ========================= */}
+      {showUpdateModal && selectedGroup && (
+        <UpdateGroupModal
+          // מעביר את הקבוצה שנבחרה לפופאפ
+          group={selectedGroup}
+          // סגירת הפופאפ
+          onClose={() => {
+            setShowUpdateModal(false); // סוגר חלון
+            setSelectedGroup(null); // מנקה קבוצה
+          }}
+          // אחרי עדכון מוצלח
+          onSuccess={() => {
+            loadGroups(); // רענון טבלה
+          }}
+        />
+      )}
     </div>
   );
 }

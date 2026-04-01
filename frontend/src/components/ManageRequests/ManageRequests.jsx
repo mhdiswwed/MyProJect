@@ -24,7 +24,10 @@ import {
   FaPhone,
   FaEnvelope,
   FaWhatsapp,
+  FaUser,
+  FaCar,
 } from "react-icons/fa";
+
 
 
 export default function ManageRequests() {
@@ -870,8 +873,9 @@ export default function ManageRequests() {
             <th>תאריך</th>
             <th>שעה</th>
             <th>מדריך</th>
-            <th>משתתפים</th>
-            <th>רכבים</th>
+            <th>
+              משתתפים /<br /> רכבים
+            </th>
             <th>סטטוס</th>
             <th>הודעות</th>
             <th>פעולות</th>
@@ -957,8 +961,19 @@ export default function ManageRequests() {
                       </div>
                     )}
                 </td>
-                <td>{req.number_of_participants}</td>
-                <td>{req.number_of_vehicles}</td>
+                <td>
+                  <div className={styles.peopleCars}>
+                    <span>
+                      <FaUser className={styles.smallIcon} />
+                      {req.number_of_participants}
+                    </span>
+
+                    <span>
+                      <FaCar className={styles.smallIcon} />
+                      {req.trail_type === "רגלי" ? "—" : req.number_of_vehicles}
+                    </span>
+                  </div>
+                </td>
                 <td>{req.status}</td>
 
                 {/* עמודת הודעות */}
@@ -981,7 +996,6 @@ export default function ManageRequests() {
                   <div className={styles.actionsRow}>
                     {req.status === "ממתין" && (
                       <>
-                      
                         <button
                           className={styles.approveBtn}
                           onClick={() => openApproveModal(req)}
@@ -1372,17 +1386,17 @@ export default function ManageRequests() {
                 <div>{m.text}</div>
               </div>
             ))}
-            <br/>
+            <br />
 
             {/* כפתור סגירה */}
-              <div className={styles.btnRow}>
-            <button
-              className={styles.closeBtn}
-              onClick={() => setShowMessagesModal(false)}
-            >
-              סגור
-            </button>
-          </div>
+            <div className={styles.btnRow}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowMessagesModal(false)}
+              >
+                סגור
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1446,14 +1460,14 @@ export default function ManageRequests() {
             </p>
 
             {/* כפתור סגירה */}
-              <div className={styles.btnRow}>
-            <button
-              className={styles.closeBtn}
-              onClick={() => setShowUserModal(false)}
-            >
-              סגור
-            </button>
-          </div>
+            <div className={styles.btnRow}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowUserModal(false)}
+              >
+                סגור
+              </button>
+            </div>
           </div>
         </div>
       )}

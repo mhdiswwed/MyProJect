@@ -403,11 +403,11 @@ export default function MyRequests({ user }) {
               <th>מסלול</th>
               <th>תאריך</th>
               <th>שעה</th>
-              <th>מספר משתתפים</th>
+              <th>
+                משתתפים /<br /> רכבים
+              </th>
               <th>שם המדריך</th>
-              <th>כלים</th>
               <th>פירוט המחיר</th>
-
               <th>סטטוס</th>
               <th>פעולה</th>
               <th>פרטים</th>
@@ -458,7 +458,21 @@ export default function MyRequests({ user }) {
                       )}
                   </td>
 
-                  <td>{r.number_of_participants}</td>
+                  <td>
+                    <div className={styles.peopleCars}>
+                      {/* משתתפים */}
+                      <span>
+                        <FaUsers className={styles.smallIcon} />
+                        {r.number_of_participants}
+                      </span>
+
+                      {/* רכבים */}
+                      <span>
+                        <FaCar className={styles.smallIcon} />
+                        {r.price_per_vehicle > 0 ? r.number_of_vehicles : "—"}
+                      </span>
+                    </div>
+                  </td>
 
                   <td>
                     <div>{r.guide_name || "—"}</div>
@@ -473,9 +487,7 @@ export default function MyRequests({ user }) {
                       )}
                   </td>
 
-                  <td>
-                    {r.price_per_vehicle > 0 ? r.number_of_vehicles : "—"}
-                  </td>
+               
 
                   {/* פירוט המחיר*/}
                   <td>

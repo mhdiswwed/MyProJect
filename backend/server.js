@@ -28,6 +28,9 @@ const UsersManagement = require("./routes/UsersManagement");
 const ManageGuidances = require("./routes/ManageGuidances");
 const myGuidances = require("./routes/myGuidances");
 const manageGroupsRouter = require("./routes/ManageGroups");
+const updateGroup = require("./routes/UpdateGroup");
+
+
 
 
 
@@ -111,6 +114,7 @@ app.use("/api/UsersManagement", UsersManagement);
 app.use("/api/ManageGuidances", ManageGuidances);
 app.use("/api/myGuidances", myGuidances);
 app.use("/api/ManageGroups", manageGroupsRouter);
+app.use("/api/updateGroup", updateGroup);
 
 /* ==========================================================
    404

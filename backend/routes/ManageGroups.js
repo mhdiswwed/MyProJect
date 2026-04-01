@@ -32,6 +32,8 @@ router.get("/", (req, res) => {
        u.phone,
         u.email,
 
+      guide.full_name AS guide_name,
+
       gd.status AS guidance_status,
 
       tr.cancel_reason,
@@ -53,6 +55,9 @@ g.guide_change_reason
 
     LEFT JOIN guidances gd
       ON g.group_id = gd.group_id
+
+  LEFT JOIN users guide
+     ON g.guide_id = guide.user_id
 
     ORDER BY 
     CASE

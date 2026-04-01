@@ -855,3 +855,22 @@ border-top:1px solid #ccc;
   color: #fde68a;               /* זהב בהיר יותר */
   transform: scale(1.15);       /* הגדלה קלה */
 }
+
+
+.peopleCars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.peopleCars span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.smallIcon {
+  font-size: 12px;
+  color: #64748b;
+}

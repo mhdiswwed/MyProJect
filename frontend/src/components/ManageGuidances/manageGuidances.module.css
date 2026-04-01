@@ -540,3 +540,8 @@ tr:hover{
 .emailIcon:hover {
   transform: scale(1.2);
 }
+
+.timeRow {
+  font-size: 12px;
+  color: #64748b;
+}

@@ -483,6 +483,7 @@ grp.guide_change_reason,
   u.email AS user_email,
 
   t.trail_name,
+  t.trail_type,
   t.price_per_person,
   t.price_per_vehicle,
   t.duration_minutes,

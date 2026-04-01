@@ -518,3 +518,8 @@ th, td{
     transform: translateY(0);
   }
 }
+
+.timeRow {
+  font-size: 12px;
+  color: #64748b;
+}
