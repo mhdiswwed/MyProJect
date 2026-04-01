@@ -17,7 +17,16 @@ import { useEffect, useState } from "react";
 import styles from "./usersManagement.module.css";
 import API_BASE from "../../config/api";
 
-import { FaEdit, FaTrash, FaLock, FaUnlock } from "react-icons/fa";
+import {
+  FaEdit,
+  FaTrash,
+  FaLock,
+  FaUnlock,
+  FaPhone,
+  FaWhatsapp,
+  FaEnvelope,
+} from "react-icons/fa";
+
 // Hook לשמירת חישוב (כמו סינון) כדי למנוע רינדור מיותר ולשפר ביצועים
 import { useMemo } from "react";
 export default function UsersManagement({ currentUser }) {
@@ -41,7 +50,6 @@ export default function UsersManagement({ currentUser }) {
      מודאלים
   ========================= */
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   // state שמכריח את React לעשות רינדור מחדש גם אם לוחצים על אותו כפתור
@@ -60,6 +68,16 @@ export default function UsersManagement({ currentUser }) {
     phone: "",
     role: "",
   });
+
+  /* =========================
+   מודאל פרטי משתמש
+========================= */
+
+  // המשתמש שנבחר
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // האם להציג את המודאל
+  const [showUserModal, setShowUserModal] = useState(false);
 
   /* =========================
      טעינת משתמשים
@@ -303,6 +321,38 @@ export default function UsersManagement({ currentUser }) {
     },
   );
 
+  /**
+   * =========================================
+   * פתיחת חלון פרטי משתמש
+   * =========================================
+   * שומר את המשתמש שנבחר
+   * ופותח את המודאל
+   */
+  function openUserDetails(user) {
+    setSelectedUser(user);
+    setShowUserModal(true);
+  }
+
+  /**
+   * =========================================
+   * המרת מספר טלפון לפורמט WhatsApp
+   * =========================================
+   * 0501234567 -> 972501234567
+   */
+  function formatPhoneForWhatsapp(phone) {
+    if (!phone) return "";
+
+    // ניקוי תווים לא מספריים
+    let clean = phone.replace(/\D/g, "");
+
+    // המרה ל-972 אם מתחיל ב-0
+    if (clean.startsWith("0")) {
+      return "972" + clean.substring(1);
+    }
+
+    return clean;
+  }
+
 
   return (
     <div className={styles.page} dir="rtl">
@@ -389,8 +439,6 @@ export default function UsersManagement({ currentUser }) {
           <thead>
             <tr>
               <th>שם מלא</th>
-              <th>אימייל</th>
-              <th>טלפון</th>
               <th>תפקיד</th>
               <th>תאריך הצטרפות</th>
               <th>סטטוס</th>
@@ -401,20 +449,28 @@ export default function UsersManagement({ currentUser }) {
           <tbody>
             {filteredUsers.map((u) => (
               <tr key={u.user_id}>
-                <td>{u.full_name}</td>
-                <td>{u.email}</td>
-                <td>{u.phone}</td>
+                {/* שם משתמש - לחיץ לפתיחת מודאל */}
+                <td>
+                  <span
+                    style={{ cursor: "pointer", color: "#38bdf8" }}
+                    onClick={() => openUserDetails(u)}
+                  >
+                    {u.full_name}
+                  </span>
+                </td>
                 <td>{u.role}</td>
                 <td>{new Date(u.created_at).toLocaleDateString("he-IL")}</td>
                 <td>{u.active ? "פעיל" : "חסום"}</td>
-
                 <td className={styles.actions}>
                   <button onClick={() => openEdit(u)} title="עדכון פרטים">
                     <FaEdit />
                   </button>
 
                   {u.user_id !== currentUser.user_id && (
-                    <button onClick={() => toggleStatus(u)} title={u.active ? "חסום":"הפעל"}>
+                    <button
+                      onClick={() => toggleStatus(u)}
+                      title={u.active ? "חסום" : "הפעל"}
+                    >
                       {u.active ? <FaLock /> : <FaUnlock />}
                     </button>
                   )}
@@ -422,7 +478,7 @@ export default function UsersManagement({ currentUser }) {
                   {u.user_id !== currentUser.user_id && (
                     <button
                       onClick={() => {
-                        setMsg({ type: "", text: "" }); 
+                        setMsg({ type: "", text: "" });
                         setConfirmDelete(u);
                       }}
                       title="מחק"
@@ -436,7 +492,6 @@ export default function UsersManagement({ currentUser }) {
           </tbody>
         </table>
       </div>
-
       {/* מודאל מחיקה */}
       {confirmDelete && (
         <div className={styles.modalOverlay}>
@@ -455,23 +510,24 @@ export default function UsersManagement({ currentUser }) {
                 {msg.text}
               </div>
             )}
-            <button
-              className={styles.deleteBtn}
-              onClick={() => deleteUser(confirmDelete.user_id)}
-            >
-              מחק
-            </button>
+            <div className={styles.btnRow}>
+              <button
+                className={styles.deleteBtn}
+                onClick={() => deleteUser(confirmDelete.user_id)}
+              >
+                מחק
+              </button>
 
-            <button
-              className={styles.close}
-              onClick={() => setConfirmDelete(null)}
-            >
-              ביטול
-            </button>
+              <button
+                className={styles.close}
+                onClick={() => setConfirmDelete(null)}
+              >
+                ביטול
+              </button>
+            </div>
           </div>
         </div>
       )}
-
       {/* מודאל עריכה */}
       {showEditModal && (
         <div className={styles.modalOverlay}>
@@ -519,7 +575,7 @@ export default function UsersManagement({ currentUser }) {
               </div>
             )}
 
-            <div className={styles.modalActions}>
+            <div className={styles.btnRow}>
               <button className={styles.saveBtn} onClick={saveUser}>
                 שמור
               </button>
@@ -534,6 +590,86 @@ export default function UsersManagement({ currentUser }) {
           </div>
         </div>
       )}
+      
+      {/* =========================================
+       מודאל פרטי משתמש מציג: - שם - טלפון + אייקונים - אימייל + אייקון
+      ========================================= */}
+      {showUserModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            {/* כותרת */}
+            <h2>פרטי משתמש</h2>
+
+            {/* =========================
+         שם
+      ========================= */}
+            <p>
+              <strong>שם:</strong> {selectedUser?.full_name}
+            </p>
+
+            {/* =========================
+         טלפון + אייקונים
+      ========================= */}
+            <p>
+              <strong>טלפון:</strong>{" "}
+              {selectedUser?.phone ? (
+                <>
+                  {/* אייקון חיוג */}
+                  <a href={`tel:${selectedUser.phone}`} title="התקשר">
+                    <FaPhone className={styles.phoneIcon} />
+                  </a>{" "}
+                  {/* מספר טלפון */}
+                  {selectedUser.phone} {/* אייקון WhatsApp */}
+                  <a
+                    href={`https://wa.me/${formatPhoneForWhatsapp(
+                      selectedUser.phone,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="שלח וואטסאפ"
+                  >
+                    <FaWhatsapp className={styles.whatsappIcon} />
+                  </a>
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            {/* =========================
+             אימייל + אייקון
+           ========================= */}
+            <p>
+              <strong>אימייל:</strong>{" "}
+              {selectedUser?.email ? (
+                <>
+                  {/* אייקון אימייל */}
+                  <a href={`mailto:${selectedUser.email}`} title="שלח מייל">
+                    <FaEnvelope className={styles.emailIcon} />
+                  </a>{" "}
+                  {/* כתובת אימייל */}
+                  {selectedUser.email}
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            {/* =========================
+         כפתור סגירה
+      ========================= */}
+            <div className={styles.btnRow}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowUserModal(false)}
+              >
+                סגור
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
