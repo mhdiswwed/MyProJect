@@ -26,7 +26,9 @@ import {
   FaCar,
   FaUsers,
   FaReceipt,
+  FaFileInvoiceDollar,
 } from "react-icons/fa";
+
 
 // אייקונים להתראות, מיקום וזמן
 import { MdAccessTime, MdAttachMoney } from "react-icons/md";
@@ -487,11 +489,9 @@ export default function MyRequests({ user }) {
                       )}
                   </td>
 
-               
-
                   {/* פירוט המחיר*/}
                   <td>
-                    <FaShekelSign
+                    <FaFileInvoiceDollar
                       className={styles.priceTableIcon}
                       title="פירוט מחיר"
                       onClick={() => openPriceModal(r)}
@@ -837,7 +837,7 @@ export default function MyRequests({ user }) {
           <div className={styles.modal} dir="rtl">
             {/* כותרת עם אייקון */}
             <h3 className={styles.priceTitle}>
-              <FaShekelSign /> פירוט מחירים
+              <FaFileInvoiceDollar /> פירוט מחירים
             </h3>
 
             {/* שם המסלול */}

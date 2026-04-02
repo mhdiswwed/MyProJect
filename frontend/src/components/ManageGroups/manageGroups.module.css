@@ -523,3 +523,20 @@ th, td{
   font-size: 12px;
   color: #64748b;
 }
+
+.viewing:hover {
+  transform: scale(1.2);
+}
+/* כפתורים */
+.viewing{
+  cursor: pointer;
+  color:#7dd3fc;
+  padding:6px 12px;       /* כמו הכפתורים הטובים */
+  border-radius:8px;
+  border:none;
+white-space: nowrap;
+  font-size:13px;          /* כמו בטופס */
+  font-weight:400;
+
+  cursor:pointer;
+}

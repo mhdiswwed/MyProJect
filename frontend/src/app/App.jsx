@@ -47,6 +47,7 @@ import ManageGuidances from "../components/ManageGuidances/ManageGuidances";
 import MyGuidances from "../components/MyGuidances/MyGuidances";
 import RequireRole from "../components/RequireRole/RequireRole";
 import ManageGroups from "../components/ManageGroups/ManageGroups";
+import FieldReports from "../components/FieldReports/FieldReports";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -203,6 +204,8 @@ export default function App() {
             <Route path="ManageGuidances" element={<ManageGuidances />} />
             {/*ניהול קבוצות*/}
             <Route path="ManageGroups" element={<ManageGroups />} />
+            {/*ניהול דיווחים מהשטח*/}
+            <Route path="FieldReports" element={<FieldReports />} />
           </Route>
 
           {/* אזורר מדריך רק אם מדריך מחובר */}

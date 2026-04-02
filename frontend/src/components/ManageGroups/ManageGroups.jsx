@@ -568,8 +568,8 @@ export default function ManageGroups() {
                   ========================================= */}
                   <td>
                     <FaEye
+                    className={styles.viewing}
                       title="צפייה בהודעות" // טולטיפ כשעוברים עם העכבר
-                      style={{ cursor: "pointer" }} // הופך לסמן לחיץ
                       onClick={() => openMessages(g)} // פתיחת ההודעות של הקבוצה
                     />
                   </td>

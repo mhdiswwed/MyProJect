@@ -85,7 +85,7 @@ export default function Sidebar() {
 
       {/* דיווחים */}
       <NavLink
-        to="/admin/reports"
+        to="/admin/FieldReports"
         className={({ isActive }) =>
           isActive ? `${styles.link} ${styles.active}` : styles.link
         }

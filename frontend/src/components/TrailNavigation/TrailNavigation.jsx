@@ -219,8 +219,8 @@ export default function TrailNavigation({ user }) {
                 <option value="">בחר סוג בעיה</option>
                 <option value="סכנה">סכנה</option>
                 <option value="חסימה">חסימה</option>
-                <option value="פציעה">פציעה</option>
-                <option value="לכלוך">לכלוך</option>
+                <option value="תחזוקה">תחזוקה</option>
+                <option value="ניקיון">ניקיון</option>
               </select>
 
               <textarea

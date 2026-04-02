@@ -29,15 +29,11 @@ const ManageGuidances = require("./routes/ManageGuidances");
 const myGuidances = require("./routes/myGuidances");
 const manageGroupsRouter = require("./routes/ManageGroups");
 const updateGroup = require("./routes/UpdateGroup");
-
-
-
-
+const fieldReportsRouter = require("./routes/FieldReports");
 
 
 
 const app = express();
-
 
 
 
@@ -115,6 +111,9 @@ app.use("/api/ManageGuidances", ManageGuidances);
 app.use("/api/myGuidances", myGuidances);
 app.use("/api/ManageGroups", manageGroupsRouter);
 app.use("/api/updateGroup", updateGroup);
+app.use("/api/FieldReports", fieldReportsRouter);
+
+
 
 /* ==========================================================
    404

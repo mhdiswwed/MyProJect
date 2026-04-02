@@ -845,17 +845,16 @@ border-top:1px solid #ccc;
 ========================================= */
 .priceTableIcon {
   font-size: 18px;              /* גודל האייקון */
-  color: #facc15;               /* צבע זהוב */
+  color: #94a3b8; /* אפור מקצועי */             /* צבע זהוב */
   cursor: pointer;              /* יד בלחיצה */
   transition: 0.2s ease;        /* מעבר חלק */
 }
 
 /* ריחוף על האייקון */
 .priceTableIcon:hover {
-  color: #fde68a;               /* זהב בהיר יותר */
-  transform: scale(1.15);       /* הגדלה קלה */
+  color: #ffffff;
+  transform: scale(1.2);
 }
-
 
 .peopleCars {
   display: flex;

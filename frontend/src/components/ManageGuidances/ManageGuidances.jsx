@@ -548,26 +548,28 @@ export default function ManageGuidances() {
                 </td>
                 <td>{g.group_id}</td>
                 <td>{g.trail_name}</td>
-               <td>
-              <div>
-                <div>
-                  {new Date(g.trip_date).toLocaleDateString("he-IL")}
-                </div>
+                <td>
+                  <div>
+                    <div>
+                      {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                    </div>
 
-                <div className={styles.timeRow}>
-                  {g.trip_time?.slice(0, 5)} -{" "}
-                  {calculateEndTime(g.trip_time?.slice(0, 5), g.duration_minutes)}
-                </div>
-              </div>
-            </td>
+                    <div className={styles.timeRow}>
+                      {g.trip_time?.slice(0, 5)} -{" "}
+                      {calculateEndTime(
+                        g.trip_time?.slice(0, 5),
+                        g.duration_minutes,
+                      )}
+                    </div>
+                  </div>
+                </td>
                 <td>{g.status}</td>
 
                 <td>
                   {/* אייקון צפייה בפרטים */}
                   <FaEye
-                    className={styles.iconBtn}
-                    title="צפייה"
-                    style={{ cursor: "pointer" }}
+                    className={styles.viewing}
+                    title=" צפייה בפרטי הדרכה"
                     onClick={() => openDetails(g)}
                   />
                 </td>

@@ -984,9 +984,8 @@ export default function ManageRequests() {
                     req.cancel_reject_reason ||
                     req.change_reason) && (
                     <FaEye
-                      className={styles.iconBtn}
+                      className={styles.viewing}
                       title="צפייה בהודעות"
-                      style={{ cursor: "pointer" }}
                       onClick={() => openMessages(req)}
                     />
                   )}
