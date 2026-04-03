@@ -6,7 +6,14 @@ import { useEffect, useState } from "react";
 import styles from "./myGuidances.module.css";
 import API_BASE from "../../config/api";
 
-import {FaEye, FaPlay, FaFlagCheckered, FaCamera } from "react-icons/fa";
+import {FaEye, 
+  FaPlay,
+   FaFlagCheckered,
+    FaCamera  ,
+    FaPhone,
+  FaWhatsapp,
+  FaEnvelope, } from "react-icons/fa";
+
 export default function MyGuidances({ user }) {
   // רשימת ההדרכות
   const [guidances, setGuidances] = useState([]);
@@ -36,6 +43,10 @@ export default function MyGuidances({ user }) {
 
   // משתנה שמחזיק זמן נוכחי (גורם לרינדור מחדש)
   const [now, setNow] = useState(Date.now());
+
+  // נציג קבוצה שנבחר + שליטה על המודאל
+  const [selectedRepresentative, setSelectedRepresentative] = useState(null);
+  const [showRepresentativeModal, setShowRepresentativeModal] = useState(false);
 
   //========================================
   // מעדכן את הזמן כל שנייה כדי שהסטופר יזוז
@@ -169,35 +180,34 @@ export default function MyGuidances({ user }) {
   /**====================
    * התחלת טיול
    =====================*/
-async function startTrip(id) {
-  try {
-    const res = await fetch(`${API_BASE}/api/myGuidances/start/${id}`, {
-      method: "PUT",
-    });
+  async function startTrip(id) {
+    try {
+      const res = await fetch(`${API_BASE}/api/myGuidances/start/${id}`, {
+        method: "PUT",
+      });
 
-    if (!res.ok) {
-      setMsg({ type: "error", text: "שגיאה בהתחלת טיול" });
-      return;
+      if (!res.ok) {
+        setMsg({ type: "error", text: "שגיאה בהתחלת טיול" });
+        return;
+      }
+
+      const now = new Date().toISOString(); // זמן עכשיו
+
+      setGuidances((prev) =>
+        prev.map((g) =>
+          g.group_id === id
+            ? {
+                ...g,
+                guidance_status: "בתהליך",
+                start_time: now, // 👈 חשוב!!!
+              }
+            : g,
+        ),
+      );
+    } catch {
+      setMsg({ type: "error", text: "שגיאה בשרת" });
     }
-
-
-    const now = new Date().toISOString(); // זמן עכשיו
-
-    setGuidances((prev) =>
-      prev.map((g) =>
-        g.group_id === id
-          ? {
-              ...g,
-              guidance_status: "בתהליך",
-              start_time: now, // 👈 חשוב!!!
-            }
-          : g,
-      ),
-    );
-  } catch {
-    setMsg({ type: "error", text: "שגיאה בשרת" });
   }
-}
   // ==============================
   // סיום טיול (רק עדכון זמן + סטטוס)
   // ==============================
@@ -325,6 +335,25 @@ async function startTrip(id) {
     },
   );
 
+  // פתיחת מודאל פרטי נציג קבוצה
+  function openRepresentativeDetails(g) {
+    setSelectedRepresentative(g);
+    setShowRepresentativeModal(true);
+  }
+
+  // המרת מספר ישראלי לפורמט וואטסאפ (972 במקום 0)
+  function formatPhoneForWhatsapp(phone) {
+    if (!phone) return "";
+
+    let clean = phone.replace(/\D/g, "");
+
+    if (clean.startsWith("0")) {
+      return "972" + clean.substring(1);
+    }
+
+    return clean;
+  }
+
   return (
     <div className={styles.page} dir="rtl">
       {/* כותרת + פילטר כמו ManageRequests */}
@@ -444,7 +473,14 @@ async function startTrip(id) {
                 })()}
               >
                 <td>{g.group_id}</td>
-                <td>{g.user_name}</td>
+                <td>
+                  <span
+                    style={{ cursor: "pointer", color: "#38bdf8" }}
+                    onClick={() => openRepresentativeDetails(g)}
+                  >
+                    {g.user_name}
+                  </span>
+                </td>
                 <td>{g.trail_name}</td>
                 <td>{g.trail_type}</td>
                 <td>{g.number_of_participants}</td>
@@ -656,6 +692,66 @@ async function startTrip(id) {
                 }}
               >
                 ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* מודאל פרטי נציג קבוצה */}
+      {showRepresentativeModal && selectedRepresentative && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2>פרטי נציג קבוצה</h2>
+
+            <p>
+              <strong>שם:</strong> {selectedRepresentative.user_name}
+            </p>
+
+            <p>
+              <strong>טלפון:</strong>{" "}
+              {selectedRepresentative.user_phone ? (
+                <>
+                  <a href={`tel:${selectedRepresentative.user_phone}`}>
+                    <FaPhone className={styles.phoneIcon} />
+                  </a>
+                  {selectedRepresentative.user_phone}
+                  {" "}
+                  <a
+                    href={`https://wa.me/${formatPhoneForWhatsapp(
+                      selectedRepresentative.user_phone,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <FaWhatsapp className={styles.whatsappIcon} />
+                  </a>
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            <p>
+              <strong>אימייל:</strong>{" "}
+              {selectedRepresentative.user_email ? (
+                <>
+                  <a href={`mailto:${selectedRepresentative.user_email}`}>
+                    <FaEnvelope className={styles.emailIcon} />
+                  </a>
+                  {selectedRepresentative.user_email}
+                </>
+              ) : (
+                "לא קיים"
+              )}
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowRepresentativeModal(false)}
+              >
+                סגור
               </button>
             </div>
           </div>

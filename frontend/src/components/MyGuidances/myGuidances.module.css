@@ -596,3 +596,41 @@ button {
   color:#22c55e; /* ירוק יפה */
   font-weight:600;
 }
+
+/* מודאל פרטי נציג קבוצה */
+.repModal {
+  text-align: right;
+}
+
+/* שורת מידע */
+.repRow {
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+/* אייקונים */
+.phoneIcon {
+  color: #22c55e;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.whatsappIcon {
+  color: #25D366;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.emailIcon {
+  color: #38bdf8;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+/* אפקט hover קטן */
+.phoneIcon:hover,
+.whatsappIcon:hover,
+.emailIcon:hover {
+  transform: scale(1.2);
+  transition: 0.2s;
+}
