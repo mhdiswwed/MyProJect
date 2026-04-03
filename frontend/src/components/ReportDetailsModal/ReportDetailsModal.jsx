@@ -1,7 +1,12 @@
-import { useState,useEffect } from "react";
+//==================================
+//    קומפוננטה חלון פופה לפרטי הדיווח קשורה  לניהול דיווחים מהשטח על ידי מנהל
+//(נפתח ברגע שלוחץ על האיקון של פרטי הדיווח בקומפוננטה  ניהול דיווחים מהשטח)
+//====================================
+
+import { useState, useEffect } from "react";
 import styles from "./reportDetailsModal.module.css";
 
-import { MapContainer, TileLayer, Marker,useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-gpx";

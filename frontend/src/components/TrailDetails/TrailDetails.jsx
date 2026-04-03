@@ -1,5 +1,5 @@
 //==========================================================
-//קומפוננטה להצגת פרטים מסלול מסויים כולל חלון פופה לפקשות ליציאה לטיול כולל נייוט
+//קומפוננטה להצגת פרטים מסלול מסויים כולל חלון פופה לבקשות ליציאה לטיול כולל נייוט
 //=========================================================
 
 // קומפוננטה לבחירת תאריך ושעה
@@ -81,9 +81,6 @@ export default function TrailDetails({ user }) {
       .catch(() => console.log("שגיאה בשליפת המע״מ"));
   }, []);
 
-
-
-
   // ===============================
   // שליפת מדריכים פנויים לפי בחירה
   // ===============================
@@ -99,8 +96,6 @@ export default function TrailDetails({ user }) {
       .then((res) => res.json())
       .then((data) => setGuides(data));
   }, [tripDate, tripTime]);
-
-
 
   // טעינת פרטי המסלול לפי id
   useEffect(() => {
@@ -222,6 +217,38 @@ export default function TrailDetails({ user }) {
   // ===============================
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // =========================
+  // בדיקת שעות עבודה (08:00 - 18:00)
+  // =========================
+  function isValidTime(date) {
+    if (!date) return false;
+    const hour = date.getHours();
+    const minutes = date.getMinutes();
+    // לפני 08:00
+    if (hour < 8) return false;
+    // אחרי 18:00
+    if (hour > 18) return false;
+    // אם 18:XX → לא חוקי
+    if (hour === 18 && minutes > 0) return false;
+    return true;
+  }
+
+  // =========================
+  // בדיקה שהמסלול מסתיים עד 18:00
+  // =========================
+  function isValidEndTime(startDate, durationMinutes) {
+    if (!startDate) return false;
+    // מחשבים זמן סיום
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+    const hour = endDate.getHours();
+    const minutes = endDate.getMinutes();
+    // אחרי 18:00
+    if (hour > 18) return false;
+    // אם 18:XX
+    if (hour === 18 && minutes > 0) return false;
+    return true;
+  }
 
   return (
     <div className={styles.page} dir="rtl">
@@ -398,7 +425,32 @@ export default function TrailDetails({ user }) {
 
                 <DatePicker
                   selected={tripTime}
-                  onChange={(date) => setTripTime(date)}
+                  // =========================
+                  // שינוי שעה עם בדיקה
+                  // =========================
+                  onChange={(date) => {
+                    // בדיקת שעות עבודה
+                    if (!isValidTime(date)) {
+                      setRequestMsg({
+                        type: "error",
+                        text: "ניתן לבחור שעות בין 08:00 ל־18:00 בלבד",
+                      });
+                      setTripTime(null);
+                      return;
+                    }
+
+                    // בדיקה שהמסלול לא חורג מ־18:00
+                    if (!isValidEndTime(date, trail.duration_minutes)) {
+                      setRequestMsg({
+                        type: "error",
+                        text: "שעת ההתחלה לא תקינה – המסלול יסתיים אחרי 18:00 אל תבחר שעה ידנית תבחר מתוך הרשימה",
+                      });
+                      setTripTime(null);
+                      return;
+                    }
+
+                    setTripTime(date);
+                  }}
                   showTimeSelect
                   showTimeSelectOnly
                   timeIntervals={5}
@@ -414,6 +466,7 @@ export default function TrailDetails({ user }) {
                         )
                       : new Date().setHours(18, 0, 0, 0)
                   }
+                  customInput={<input readOnly className={styles.dateInput} />}
                 />
               </div>
 

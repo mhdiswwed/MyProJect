@@ -5,6 +5,8 @@
 import { useEffect, useState } from "react";
 import styles from "./fieldReports.module.css";
 import ReportDetailsModal from "../ReportDetailsModal/ReportDetailsModal";
+// ייבוא קומפוננטת יצירת משימה
+import CreateTaskModal from "../CreateTaskModal/CreateTaskModal";
 // =========================
 // אייקונים
 // =========================
@@ -45,12 +47,18 @@ export default function FieldReports() {
   // מודאל אישור טופל
   // =========================
   const [showDoneModal, setShowDoneModal] = useState(false);
-const [selectedReport, setSelectedReport] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
 
   // =========================
   // דיווח נבחר לצפייה
   // =========================
   const [selectedReportView, setSelectedReportView] = useState(null);
+
+  // state שמחליט אם להציג את הפופאפ
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
+  // state ששומר איזה דיווח נבחר ליצירת משימה
+  const [selectedReportForTask, setSelectedReportForTask] = useState(null);
 
   // =========================
   // טעינת דיווחים מהשרת
@@ -174,6 +182,13 @@ const [selectedReport, setSelectedReport] = useState(null);
     setSelectedReport(report);
     setShowDoneModal(true);
   }
+
+  // פונקציה שפותחת את הפופאפ ומכניסה את הדיווח שנבחר
+  function openTaskModal(report) {
+    setSelectedReportForTask(report); // שומר את הדיווח שנבחר
+    setShowTaskModal(true); // פותח את המודאל
+  }
+  
   return (
     <div className={styles.page} dir="rtl">
       {/* =========================
@@ -291,7 +306,10 @@ const [selectedReport, setSelectedReport] = useState(null);
                        יצור משימה - רק לחדש
                     ========================= */}
                     {r.status === "חדש" && (
-                      <button className={styles.editBtn}>
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => openTaskModal(r)} // בלחיצה פותח פופאפ עם הדיווח
+                      >
                         <FaFileExport /> יצור משימה
                       </button>
                     )}
@@ -420,6 +438,19 @@ const [selectedReport, setSelectedReport] = useState(null);
         <ReportDetailsModal
           report={selectedReportView}
           onClose={() => setSelectedReportView(null)} // סגירה
+        />
+      )}
+      {/*// ========================= // 
+     // מודאל יצירת משימה //
+      =========================*/}
+      {showTaskModal && selectedReportForTask && (
+        <CreateTaskModal
+          report={selectedReportForTask} // שולח את הדיווח לפופאפ
+          onClose={() => {
+            setShowTaskModal(false); // סוגר את המודאל
+            setSelectedReportForTask(null); // מאפס את הדיווח
+          }}
+          onSuccess={loadReports} // אחרי יצירה - מרענן את הטבלה
         />
       )}
     </div>
