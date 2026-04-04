@@ -45,6 +45,7 @@ import ManageRequests from "../components/ManageRequests/ManageRequests";
 import UsersManagement from "../components/UsersManagement/UsersManagement";
 import ManageGuidances from "../components/ManageGuidances/ManageGuidances";
 import MyGuidances from "../components/MyGuidances/MyGuidances";
+import MyTasks from "../components/MyTasks/MyTasks";
 import RequireRole from "../components/RequireRole/RequireRole";
 import ManageGroups from "../components/ManageGroups/ManageGroups";
 import FieldReports from "../components/FieldReports/FieldReports";
@@ -214,6 +215,16 @@ export default function App() {
             element={
               <RequireRole user={user} allowedRoles={["מדריך"]}>
                 <MyGuidances user={user} />
+              </RequireRole>
+            }
+          />
+
+          {/* אזורר העובד רק אם העובד מחובר */}
+          <Route
+            path="/myTasks"
+            element={
+              <RequireRole user={user} allowedRoles={["עובד"]}>
+                <MyTasks user={user} />
               </RequireRole>
             }
           />

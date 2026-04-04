@@ -36,6 +36,9 @@ export default function Header({ user, onLogout }) {
   // בדיקה אם המשתמש הוא מדריך
   const isGuide = role === "מדריך";
 
+  // בדיקה אם המשתמש הוא עובד
+  const isTasks = role === "עובד";
+
   // פונקציה שמופעלת בלחיצה על אזור המשתמש
   function handleUserClick() {
     if (!user) {
@@ -107,7 +110,7 @@ export default function Header({ user, onLogout }) {
               }`}
               onClick={() => navigate("/admin")}
             >
-             ניהול המערכת
+              ניהול המערכת
             </button>
           )}
 
@@ -120,6 +123,18 @@ export default function Header({ user, onLogout }) {
               onClick={() => navigate("/guide")}
             >
               ההדרכות שלי
+            </button>
+          )}
+
+          {/* כפתור המשימות שלי יוצג רק אם המשתמש עובד */}
+          {isTasks && (
+            <button
+              className={`${styles.navBtn} ${
+                isActive("/myTasks") ? styles.active : ""
+              }`}
+              onClick={() => navigate("/myTasks")}
+            >
+              המשימות שלי
             </button>
           )}
         </nav>

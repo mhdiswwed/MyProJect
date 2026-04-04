@@ -47,13 +47,13 @@
   margin-bottom:255px;
 }
 
+/* פילטר */
 .filterBox{
   display:flex;
   align-items:center;
   gap:10px;
-
-  margin-top:80px; /* 👈 זה מה שאתה צריך */
 }
+
 
 .filterLabel{
   font-size:14px;
@@ -140,30 +140,37 @@ tr:hover{
   padding:6px 12px;
   border-radius:8px;
   font-weight:600;
-  color:white;
   display:inline-block;
-  white-space:nowrap;
 }
 
-/* מתוכנן */
+/* מתוכנן - כתום עדין */
 .planned{
-  background:#f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
 }
 
-/* בתהליך */
+/* בתהליך - כחול עדין */
 .inProgress{
-  background:#3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
 }
 
-/* הסתיים */
+/* הסתיים - ירוק עדין */
 .finished{
-  background:#22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
 }
 
-/* בוטל */
+/* בוטל - אפור עדין */
 .cancelled{
-  background:#6b7280;
+  background: rgba(107, 114, 128, 0.15);
+  border: 1px solid rgba(107, 114, 128, 0.4);
+  color: #d1d5db;
 }
+
 
 /**
 ------------------------------------------------
@@ -507,54 +514,51 @@ button {
 }
 
 /* ===============================
-   שורת סטטיסטיקות
+   סטטיסטיקות
 =============================== */
-
-/* קונטיינר שמכיל את כל העיגולים */
 .statsRow{
-  display:flex; /* מציג בשורה */
-  gap:15px; /* רווח בין הקופסאות */
-  margin:15px 0 25px 0; /* רווח מלמעלה ולמטה */
-  flex-wrap:wrap; /* ירידה שורה במסכים קטנים */
-    margin-bottom:100px;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin:20px auto;
 }
 
-/* קופסה בודדת */
 .statBox{
-  flex:1; /* חלוקה שווה */
-  min-width:120px; /* מינימום רוחב */
+  width:110px;
+  height:110px;
 
-  background:rgba(18,22,28,.9); /* רקע כהה */
-  border:1px solid rgba(255,255,255,.15); /* מסגרת עדינה */
+  border-radius:50%;
 
-  border-radius:16px; /* עיגול פינות */
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
 
-  padding:14px; /* ריווח פנימי */
+  background:rgba(18,22,28,.9);
 
-  text-align:center; /* יישור למרכז */
+  /* 🔥 במקום border רגיל */
+  border:2px solid rgba(255,255,255,.15);
 
-  box-shadow:0 10px 25px rgba(0,0,0,.4); /* צל */
-
-  transition:.2s; /* אנימציה חלקה */
+  transition:.3s;
 }
 
-/* אפקט hover */
+/* hover */
 .statBox:hover{
-  transform:translateY(-3px); /* קופץ קצת למעלה */
+  transform:scale(1.05);
 }
 
-/* מספר גדול */
+/* מספר */
 .statNumber{
-  font-size:26px; /* גודל גדול */
-  font-weight:bold; /* מודגש */
+  font-size:26px;
+  font-weight:bold;
 }
 
-/* טקסט קטן מתחת */
+/* טקסט */
 .statLabel{
-  font-size:13px; /* קטן */
-  color:#9ca3af; /* אפור */
-  margin-top:5px; /* רווח מהמספר */
+  font-size:13px;
+  color:#9ca3af;
 }
+
 
 /* ===============================
    צבעים לפי סטטוס
@@ -633,4 +637,12 @@ button {
 .emailIcon:hover {
   transform: scale(1.2);
   transition: 0.2s;
+}
+
+.FaFlagCheckered{
+  color: #27da4e;
+}
+
+.FaPlay{
+  color: #1111e3;
 }

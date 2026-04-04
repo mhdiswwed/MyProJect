@@ -31,6 +31,7 @@ const manageGroupsRouter = require("./routes/ManageGroups");
 const updateGroup = require("./routes/UpdateGroup");
 const fieldReportsRouter = require("./routes/FieldReports");
 const CreateTaskModal = require("./routes/CreateTaskModal");
+const MyTasks = require("./routes/MyTasks");
 
 
 
@@ -114,6 +115,7 @@ app.use("/api/ManageGroups", manageGroupsRouter);
 app.use("/api/updateGroup", updateGroup);
 app.use("/api/FieldReports", fieldReportsRouter);
 app.use("/api/CreateTaskModal", CreateTaskModal);
+app.use("/api/MyTasks", MyTasks);
 
 
 

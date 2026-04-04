@@ -6,13 +6,17 @@ import { useEffect, useState } from "react";
 import styles from "./myGuidances.module.css";
 import API_BASE from "../../config/api";
 
-import {FaEye, 
+import {
+  FaEye,
   FaPlay,
-   FaFlagCheckered,
-    FaCamera  ,
-    FaPhone,
+  FaFlagCheckered,
+  FaCamera,
+  FaPhone,
   FaWhatsapp,
-  FaEnvelope, } from "react-icons/fa";
+  FaEnvelope,
+  FaCalendarAlt,
+  FaClock,
+} from "react-icons/fa";
 
 export default function MyGuidances({ user }) {
   // רשימת ההדרכות
@@ -354,6 +358,16 @@ export default function MyGuidances({ user }) {
     return clean;
   }
 
+  /**
+   * מחשב שעת סיום לפי תאריך + שעה + משך בדקות
+   */
+  function getEndDateTime(date, time, duration) {
+    if (!date || !time || !duration) return null;
+
+    const start = new Date(`${date}T${time}`);
+    return new Date(start.getTime() + duration * 60000);
+  }
+
   return (
     <div className={styles.page} dir="rtl">
       {/* כותרת + פילטר כמו ManageRequests */}
@@ -403,7 +417,7 @@ export default function MyGuidances({ user }) {
               </div>
               <div className={styles.statLabel}>בוטל</div>
             </div>
-          </div>
+        
           <div className={styles.filterBox}>
             <label className={styles.filterLabel}>סינון:</label>
 
@@ -420,6 +434,7 @@ export default function MyGuidances({ user }) {
             </select>
           </div>
         </div>
+        </div>
       </div>
       {/* טבלה כמו ManageRequests */}
       <table className={styles.table}>
@@ -431,8 +446,7 @@ export default function MyGuidances({ user }) {
             <th>סוג</th>
             <th>משתתפים</th>
             <th>רכבים</th>
-            <th>תאריך</th>
-            <th>שעה</th>
+            <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
             <th>מפגש</th>
             <th>סטטוס</th>
             <th>פעולות</th>
@@ -486,9 +500,59 @@ export default function MyGuidances({ user }) {
                 <td>{g.number_of_participants}</td>
                 <td>{g.number_of_vehicles}</td>
 
-                <td>{new Date(g.trip_date).toLocaleDateString("he-IL")}</td>
+                <td>
+                  {/* התחלה */}
+                  <div className={styles.timeRow}>
+                    <FaPlay title="התחלה" className={styles.FaPlay} /> <FaCalendarAlt />{" "}
+                    {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                    {" | "}
+                    <FaClock /> {g.trip_time?.slice(0, 5)}
+                  </div>
 
-                <td>{g.trip_time?.slice(0, 5)}</td>
+                  {/* סיום מחושב */}
+                  <div className={styles.timeRow}>
+                    <FaFlagCheckered title="סיום" className={styles.FaFlagCheckered} />{" "}
+                    <FaCalendarAlt />{" "}
+                    {(() => {
+                      if (!g.trip_date || !g.trip_time || !g.duration_minutes)
+                        return "-";
+
+                      const start = new Date(g.trip_date);
+
+                      // מוסיפים את השעה לתאריך
+                      start.setHours(
+                        Number(g.trip_time.slice(0, 2)),
+                        Number(g.trip_time.slice(3, 5)),
+                      );
+
+                      // חישוב סיום
+                      const end = new Date(
+                        start.getTime() + g.duration_minutes * 60000,
+                      );
+
+                      return end.toLocaleDateString("he-IL");
+                    })()}
+                    {" | "}
+                    <FaClock />{" "}
+                    {(() => {
+                      if (!g.trip_date || !g.trip_time || !g.duration_minutes)
+                        return "-";
+
+                      const start = new Date(g.trip_date);
+
+                      start.setHours(
+                        Number(g.trip_time.slice(0, 2)),
+                        Number(g.trip_time.slice(3, 5)),
+                      );
+
+                      const end = new Date(
+                        start.getTime() + g.duration_minutes * 60000,
+                      );
+
+                      return end.toTimeString().slice(0, 5);
+                    })()}
+                  </div>
+                </td>
 
                 <td>{g.meeting_point}</td>
 
@@ -715,8 +779,7 @@ export default function MyGuidances({ user }) {
                   <a href={`tel:${selectedRepresentative.user_phone}`}>
                     <FaPhone className={styles.phoneIcon} />
                   </a>
-                  {selectedRepresentative.user_phone}
-                  {" "}
+                  {selectedRepresentative.user_phone}{" "}
                   <a
                     href={`https://wa.me/${formatPhoneForWhatsapp(
                       selectedRepresentative.user_phone,

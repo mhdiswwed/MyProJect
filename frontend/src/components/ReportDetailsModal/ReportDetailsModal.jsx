@@ -24,6 +24,124 @@ export default function ReportDetailsModal({ report, onClose }) {
 
   const position = [report.latitude, report.longitude];
 
+  
+  //================================
+  //איקון מסויים לנקודת הבעיה המדויקת במפה
+  //================================
+  // ================= ICONS =================
+  // 🚧 חסימה
+  const blockedIcon = L.divIcon({
+    className: "",
+    html: `
+    <div style="
+      width:36px;
+      height:36px;
+      background:#f97316;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-size:18px;
+      border:2px solid white;
+      box-shadow:0 0 10px rgba(249,115,22,0.8);
+    ">
+      🚧
+    </div>
+  `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+  });
+
+  // ⚠️ סכנה
+  const dangerIcon = L.divIcon({
+    className: "",
+    html: `
+    <div style="
+      width:36px;
+      height:36px;
+      background:#dc2626;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-size:18px;
+      border:2px solid white;
+      box-shadow:0 0 10px rgba(220,38,38,0.8);
+    ">
+      ⚠️
+    </div>
+  `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+  });
+
+  // 🛠️ תחזוקה
+  const maintenanceIcon = L.divIcon({
+    className: "",
+    html: `
+    <div style="
+      width:36px;
+      height:36px;
+      background:#2563eb;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-size:18px;
+      border:2px solid white;
+      box-shadow:0 0 10px rgba(37,99,235,0.8);
+    ">
+      🛠️
+    </div>
+  `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+  });
+
+  // 🧹 ניקיון
+  const cleanIcon = L.divIcon({
+    className: "",
+    html: `
+    <div style="
+      width:36px;
+      height:36px;
+      background:#16a34a;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-size:18px;
+      border:2px solid white;
+      box-shadow:0 0 10px rgba(22,163,74,0.8);
+    ">
+      🧹
+    </div>
+  `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+  });
+  const getIconByType = (type) => {
+    if (!type) return dangerIcon;
+
+    const t = type.trim(); // מנקה רווחים
+
+    switch (t) {
+      case "חסימה":
+        return blockedIcon;
+      case "סכנה":
+        return dangerIcon;
+      case "תחזוקה":
+        return maintenanceIcon;
+      case "ניקיון":
+        return cleanIcon;
+      default:
+        return dangerIcon;
+    }
+  };
   return (
     <>
       {/* =========================
@@ -62,9 +180,6 @@ export default function ReportDetailsModal({ report, onClose }) {
           </p>
 
           {/* תמונה*/}
-          {/* =========================
-   תמונת הדיווח
-========================= */}
           {report.image_path && (
             <div
               className={styles.imageWrapper}
@@ -87,7 +202,10 @@ export default function ReportDetailsModal({ report, onClose }) {
           >
             <MapContainer center={position} zoom={16} className={styles.map}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={position} />
+              <Marker
+                position={position}
+                icon={getIconByType(report.problem_type)}
+              />
               <AutoCenter position={position} />
               {report.gpx_file && <GPXLayer fileName={report.gpx_file} />}
             </MapContainer>
@@ -113,7 +231,10 @@ export default function ReportDetailsModal({ report, onClose }) {
           >
             <MapContainer center={position} zoom={17} className={styles.bigMap}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={position} />
+              <Marker
+                position={position}
+                icon={getIconByType(report.problem_type)}
+              />
               <AutoCenter position={position} />
               {report.gpx_file && <GPXLayer fileName={report.gpx_file} />}
             </MapContainer>
