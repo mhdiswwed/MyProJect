@@ -49,6 +49,7 @@ import MyTasks from "../components/MyTasks/MyTasks";
 import RequireRole from "../components/RequireRole/RequireRole";
 import ManageGroups from "../components/ManageGroups/ManageGroups";
 import FieldReports from "../components/FieldReports/FieldReports";
+import TaskManagement from "../components/TaskManagement/TaskManagement";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -207,6 +208,8 @@ export default function App() {
             <Route path="ManageGroups" element={<ManageGroups />} />
             {/*ניהול דיווחים מהשטח*/}
             <Route path="FieldReports" element={<FieldReports />} />
+            {/*ניהול משימות*/}
+            <Route path="TaskManagement" element={<TaskManagement />} />
           </Route>
 
           {/* אזורר מדריך רק אם מדריך מחובר */}

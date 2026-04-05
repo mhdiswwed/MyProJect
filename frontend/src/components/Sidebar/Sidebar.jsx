@@ -96,7 +96,7 @@ export default function Sidebar() {
 
       {/* משימות */}
       <NavLink
-        to="/admin/tasks"
+        to="/admin/TaskManagement"
         className={({ isActive }) =>
           isActive ? `${styles.link} ${styles.active}` : styles.link
         }

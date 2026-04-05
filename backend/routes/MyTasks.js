@@ -23,6 +23,7 @@ router.get("/:userId", (req, res) => {
       t.task_type,
       t.status,
       t.start_time,
+      t.cancel_reason,
       te.start_time AS execution_start_time,
     te.image AS execution_image,
       t.due_time AS end_time ,

@@ -19,6 +19,7 @@ import {
   FaCamera,
   FaBell,
   FaMapMarkerAlt,
+  FaInfoCircle,
 } from "react-icons/fa";
 
 import { MdAccessTime, MdAttachMoney } from "react-icons/md";
@@ -41,6 +42,12 @@ export default function MyTasks({ user }) {
 
   // סטייט למשימה שנבחרה
   const [selectedTaskReport, setSelectedTaskReport] = useState(null);
+
+  // מודאל סיבת ביטול
+  const [showCancelReasonModal, setShowCancelReasonModal] = useState(false);
+
+  // משימה להצגת סיבה
+  const [selectedCancelTask, setSelectedCancelTask] = useState(null);
 
   /**
    * עדכון טיימר כל שנייה
@@ -504,6 +511,20 @@ export default function MyTasks({ user }) {
                         שלח דיווח
                       </button>
                     )}
+
+                  {/* אם בוטלה → כפתור סיבה */}
+                  {t.status === "בוטלה" && (
+                    <button
+                      className={styles.cancelBtn}
+                      onClick={() => {
+                        setSelectedCancelTask(t);
+                        setShowCancelReasonModal(true);
+                      }}
+                    >
+                      <FaInfoCircle className={styles.btnIconFaInfoCircle} />{" "}
+                      סיבה
+                    </button>
+                  )}
                 </td>
               </tr>
             ))
@@ -526,6 +547,28 @@ export default function MyTasks({ user }) {
           onClose={() => setShowTaskReport(false)} // סגירה
           onSuccess={fetchTasks} // רענון
         />
+      )}
+
+      {/* מודאל סיבת ביטול */}
+      {showCancelReasonModal && selectedCancelTask && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2 className={styles.modalTitle}>סיבת ביטול</h2>
+
+            <p style={{ marginTop: "10px" }}>
+              {selectedCancelTask.cancel_reason || "לא צוינה סיבה"}
+            </p>
+
+            <div className={styles.btnRow}>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowCancelReasonModal(false)}
+              >
+                סגור
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
