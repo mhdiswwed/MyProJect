@@ -4,9 +4,9 @@
 ------------------------------------------------
 */
 
-.page{
-  padding:30px 40px;
-  color:white;
+.page {
+  padding: 30px 40px;
+  color: white;
 }
 
 /**
@@ -15,9 +15,9 @@
 ------------------------------------------------
 */
 
-.title{
-  font-size:32px;
-  margin-bottom:30px;
+.title {
+  font-size: 32px;
+  margin-bottom: 30px;
 }
 
 /**
@@ -26,58 +26,54 @@
 ------------------------------------------------
 */
 
-.topBar{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  margin-bottom:25px;
+.topBar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 25px;
 }
 
-.topBarRow{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  width:100%;
-  
+.topBarRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
-.topBarRow h1{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  margin-bottom:255px;
+
+.topBarRow h1 {
+  margin-bottom: 0;
 }
 
 /* פילטר */
-.filterBox{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.filterBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-
-.filterLabel{
-  font-size:14px;
-  color:#9ca3af;
+.filterLabel {
+  font-size: 14px;
+  color: #9ca3af;
 }
 
-.filterSelect{
-  padding:8px 14px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.25);
-  background:rgba(0,0,0,.35);
-  color:white;
-  font-size:14px;
-  cursor:pointer;
-  transition:.2s;
+.filterSelect {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.filterSelect:hover{
-  background:rgba(0,0,0,.55);
+.filterSelect:hover {
+  background: rgba(0, 0, 0, 0.55);
 }
 
-.filterSelect:focus{
-  outline:none;
-  border-color:#7dd3fc;
+.filterSelect:focus {
+  outline: none;
+  border-color: #7dd3fc;
 }
 
 /**
@@ -86,31 +82,30 @@
 ------------------------------------------------
 */
 
-.table{
-  width:100%;
-  border-collapse:collapse;
-  background:rgba(18,22,28,.9);
-  border-radius:14px;
-  overflow:hidden;
-  box-shadow:0 18px 40px rgba(0,0,0,.45);
-  margin-top: -90px;
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(18, 22, 28, 0.9);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
 }
 
-th{
-  text-align:right;
-  padding:14px;
-  background:#111827;
-  color:#7dd3fc;
-  font-size:14px;
+th {
+  text-align: right;
+  padding: 14px;
+  background: #111827;
+  color: #7dd3fc;
+  font-size: 14px;
 }
 
-td{
-  padding:14px;
-  border-bottom:1px solid rgba(255,255,255,.08);
+td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-tr:hover{
-  background:rgba(255,255,255,.05);
+tr:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /**
@@ -119,15 +114,15 @@ tr:hover{
 ------------------------------------------------
 */
 
-.iconBtn{
-  font-size:18px;
-  color:#7dd3fc;
-  transition:.2s;
+.iconBtn {
+  font-size: 18px;
+  color: #7dd3fc;
+  transition: 0.2s;
 }
 
-.iconBtn:hover{
-  color:#38bdf8;
-  transform:scale(1.08);
+.iconBtn:hover {
+  color: #38bdf8;
+  transform: scale(1.08);
 }
 
 /**
@@ -136,41 +131,40 @@ tr:hover{
 ------------------------------------------------
 */
 
-.status{
-  padding:6px 12px;
-  border-radius:8px;
-  font-weight:600;
-  display:inline-block;
+.status {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-block;
 }
 
 /* מתוכנן - כתום עדין */
-.planned{
+.planned {
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.4);
   color: #fcd34d;
 }
 
 /* בתהליך - כחול עדין */
-.inProgress{
+.inProgress {
   background: rgba(59, 130, 246, 0.15);
   border: 1px solid rgba(59, 130, 246, 0.4);
   color: #93c5fd;
 }
 
 /* הסתיים - ירוק עדין */
-.finished{
+.finished {
   background: rgba(34, 197, 94, 0.15);
   border: 1px solid rgba(34, 197, 94, 0.4);
   color: #86efac;
 }
 
 /* בוטל - אפור עדין */
-.cancelled{
+.cancelled {
   background: rgba(107, 114, 128, 0.15);
   border: 1px solid rgba(107, 114, 128, 0.4);
   color: #d1d5db;
 }
-
 
 /**
 ------------------------------------------------
@@ -178,34 +172,34 @@ tr:hover{
 ------------------------------------------------
 */
 
-.approveBtn{
-  background:#22c55e;
-  border:none;
-  padding:6px 12px;
-  border-radius:8px;
-  color:white;
-  cursor:pointer;
-  margin-left:6px;
-  transition:.2s;
+.approveBtn {
+  background: #22c55e;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: 0.2s;
 }
 
-.approveBtn:hover{
-  background:#16a34a;
+.approveBtn:hover {
+  background: #16a34a;
 }
 
-.cancelBtn{
-  background:#f59e0b;
-  border:none;
-  padding:6px 12px;
-  border-radius:8px;
-  color:white;
-  cursor:pointer;
-  margin-left:6px;
-  transition:.2s;
+.cancelBtn {
+  background: #f59e0b;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: 0.2s;
 }
 
-.cancelBtn:hover{
-  background:#d97706;
+.cancelBtn:hover {
+  background: #d97706;
 }
 
 /**
@@ -214,15 +208,15 @@ tr:hover{
 ------------------------------------------------
 */
 
-.modalOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.65);
-  backdrop-filter:blur(8px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
 
 /**
@@ -231,58 +225,58 @@ tr:hover{
 ------------------------------------------------
 */
 
-.modal{
-  width:420px;
-  max-height:80vh;
-  overflow-y:auto;
+.modal {
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
 
-  background:linear-gradient(
+  background: linear-gradient(
     180deg,
-    rgba(18,22,28,.92),
-    rgba(10,14,18,.92)
+    rgba(18, 22, 28, 0.92),
+    rgba(10, 14, 18, 0.92)
   );
 
-  border:1px solid rgba(255,255,255,.18);
-  padding:28px;
-  border-radius:20px;
-  color:white;
-  text-align:right;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 28px;
+  border-radius: 20px;
+  color: white;
+  text-align: right;
 
   box-shadow:
-    0 30px 60px rgba(0,0,0,.6),
-    inset 0 0 40px rgba(255,255,255,.04);
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(255, 255, 255, 0.04);
 
-  backdrop-filter:blur(10px);
-  animation:modalIn .25s ease;
+  backdrop-filter: blur(10px);
+  animation: modalIn 0.25s ease;
 
-  -ms-overflow-style:none;
-  scrollbar-width:none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.modal::-webkit-scrollbar{
-  display:none;
+.modal::-webkit-scrollbar {
+  display: none;
 }
 
-@keyframes modalIn{
-  from{
-    opacity:0;
-    transform:scale(.92);
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
   }
-  to{
-    opacity:1;
-    transform:scale(1);
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 .modal h2,
-.modal h3{
-  text-align:center;
-  margin-bottom:18px;
+.modal h3 {
+  text-align: center;
+  margin-bottom: 18px;
 }
 
-.modal p{
-  margin:8px 0;
-  line-height:1.6;
+.modal p {
+  margin: 8px 0;
+  line-height: 1.6;
 }
 
 /**
@@ -291,19 +285,19 @@ tr:hover{
 ------------------------------------------------
 */
 
-.saveBtn{
-  background:#22c55e;
-  color:white;
-  padding:10px 22px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
-  transition:.2s;
+.saveBtn {
+  background: #22c55e;
+  color: white;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
 }
 
-.saveBtn:hover{
-  background:#16a34a;
+.saveBtn:hover {
+  background: #16a34a;
 }
 
 /**
@@ -312,18 +306,18 @@ tr:hover{
 ------------------------------------------------
 */
 
-.closeBtn{
-  background:transparent;
-  border:1px solid rgba(255,255,255,.25);
-  color:white;
-  padding:10px 22px;
-  border-radius:10px;
-  cursor:pointer;
-  transition:.2s;
+.closeBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.closeBtn:hover{
-  background:rgba(255,255,255,.1);
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 /**
 ------------------------------------------------
@@ -331,9 +325,9 @@ tr:hover{
 ------------------------------------------------
 */
 
-.emptyRow td{
-  text-align:center;
-  color:#d1d5db;
+.emptyRow td {
+  text-align: center;
+  color: #d1d5db;
 }
 
 /**
@@ -342,32 +336,31 @@ tr:hover{
 ------------------------------------------------
 */
 
-@media (max-width: 900px){
-  .page{
-    padding:20px;
+@media (max-width: 900px) {
+  .page {
+    padding: 20px;
   }
 
-  .topBarRow{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:12px;
+  .topBarRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
-  .table{
-    font-size:13px;
+  .table {
+    font-size: 13px;
   }
 
   th,
-  td{
-    padding:10px;
+  td {
+    padding: 10px;
   }
 
-  .modal{
-    width:92%;
-    padding:22px;
+  .modal {
+    width: 92%;
+    padding: 22px;
   }
 }
-
 
 /**
 ------------------------------------------------
@@ -375,15 +368,15 @@ tr:hover{
 ------------------------------------------------
 */
 
-.modalActions{
-  margin-top:25px;
+.modalActions {
+  margin-top: 25px;
 
-  display:flex;
+  display: flex;
 
-  justify-content:center; /* 👈 מרכז אופקי */
-  align-items:center;
+  justify-content: center; /* 👈 מרכז אופקי */
+  align-items: center;
 
-  gap:12px;
+  gap: 12px;
 }
 
 /**
@@ -393,44 +386,44 @@ tr:hover{
 */
 
 /* בלוק כל שדה */
-.reportSection{
-  margin-bottom:18px;
-  text-align:right;
+.reportSection {
+  margin-bottom: 18px;
+  text-align: right;
 }
 
 /* תווית (label) */
-.reportLabel{
-  font-weight:600;
-  color:#7dd3fc;
-  margin-bottom:6px;
-  display:block;
+.reportLabel {
+  font-weight: 600;
+  color: #7dd3fc;
+  margin-bottom: 6px;
+  display: block;
 }
 
 /* קובץ */
-.reportFile{
-  width:100%;
-  margin-top:6px;
-     border:1px solid rgba(255,255,255,.25);
+.reportFile {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 
-  background:rgba(0,0,0,.35);
-  color:white;
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
 }
 
 /* textarea */
-.reportTextarea{
-  width:100%;
-  min-height:90px;
-  margin-top:6px;
-  padding:10px;
+.reportTextarea {
+  width: 100%;
+  min-height: 90px;
+  margin-top: 6px;
+  padding: 10px;
 
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.25);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 
-  background:rgba(0,0,0,.35);
-  color:white;
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
 
-  font-size:14px;
-  resize:vertical;
+  font-size: 14px;
+  resize: vertical;
 }
 
 /**
@@ -439,26 +432,25 @@ tr:hover{
 ------------------------------------------------
 */
 
-.inlineMsg{
-  margin-top:10px;
-  padding:10px;
-  border-radius:10px;
-  text-align:center;
-  font-weight:600;
+.inlineMsg {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
 }
 
-.inlineSuccess{
-  background:rgba(34,197,94,.15);
-  border:1px solid rgba(34,197,94,.4);
-  color:#bbf7d0;
+.inlineSuccess {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #bbf7d0;
 }
 
-.inlineError{
-  background:rgba(220,38,38,.15);
-  border:1px solid rgba(220,38,38,.4);
-  color:#fecaca;
+.inlineError {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #fecaca;
 }
-
 
 /* כפתור שליחת דיווח */
 .reportBtn {
@@ -500,105 +492,110 @@ button {
 /* =========================================
    שורה דחופה - גרסה עם הבהוב (ברירת מחדל)
 ========================================= */
-.urgentRow{
-  background:rgba(239,68,68,.15);
-  animation:blink 1s infinite;
+.urgentRow {
+  background: rgba(239, 68, 68, 0.15);
+  animation: blink 1s infinite;
 }
 
 /* אנימציית הבהוב */
 
-@keyframes blink{
-  0%{ background:rgba(239,68,68,.15); }
-  50%{ background:rgba(239,68,68,.35); }
-  100%{ background:rgba(239,68,68,.15); }
+@keyframes blink {
+  0% {
+    background: rgba(239, 68, 68, 0.15);
+  }
+  50% {
+    background: rgba(239, 68, 68, 0.35);
+  }
+  100% {
+    background: rgba(239, 68, 68, 0.15);
+  }
 }
 
 /* ===============================
    סטטיסטיקות
 =============================== */
-.statsRow{
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  margin:20px auto;
+.statsRow {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px auto;
 }
 
-.statBox{
-  width:110px;
-  height:110px;
+.statBox {
+  width: 110px;
+  height: 110px;
 
-  border-radius:50%;
+  border-radius: 50%;
 
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-  background:rgba(18,22,28,.9);
+  background: rgba(18, 22, 28, 0.9);
 
   /* 🔥 במקום border רגיל */
-  border:2px solid rgba(255,255,255,.15);
+  border: 2px solid rgba(255, 255, 255, 0.15);
 
-  transition:.3s;
+  transition: 0.3s;
 }
 
 /* hover */
-.statBox:hover{
-  transform:scale(1.05);
+.statBox:hover {
+  transform: scale(1.05);
 }
 
 /* מספר */
-.statNumber{
-  font-size:26px;
-  font-weight:bold;
+.statNumber {
+  font-size: 26px;
+  font-weight: bold;
 }
 
 /* טקסט */
-.statLabel{
-  font-size:13px;
-  color:#9ca3af;
+.statLabel {
+  font-size: 13px;
+  color: #9ca3af;
 }
-
 
 /* ===============================
    צבעים לפי סטטוס
 =============================== */
 
 /* מתוכנן - כחול */
-.plannedBox{
-  border-right:4px solid #f59e0b;
+.plannedBox {
+  border-right: 4px solid #f59e0b;
 }
 
 /* בתהליך */
-.inProgressBox{
-  border-right:4px solid #3b82f6;
+.inProgressBox {
+  border-right: 4px solid #3b82f6;
 }
 
 /* הסתיים -*/
-.finishedBox{
-  border-right:4px solid #22c55e;
+.finishedBox {
+  border-right: 4px solid #22c55e;
 }
 
 /* בוטל -*/
-.cancelledBox{
-  border-right:4px solid #6b7280;
+.cancelledBox {
+  border-right: 4px solid #6b7280;
 }
 
-.statBox{
-  border-radius:50%; /* הופך לעיגול */
-  height:100px; /* גובה קבוע */
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
+.statBox {
+  border-radius: 50%; /* הופך לעיגול */
+  height: 100px; /* גובה קבוע */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 /* סטופר מתחת לסטטוס */
-.timer{
-  margin-top:5px; /* רווח קטן מהסטטוס */
-  font-size:12px; /* קטן ונקי */
-  color:#22c55e; /* ירוק יפה */
-  font-weight:600;
+.timer {
+  margin-top: 5px; /* רווח קטן מהסטטוס */
+  font-size: 12px; /* קטן ונקי */
+  color: #22c55e; /* ירוק יפה */
+  font-weight: 600;
 }
 
 /* מודאל פרטי נציג קבוצה */
@@ -620,7 +617,7 @@ button {
 }
 
 .whatsappIcon {
-  color: #25D366;
+  color: #25d366;
   margin-left: 6px;
   cursor: pointer;
 }
@@ -639,10 +636,81 @@ button {
   transition: 0.2s;
 }
 
-.FaFlagCheckered{
+.FaFlagCheckered {
   color: #27da4e;
 }
 
-.FaPlay{
+.FaPlay {
   color: #1111e3;
+}
+
+/* ======================
+   קופסת התראות הדרכות
+====================== */
+.alertBox {
+  margin: 15px 0;
+  padding: 14px 18px;
+
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+
+  color: #bfdbfe;
+
+  border-radius: 12px;
+
+  /* עומק יפה */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+/* כותרת ההתראה */
+.alertTitle {
+  font-weight: bold;
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 15px;
+}
+
+/* שורת התראה */
+.alertItem {
+  padding: 8px 0;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  transition: 0.2s;
+}
+
+/* hover */
+.alertItem:hover {
+  color: white;
+  transform: translateX(-4px);
+}
+
+/* אייקונים בתוך ההתראה */
+.alertItem svg {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.highlightRow {
+  background: rgba(34, 197, 94, 0.2) !important;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
 }

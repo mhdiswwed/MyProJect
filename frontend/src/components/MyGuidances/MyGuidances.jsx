@@ -16,7 +16,11 @@ import {
   FaEnvelope,
   FaCalendarAlt,
   FaClock,
+  FaBell,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
+
+import { MdAccessTime } from "react-icons/md";
 
 export default function MyGuidances({ user }) {
   // רשימת ההדרכות
@@ -51,6 +55,8 @@ export default function MyGuidances({ user }) {
   // נציג קבוצה שנבחר + שליטה על המודאל
   const [selectedRepresentative, setSelectedRepresentative] = useState(null);
   const [showRepresentativeModal, setShowRepresentativeModal] = useState(false);
+  // שורה מודגשת
+  const [highlightedId, setHighlightedId] = useState(null);
 
   //========================================
   // מעדכן את הזמן כל שנייה כדי שהסטופר יזוז
@@ -368,56 +374,164 @@ export default function MyGuidances({ user }) {
     return new Date(start.getTime() + duration * 60000);
   }
 
+  //===============================================================================================
+  // =========================================
+  // מחזיר טקסט: מחר / מחרתיים
+  // =========================================
+  function getGuidanceLabel(date) {
+    const tripDate = new Date(date);
+    tripDate.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diff = Math.round((tripDate - today) / (1000 * 60 * 60 * 24));
+
+    if (diff === 1) return "מחר";
+    if (diff === 2) return "מחרתיים";
+
+    return "";
+  }
+
+  // =========================================
+  // מחזיר טקסט תיאור הדרכה
+  // =========================================
+  function getGuidanceText(g) {
+    return `הדרכה ב${g.trail_name}`;
+  }
+
+  // =========================================
+  // חישוב משך זמן (שעות + דקות)
+  // =========================================
+  function getGuidanceDuration(g) {
+    if (!g.duration_minutes) return "משך לא ידוע";
+
+    const hours = Math.floor(g.duration_minutes / 60);
+    const minutes = g.duration_minutes % 60;
+
+    if (hours > 0 && minutes > 0) {
+      return `${hours} שעות ו-${minutes} דקות`;
+    }
+
+    if (hours > 0) return `${hours} שעות`;
+
+    return `${minutes} דקות`;
+  }
+
+  // =========================================
+  // סינון הדרכות קרובות (מחר / מחרתיים בלבד)
+  // =========================================
+  const upcomingGuidances = guidances.filter((g) => {
+    // לא מציג הסתיים או בוטל
+    if (g.guidance_status === "הסתיים" || g.guidance_status === "בוטל")
+      return false;
+
+    if (!g.trip_date) return false;
+
+    const tripDate = new Date(g.trip_date);
+    tripDate.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diff = Math.round((tripDate - today) / (1000 * 60 * 60 * 24));
+
+    return diff === 1 || diff === 2;
+  });
+  //============================
+  // מדגיש שורה
+  //=============================
+  function handleGuidanceClick(g) {
+    setHighlightedId(g.group_id);
+    // גלילה לשורה
+    const row = document.getElementById(`guidance-${g.group_id}`);
+    if (row) {
+      row.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+    // ביטול highlight אחרי כמה שניות
+    setTimeout(() => {
+      setHighlightedId(null);
+    }, 5000);
+  }
+  //================================================================================================
   return (
     <div className={styles.page} dir="rtl">
       {/* כותרת + פילטר כמו ManageRequests */}
       <div className={styles.topBar}>
         <div className={styles.topBarRow}>
           <h1 className={styles.title}>ההדרכות שלי</h1>
-          {/*// ============================== // 
+        </div>
+
+        {/* ===============================
+             תזכורת להדרכות קרובות
+          =============================== */}
+        {upcomingGuidances.length > 0 && (
+          <div className={styles.alertBox}>
+            <div className={styles.alertTitle}>
+              <FaBell /> יש לך {upcomingGuidances.length} הדרכות קרובות
+            </div>
+
+            {upcomingGuidances.slice(0, 3).map((g) => (
+              <div
+                key={g.group_id}
+                className={styles.alertItem}
+                onClick={() => handleGuidanceClick(g)}
+              >
+                <FaMapMarkerAlt />
+                {getGuidanceLabel(g.trip_date)} – {getGuidanceText(g)} מתחילים
+                בשעה <MdAccessTime /> {g.trip_time?.slice(0, 5)} למשך{" "}
+                {getGuidanceDuration(g)}
+              </div>
+            ))}
+          </div>
+        )}
+        {/*// ============================== // 
          // תצוגת סטטיסטיקות למעלה //
           ==============================*/}
-          <div className={styles.statsRow}>
-            {/* סך הכל */}
-            <div className={styles.statBox}>
-              <div className={styles.statNumber}>
-                {stats.total} {/* מציג כמה הדרכות יש בסך הכל */}
-              </div>
-              <div className={styles.statLabel}>סה״כ</div>
+        <div className={styles.statsRow}>
+          {/* סך הכל */}
+          <div className={styles.statBox}>
+            <div className={styles.statNumber}>
+              {stats.total} {/* מציג כמה הדרכות יש בסך הכל */}
             </div>
+            <div className={styles.statLabel}>סה״כ</div>
+          </div>
 
-            {/* מתוכנן */}
-            <div className={`${styles.statBox} ${styles.plannedBox}`}>
-              <div className={styles.statNumber}>
-                {stats.planned} {/* כמות הדרכות מתוכננות */}
-              </div>
-              <div className={styles.statLabel}>מתוכנן</div>
+          {/* מתוכנן */}
+          <div className={`${styles.statBox} ${styles.plannedBox}`}>
+            <div className={styles.statNumber}>
+              {stats.planned} {/* כמות הדרכות מתוכננות */}
             </div>
+            <div className={styles.statLabel}>מתוכנן</div>
+          </div>
 
-            {/* בתהליך */}
-            <div className={`${styles.statBox} ${styles.inProgressBox}`}>
-              <div className={styles.statNumber}>
-                {stats.inProgress} {/* כמות הדרכות בתהליך */}
-              </div>
-              <div className={styles.statLabel}>בתהליך</div>
+          {/* בתהליך */}
+          <div className={`${styles.statBox} ${styles.inProgressBox}`}>
+            <div className={styles.statNumber}>
+              {stats.inProgress} {/* כמות הדרכות בתהליך */}
             </div>
+            <div className={styles.statLabel}>בתהליך</div>
+          </div>
 
-            {/* הסתיים */}
-            <div className={`${styles.statBox} ${styles.finishedBox}`}>
-              <div className={styles.statNumber}>
-                {stats.finished} {/* כמות הדרכות שהסתיימו */}
-              </div>
-              <div className={styles.statLabel}>הסתיים</div>
+          {/* הסתיים */}
+          <div className={`${styles.statBox} ${styles.finishedBox}`}>
+            <div className={styles.statNumber}>
+              {stats.finished} {/* כמות הדרכות שהסתיימו */}
             </div>
+            <div className={styles.statLabel}>הסתיים</div>
+          </div>
 
-            {/* בוטל */}
-            <div className={`${styles.statBox} ${styles.cancelledBox}`}>
-              <div className={styles.statNumber}>
-                {stats.cancelled} {/* כמות הדרכות שבוטלו */}
-              </div>
-              <div className={styles.statLabel}>בוטל</div>
+          {/* בוטל */}
+          <div className={`${styles.statBox} ${styles.cancelledBox}`}>
+            <div className={styles.statNumber}>
+              {stats.cancelled} {/* כמות הדרכות שבוטלו */}
             </div>
-        
+            <div className={styles.statLabel}>בוטל</div>
+          </div>
+
           <div className={styles.filterBox}>
             <label className={styles.filterLabel}>סינון:</label>
 
@@ -433,7 +547,6 @@ export default function MyGuidances({ user }) {
               <option value="בוטל">בוטל</option>
             </select>
           </div>
-        </div>
         </div>
       </div>
       {/* טבלה כמו ManageRequests */}
@@ -463,28 +576,27 @@ export default function MyGuidances({ user }) {
             filtered.map((g) => (
               <tr
                 key={g.group_id}
-                className={(() => {
+                id={`guidance-${g.group_id}`}
+                className={`
+                ${(() => {
                   const now = new Date();
                   const tripDate = new Date(g.trip_date);
 
-                  // מאפסים שעות
                   now.setHours(0, 0, 0, 0);
                   tripDate.setHours(0, 0, 0, 0);
 
                   const diffDays = (tripDate - now) / (1000 * 60 * 60 * 24);
 
-                  // 🔥 קרוב (יומיים קדימה)
                   const isUrgent = diffDays >= 0 && diffDays <= 2;
-
-                  // 🔥 רק אם זה עדיין לא הסתיים / בוטל
                   const isActive =
                     g.guidance_status === "מתוכנן" ||
                     g.guidance_status === "בתהליך";
 
-                  const shouldBlink = isUrgent && isActive;
-
-                  return shouldBlink ? styles.urgentRow : "";
+                  return isUrgent && isActive ? styles.urgentRow : "";
                 })()}
+
+                ${highlightedId === g.group_id ? styles.highlightRow : ""}
+              `}
               >
                 <td>{g.group_id}</td>
                 <td>
@@ -503,7 +615,8 @@ export default function MyGuidances({ user }) {
                 <td>
                   {/* התחלה */}
                   <div className={styles.timeRow}>
-                    <FaPlay title="התחלה" className={styles.FaPlay} /> <FaCalendarAlt />{" "}
+                    <FaPlay title="התחלה" className={styles.FaPlay} />{" "}
+                    <FaCalendarAlt />{" "}
                     {new Date(g.trip_date).toLocaleDateString("he-IL")}
                     {" | "}
                     <FaClock /> {g.trip_time?.slice(0, 5)}
@@ -511,7 +624,10 @@ export default function MyGuidances({ user }) {
 
                   {/* סיום מחושב */}
                   <div className={styles.timeRow}>
-                    <FaFlagCheckered title="סיום" className={styles.FaFlagCheckered} />{" "}
+                    <FaFlagCheckered
+                      title="סיום"
+                      className={styles.FaFlagCheckered}
+                    />{" "}
                     <FaCalendarAlt />{" "}
                     {(() => {
                       if (!g.trip_date || !g.trip_time || !g.duration_minutes)
