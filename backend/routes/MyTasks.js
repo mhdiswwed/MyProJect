@@ -127,32 +127,74 @@ router.post("/start/:taskId", (req, res) => {
  * =========================================
  * PUT
  * סיום משימה
- * רק שומר סטטוס המשימה קבוציעה ושומר זמן סיום משימה בדיווח על ביצוע משימה 
+ *  רק שומר סטטוס המשימה קבוציעה ושומר זמן סיום משימה בדיווח על ביצוע משימה ובודק אם המשימה בוצעה מתוך דווח קיים אם כן מדדכן סטטוס הדיווח לטופל
  * =========================================
  */
 router.put("/end/:taskId", (req, res) => {
   const { taskId } = req.params;
   const { user_id } = req.body;
 
-  const sql = `
+  // 1. סיום ביצוע משימה
+  const endExecutionSql = `
     UPDATE task_executions
     SET end_time = NOW()
     WHERE task_id = ? AND user_id = ? AND end_time IS NULL
   `;
 
-  db.query(sql, [taskId, user_id], (err) => {
+  db.query(endExecutionSql, [taskId, user_id], (err) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "שגיאה בסיום" });
     }
 
-    // עדכון סטטוס משימה
-    db.query(
-     `UPDATE tasks SET status='בוצעה' WHERE task_id=?`,
-      [taskId]
-    );
+    // 2. עדכון סטטוס משימה
+    const updateTaskSql = `
+      UPDATE tasks 
+      SET status='בוצעה' 
+      WHERE task_id=?
+    `;
 
-    res.json({ message: "הסתיים" });
+    db.query(updateTaskSql, [taskId], (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "שגיאה בעדכון משימה" });
+      }
+
+      // 3. בדיקה אם יש report_id
+      const getReportSql = `
+        SELECT report_id FROM tasks WHERE task_id = ?
+      `;
+
+      db.query(getReportSql, [taskId], (err, results) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "שגיאה בבדיקת דוח" });
+        }
+
+        const reportId = results[0]?.report_id;
+
+        // 4. אם המשימה נוצרה מדוח → עדכון דוח
+        if (reportId) {
+          const updateReportSql = `
+            UPDATE reports 
+            SET status='טופל' 
+            WHERE report_id = ?
+          `;
+
+          db.query(updateReportSql, [reportId], (err) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "שגיאה בעדכון דוח" });
+            }
+
+            return res.json({ message: "המשימה והדוח עודכנו" });
+          });
+        } else {
+          // אין דוח
+          return res.json({ message: "המשימה הסתיימה" });
+        }
+      });
+    });
   });
 });
 
