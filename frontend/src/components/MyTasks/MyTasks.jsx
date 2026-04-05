@@ -187,20 +187,20 @@ export default function MyTasks({ user }) {
   //==============================
   // טקסט: מחר / מחרתיים
   //==============================
-function getTaskLabel(date) {
-  const taskDate = new Date(date);
-  taskDate.setHours(0, 0, 0, 0);
+  function getTaskLabel(date) {
+    const taskDate = new Date(date);
+    taskDate.setHours(0, 0, 0, 0);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const diff = Math.round((taskDate - today) / (1000 * 60 * 60 * 24));
+    const diff = Math.round((taskDate - today) / (1000 * 60 * 60 * 24));
 
-  if (diff === 1) return "מחר";
-  if (diff === 2) return "מחרתיים";
+    if (diff === 1) return "מחר";
+    if (diff === 2) return "מחרתיים";
 
-  return "";
-}
+    return "";
+  }
 
   //==============================
   // highlight שורה
@@ -265,7 +265,7 @@ function getTaskLabel(date) {
     // רגיל
     return `${hours} שעות ו-${minutes} דקות`;
   }
-  
+
   //=====================================================
   // סינון משימות קרובות (מחר או מחרתיים) לפי תאריך בלבד
   //=====================================================
@@ -283,7 +283,7 @@ function getTaskLabel(date) {
     const diff = Math.round((taskDate - today) / (1000 * 60 * 60 * 24));
     return diff === 1 || diff === 2;
   });
-//=================================================================================================
+  //=================================================================================================
   return (
     <div className={styles.page} dir="rtl">
       <div className={styles.topBar}>
@@ -307,9 +307,8 @@ function getTaskLabel(date) {
                   <FaMapMarkerAlt />
                   {getTaskLabel(task.start_time)} – {getTaskTypeText(task)}{" "}
                   מתחילים בשעה <MdAccessTime />{" "}
-                  {new Date(task.start_time)
-                    .toTimeString()
-                    .slice(0, 5)} למשך {getDuration(task)}
+                  {new Date(task.start_time).toTimeString().slice(0, 5)} למשך{" "}
+                  {getDuration(task)}
                 </div>
               ))}
             </div>
@@ -388,9 +387,27 @@ function getTaskLabel(date) {
               <tr
                 key={t.task_id}
                 id={`task-${t.task_id}`}
-                className={
-                  highlightedId === t.task_id ? styles.highlightRow : ""
-                }
+                className={`
+                  ${(() => {
+                    if (!t.start_time) return "";
+
+                    const taskDate = new Date(t.start_time);
+                    const today = new Date();
+
+                    taskDate.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
+
+                    const diffDays = (taskDate - today) / (1000 * 60 * 60 * 24);
+
+                    const isUrgent = diffDays >= 0 && diffDays <= 2;
+                    const isActive =
+                      t.status === "פתוחה" || t.status === "בטיפול";
+
+                    return isUrgent && isActive ? styles.urgentRow : "";
+                  })()}
+
+                  ${highlightedId === t.task_id ? styles.highlightRow : ""}
+                `}
               >
                 <td>{t.task_id}</td>
                 <td>{t.task_type}</td>
