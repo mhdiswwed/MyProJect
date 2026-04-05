@@ -213,3 +213,26 @@ tr:hover{
   font-size:14px;
   color:#9ca3af;
 }
+
+/* כפתור שליחת דיווח */
+.reportBtn {
+  background: linear-gradient(135deg, #ff9800, #f57c00); /* כתום יפה */
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* מעבר עכבר */
+.reportBtn:hover {
+  background:  #ef6c00;
+
+}
+
+/* לחיצה */
+.reportBtn:active {
+  transform: scale(0.95);
+}

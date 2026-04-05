@@ -5,6 +5,10 @@
 import { useEffect, useState } from "react";
 import styles from "./myTasks.module.css";
 import API_BASE from "../../config/api";
+// ייבוא מודאל פרטי משימה
+import TaskDetailsModal from "../TaskDetailsModal/TaskDetailsModal";
+// ייבוא מודאל דיווח
+import ReportModal from "../ReportModal/ReportModal";
 
 import {
   FaEye,
@@ -12,6 +16,7 @@ import {
   FaFlagCheckered,
   FaCalendarAlt,
   FaClock,
+  FaCamera,
 } from "react-icons/fa";
 
 export default function MyTasks({ user }) {
@@ -24,6 +29,15 @@ export default function MyTasks({ user }) {
   // זמן לטיימר
   const [now, setNow] = useState(Date.now());
 
+  // משימה שנבחרה (לפתיחת הפופאפ)
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  // סטייט לפתיחת מודאל דיווח משימה
+  const [showTaskReport, setShowTaskReport] = useState(false);
+
+  // סטייט למשימה שנבחרה
+  const [selectedTaskReport, setSelectedTaskReport] = useState(null);
+
   /**
    * עדכון טיימר כל שנייה
    */
@@ -35,22 +49,25 @@ export default function MyTasks({ user }) {
     return () => clearInterval(interval);
   }, []);
 
-  /**
-   * שליפת משימות מהשרת
-   */
-  useEffect(() => {
-    if (!user) return;
-
+  //===============================
+  // פונקציה לרענון משימות מהשרת
+  //===============================
+  function fetchTasks() {
     fetch(`${API_BASE}/api/MyTasks/${user.user_id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          setTasks(data);
-        } else {
-          setTasks([]); // הגנה מקריסה
-        }
+        if (Array.isArray(data)) setTasks(data);
+        else setTasks([]);
       })
       .catch(() => setTasks([]));
+  }
+
+  /**====================
+   * שליפת משימות מהשרת
+   ==================*/
+  useEffect(() => {
+    if (!user) return;
+    fetchTasks();
   }, [user]);
 
   /**
@@ -104,29 +121,31 @@ export default function MyTasks({ user }) {
   /**
    * התחלת משימה
    */
-  async function startTask(id) {
-    await fetch(`${API_BASE}/api/MyTasks/start/${id}`, {
-      method: "PUT",
+
+  async function startTask(task) {
+    await fetch(`${API_BASE}/api/MyTasks/start/${task.task_id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user.user_id, 
+      }),
     });
 
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.task_id === id
-          ? {
-              ...t,
-              status: "בטיפול",
-              start_time: new Date().toISOString(),
-            }
-          : t,
-      ),
-    );
-  }
+setTasks((prev) =>
+  prev.map((t) =>
+    t.task_id === task.task_id 
+      ? {
+          ...t,
+          status: "בטיפול",
+          start_time: new Date().toISOString(),
+        }
+      : t,
+  ),
+);
 
-  /**
-   * סיום משימה (כרגע רק פתיחה עתידית)
-   */
-  function endTask(task) {
-    console.log("TODO: open modal", task);
+    fetchTasks(); // רענון
   }
 
   function getStatusClass(status) {
@@ -136,6 +155,28 @@ export default function MyTasks({ user }) {
     if (status === "בוטלה") return styles.cancelled;
     return "";
   }
+  //===================================
+  // סיום משימה + פתיחת מודאל דיווח
+  //==================================
+async function endTask(task) {
+  try {
+    await fetch(`${API_BASE}/api/MyTasks/end/${task.task_id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json", // שולח JSON
+      },
+      body: JSON.stringify({
+        user_id: user.user_id, // שולח את המשתמש
+      }),
+    });
+
+    setSelectedTaskReport(task); // שומר משימה לדיווח
+    setShowTaskReport(true); // פותח מודאל
+  } catch {
+    console.log("שגיאה");
+  }
+}
+
   return (
     <div className={styles.page} dir="rtl">
       <div className={styles.topBar}>
@@ -222,7 +263,8 @@ export default function MyTasks({ user }) {
                 {/* 🔥 עמודת זמנים */}
                 <td>
                   <div>
-                    <FaPlay title="התחלה" className={styles.FaPlay} /> <FaCalendarAlt />{" "}
+                    <FaPlay title="התחלה" className={styles.FaPlay} />{" "}
+                    <FaCalendarAlt />{" "}
                     {t.start_time
                       ? new Date(t.start_time).toLocaleDateString("he-IL")
                       : "-"}
@@ -234,7 +276,10 @@ export default function MyTasks({ user }) {
                   </div>
 
                   <div>
-                    <FaFlagCheckered title="סיום" className={styles.FaFlagCheckered} />{" "}
+                    <FaFlagCheckered
+                      title="סיום"
+                      className={styles.FaFlagCheckered}
+                    />{" "}
                     <FaCalendarAlt />{" "}
                     {t.end_time
                       ? new Date(t.end_time).toLocaleDateString("he-IL")
@@ -249,7 +294,11 @@ export default function MyTasks({ user }) {
 
                 {/* פרטים */}
                 <td>
-                  <FaEye className={styles.iconBtn} />
+                  {/*לחיצה על העין פותחת את המודאל עם המשימה*/}
+                  <FaEye
+                    className={styles.iconBtn}
+                    onClick={() => setSelectedTask(t)}
+                  />
                 </td>
 
                 {/* סטטוס */}
@@ -262,37 +311,68 @@ export default function MyTasks({ user }) {
 
                   {t.status === "בטיפול" && (
                     <div className={styles.timer}>
-                      <br/>
-                      ⏱ {getTimer(t.start_time)}
+                      <br />⏱ {getTimer(t.execution_start_time)}
                     </div>
                   )}
                 </td>
 
                 {/* פעולות */}
                 <td>
+                  {/* התחלה */}
                   {t.status === "פתוחה" && (
                     <button
                       className={styles.approveBtn}
-                      onClick={() => startTask(t.task_id)}
+                      onClick={() => startTask(t)}
                     >
-                      <FaPlay className={styles.btnIcon}/> התחלה
+                      <FaPlay className={styles.btnIcon} /> התחלה
                     </button>
                   )}
 
+                  {/* סיום */}
                   {t.status === "בטיפול" && (
                     <button
                       className={styles.cancelBtn}
                       onClick={() => endTask(t)}
                     >
-                      <FaFlagCheckered className={styles.btnIcon}/> סיום
+                      <FaFlagCheckered className={styles.btnIcon} /> סיום
                     </button>
                   )}
+
+                  {/* אם כבר בוצעה ואין דיווח */}
+                  {t.status === "בוצעה" &&
+                    !t.execution_note &&
+                    !t.execution_image && (
+                      <button
+                        onClick={() => endTask(t)}
+                        className={styles.reportBtn}
+                      >
+                        <FaCamera className={styles.btnIcon} />
+                        שלח דיווח
+                      </button>
+                    )}
                 </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+      {/* ========================= מודאל פרטי משימה ========================= */}
+      {selectedTask && (
+        <TaskDetailsModal
+          task={selectedTask} // שולח את המשימה הנבחרת
+          onClose={() => setSelectedTask(null)} // סגירה
+        />
+      )}
+
+      {/* מודאל דיווח משימה*/}
+      {showTaskReport && selectedTaskReport && (
+        <ReportModal
+          task={selectedTaskReport} // המשימה
+          user={user} // המשתמש
+          onClose={() => setShowTaskReport(false)} // סגירה
+          onSuccess={fetchTasks} // רענון
+        />
+      )}
     </div>
   );
 }

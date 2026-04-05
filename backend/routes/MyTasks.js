@@ -23,18 +23,29 @@ router.get("/:userId", (req, res) => {
       t.task_type,
       t.status,
       t.start_time,
+      te.start_time AS execution_start_time,
+    te.image AS execution_image,
       t.due_time AS end_time ,
       t.description,
-      t.image,
+    t.image AS image_path,
 
       tr.trail_name,
 
-      tw.role
+      tw.role,
+
+
+
+  r.latitude,
+  r.longitude,
+  tr.gpx_file
 
     FROM tasks t
 
     JOIN task_workers tw
       ON t.task_id = tw.task_id
+
+     LEFT JOIN task_executions te
+        ON t.task_id = te.task_id AND te.user_id = ?
 
     LEFT JOIN reports r
       ON t.report_id = r.report_id
@@ -44,17 +55,31 @@ router.get("/:userId", (req, res) => {
 
     WHERE tw.user_id = ?
 
-    ORDER BY
-      CASE
-        WHEN t.status = 'פתוחה' THEN 1
-        WHEN t.status = 'בטיפול' THEN 2
-        WHEN t.status = 'בוצעה' THEN 3
-        WHEN t.status = 'בוטלה' THEN 4
-      END,
-      t.created_at DESC
+   ORDER BY
+  CASE
+    WHEN t.status = 'בטיפול' THEN 1
+    WHEN t.status = 'פתוחה' THEN 2
+    WHEN t.status = 'בוצעה' THEN 3
+    WHEN t.status = 'בוטלה' THEN 4
+  END,
+
+  -- פתוחות לפי זמן סיום קרוב
+  CASE 
+    WHEN t.status = 'פתוחה' THEN t.due_time
+    ELSE NULL
+  END ASC,
+
+  -- בטיפול לפי התחלה
+  CASE 
+    WHEN t.status = 'בטיפול' THEN te.start_time
+    ELSE NULL
+  END DESC,
+
+  -- כל השאר לפי יצירה
+  t.created_at DESC
   `;
 
-  db.query(sql, [userId], (err, results) => {
+  db.query(sql, [userId,userId], (err, results) => {
     if (err) {
       console.error("שגיאה בשליפת משימות:", err);
       return res.status(500).json({
@@ -72,60 +97,64 @@ router.get("/:userId", (req, res) => {
  * התחלת משימה
  * =========================================
  */
-router.put("/start/:taskId", (req, res) => {
+router.post("/start/:taskId", (req, res) => {
   const { taskId } = req.params;
+  const { user_id } = req.body; 
 
   const sql = `
-    UPDATE tasks
-    SET 
-      status = 'בטיפול',
-      start_time = NOW()
-    WHERE task_id = ?
+    INSERT INTO task_executions
+    (task_id, user_id, start_time)
+    VALUES (?, ?, NOW())
   `;
 
-  db.query(sql, [taskId], (err) => {
+  db.query(sql, [taskId, user_id], (err) => {
     if (err) {
-      console.error("שגיאה בהתחלת משימה:", err);
-      return res.status(500).json({
-        message: "שגיאה בהתחלת משימה",
-      });
+      console.error("שגיאה בהתחלה:", err);
+      return res.status(500).json({ message: "שגיאה" });
     }
 
-    res.json({
-      message: "המשימה התחילה",
-    });
+    // מעדכן גם סטטוס משימה
+    db.query(
+      `UPDATE tasks SET status='בטיפול' WHERE task_id=?`,
+      [taskId]
+    );
+
+    res.json({ message: "התחיל" });
   });
 });
 
 /**
  * =========================================
  * PUT
- * סיום משימה (רק עדכון בסיסי)
+ * סיום משימה
+ * רק שומר סטטוס המשימה קבוציעה ושומר זמן סיום משימה בדיווח על ביצוע משימה 
  * =========================================
  */
 router.put("/end/:taskId", (req, res) => {
   const { taskId } = req.params;
+  const { user_id } = req.body;
 
   const sql = `
-    UPDATE tasks
-    SET 
-      status = 'בוצעה',
-      end_time = NOW()
-    WHERE task_id = ?
+    UPDATE task_executions
+    SET end_time = NOW()
+    WHERE task_id = ? AND user_id = ? AND end_time IS NULL
   `;
 
-  db.query(sql, [taskId], (err) => {
+  db.query(sql, [taskId, user_id], (err) => {
     if (err) {
-      console.error("שגיאה בסיום משימה:", err);
-      return res.status(500).json({
-        message: "שגיאה בסיום משימה",
-      });
+      console.error(err);
+      return res.status(500).json({ message: "שגיאה בסיום" });
     }
 
-    res.json({
-      message: "המשימה הסתיימה",
-    });
+    // עדכון סטטוס משימה
+    db.query(
+     `UPDATE tasks SET status='בוצעה' WHERE task_id=?`,
+      [taskId]
+    );
+
+    res.json({ message: "הסתיים" });
   });
 });
+
 
 module.exports = router;

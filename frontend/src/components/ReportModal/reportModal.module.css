@@ -1,0 +1,165 @@
+/* =========================
+   מודאל – שכבת רקע
+========================= */
+.modalOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+/* =========================
+   חלון מודאל
+========================= */
+.modal{
+  width:420px;
+  max-height:80vh;
+  overflow-y:auto;
+
+  background:linear-gradient(
+    180deg,
+    rgba(18,22,28,.92),
+    rgba(10,14,18,.92)
+  );
+
+  border:1px solid rgba(255,255,255,.18);
+  padding:28px;
+  border-radius:20px;
+  color:white;
+  text-align:right;
+
+  box-shadow:
+    0 30px 60px rgba(0,0,0,.6),
+    inset 0 0 40px rgba(255,255,255,.04);
+
+  backdrop-filter:blur(10px);
+  animation:modalIn .25s ease;
+}
+
+.modal::-webkit-scrollbar{
+  display:none;
+}
+
+/* אנימציה */
+@keyframes modalIn{
+  from{
+    opacity:0;
+    transform:scale(.92);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+/* =========================
+   מבנה שדות
+========================= */
+.reportSection{
+  margin-bottom:18px;
+  text-align:right;
+}
+
+.reportLabel{
+  font-weight:600;
+  color:#7dd3fc;
+  margin-bottom:6px;
+  display:block;
+}
+
+/* textarea */
+.reportTextarea{
+  width:100%;
+  min-height:90px;
+  margin-top:6px;
+  padding:10px;
+
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.25);
+
+  background:rgba(0,0,0,.35);
+  color:white;
+
+  font-size:14px;
+  resize:vertical;
+}
+
+/* input file */
+.reportFile{
+  width:100%;
+  margin-top:6px;
+
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:10px;
+
+  background:rgba(0,0,0,.35);
+  color:white;
+}
+
+/* =========================
+   הודעות
+========================= */
+.inlineMsg{
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  font-weight:600;
+}
+
+.inlineError{
+  background:rgba(220,38,38,.15);
+  border:1px solid rgba(220,38,38,.4);
+  color:#fecaca;
+}
+
+/* =========================
+   כפתורים
+========================= */
+.modalActions{
+  margin-top:25px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+
+/* שלח */
+.saveBtn{
+  background:#22c55e;
+  color:white;
+  padding:10px 22px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:.2s;
+}
+
+.saveBtn:hover{
+  background:#16a34a;
+}
+
+/* ביטול */
+.closeBtn{
+  background:transparent;
+  border:1px solid rgba(255,255,255,.25);
+  color:white;
+  padding:10px 22px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.closeBtn:hover{
+  background:rgba(255,255,255,.1);
+}
+
+.inlineSuccess{
+  background:rgba(34,197,94,.15);
+  border:1px solid rgba(34,197,94,.4);
+  color:#bbf7d0;
+}

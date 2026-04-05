@@ -701,8 +701,8 @@ export default function MyGuidances({ user }) {
               <label className={styles.reportLabel}>העלאת תמונה</label>
 
               {/* ==============================
- העלאת תמונה בלבד
-============================== */}
+               העלאת תמונה בלבד
+              ============================== */}
               <input
                 type="file"
                 accept="image/*" // 👈 מאפשר רק תמונות

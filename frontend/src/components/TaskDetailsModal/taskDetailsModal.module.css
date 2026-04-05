@@ -1,0 +1,149 @@
+/* =========================
+   רקע כהה של המודאל (Overlay)
+========================= */
+.modalOverlay {
+  position: fixed; /* מכסה את כל המסך */
+  inset: 0; /* top, right, bottom, left = 0 */
+  background: rgba(0, 0, 0, 0.65); /* רקע כהה שקוף */
+  display: flex;
+  justify-content: center; /* מרכז אופקית */
+  align-items: center; /* מרכז אנכית */
+  z-index: 9999; /* מעל הכל */
+}
+
+/* =========================
+   קופסת המודאל הראשית
+========================= */
+.modal {
+  width: 420px;
+
+  /* רקע גרדיאנט כהה כמו בשאר האתר */
+  background: linear-gradient(
+    180deg,
+    rgba(18, 22, 28, 0.92),
+    rgba(10, 14, 18, 0.92)
+  );
+
+  padding: 24px;
+  border-radius: 16px;
+
+  /* מסגרת עדינה */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  color: white;
+
+  /* צל פנימי וחיצוני */
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(255, 255, 255, 0.04);
+
+  /* גלילה פנימית */
+  max-height: 80vh;
+  overflow-y: auto;
+
+  /* הסתרת סקרול */
+  scrollbar-width: none;
+}
+
+/* הסתרת סקרול בכרום */
+.modal::-webkit-scrollbar {
+  display: none;
+}
+
+/* =========================
+   כותרת המודאל
+========================= */
+.title {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* =========================
+   עטיפת מפה קטנה
+========================= */
+.mapWrapper {
+  margin-top: 15px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden; /* חותך קצוות */
+  cursor: pointer; /* מצביע שהמפה לחיצה */
+}
+
+/* המפה עצמה */
+.map {
+  height: 100%;
+}
+
+/* =========================
+   מודאל מפה גדולה
+========================= */
+.bigMapModal {
+  width: 90%;
+  height: 80%;
+}
+
+/* מפה גדולה */
+.bigMap {
+  width: 100%;
+  height: 100%;
+}
+
+/* =========================
+   כפתור סגירה
+========================= */
+.closeBtn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #374151; /* אפור כהה */
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* =========================
+   עטיפת תמונה קטנה
+========================= */
+.imageWrapper {
+  margin-top: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* תמונה קטנה */
+.reportImage {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+
+  transition: 0.2s;
+}
+
+/* אפקט hover */
+.reportImage:hover {
+  transform: scale(1.03);
+}
+
+/* =========================
+   מודאל תמונה גדולה
+========================= */
+.bigImageModal {
+  width: 90%;
+  max-width: 800px;
+}
+
+/* תמונה גדולה */
+.bigImage {
+  width: 100%;
+  border-radius: 16px;
+}
+
+.FaFlagCheckered{
+  color: #27da4e;
+}
+
+.FaPlay{
+  color: #1111e3;
+}
