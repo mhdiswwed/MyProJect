@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import styles from "./taskManagement.module.css";
 import CreateTaskModal from "../CreateTaskModal/CreateTaskModal";
 import API_BASE from "../../config/api";
+// קומפוננטה להצגת פרטי משימה במודאל (צד מנהל)
+import TaskDetailsModalAdmin from "../TaskDetailsModalAdmin/TaskDetailsModalAdmin";
 
 // אייקונים
 import {
@@ -44,6 +46,8 @@ export default function TaskManagement() {
   const [msg, setMsg] = useState({ type: "", text: "" });
   // מודאל יצירת משימה
   const [showCreateModal, setShowCreateModal] = useState(false);
+  // האם להציג מודאל פרטי משימה
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   //===========================
   // שליפת משימות מהשרת
@@ -152,6 +156,11 @@ export default function TaskManagement() {
     setMsg({ type: "", text: "" });
   }
 
+  // פותח מודאל של פרטי משימה ושומר את המשימה שנבחרה
+  function openDetailsModal(task) {
+    setSelectedTask(task); // שומר את המשימה שנלחצה
+    setShowDetailsModal(true); // פותח את המודאל
+  }
   return (
     <div className={styles.page} dir="rtl">
       <h1 className={styles.title}>ניהול משימות</h1>
@@ -295,12 +304,18 @@ export default function TaskManagement() {
 
                 {/* פרטים */}
                 <td>
-                  <FaEye className={styles.iconBtn} />
+                  {/* כפתור צפייה בפרטי משימה */}
+                  <FaEye
+                    className={styles.iconBtn}
+                    onClick={() => openDetailsModal(t)} // פתיחת מודאל עם המשימה
+                  />
                 </td>
 
                 {/* בקרה */}
                 <td>
-                  <FaEye className={styles.iconBtn} />
+                  {(t.status === "בוצעה" || t.status === "בוטלה") && (
+                    <FaEye className={styles.iconBtn} />
+                  )}
                 </td>
 
                 {/* פעולות*/}
@@ -362,6 +377,14 @@ export default function TaskManagement() {
           mode="manual" //  חשוב! זה מנהל
           onClose={() => setShowCreateModal(false)}
           onSuccess={fetchTasks} // רענון אחרי יצירה
+        />
+      )}
+
+      {/* מודאל פרטי משימה */}
+      {showDetailsModal && selectedTask && (
+        <TaskDetailsModalAdmin
+          task={selectedTask} // מעביר את המשימה שנבחרה
+          onClose={() => setShowDetailsModal(false)} // סגירה
         />
       )}
     </div>

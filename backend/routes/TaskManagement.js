@@ -24,13 +24,14 @@ router.get("/", (req, res) => {
  */
 SELECT
   t.*,
-
+  
   -- שם מסלול
   tr.trail_name,
 
   -- מיקום (אם יש)
   r.latitude,
   r.longitude,
+
 
   -- קובץ GPX
   tr.gpx_file
@@ -72,6 +73,36 @@ ORDER BY
       return res.status(500).json({
         message: "שגיאה בשליפת משימות",
       });
+    }
+
+    res.json(results);
+  });
+});
+
+/**
+ * =========================================
+ * GET עובדים לפי משימה
+ * =========================================
+ */
+router.get("/:taskId/workers", (req, res) => {
+  const { taskId } = req.params;
+
+  const sql = `
+    SELECT
+      u.user_id,
+      u.full_name,
+      u.phone,
+      u.email,
+      tw.role
+    FROM task_workers tw
+    JOIN users u ON u.user_id = tw.user_id
+    WHERE tw.task_id = ?
+  `;
+
+  db.query(sql, [taskId], (err, results) => {
+    if (err) {
+      console.error("שגיאה בשליפת עובדים:", err);
+      return res.status(500).json({ message: "שגיאה" });
     }
 
     res.json(results);
