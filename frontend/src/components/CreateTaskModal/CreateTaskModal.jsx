@@ -1,17 +1,26 @@
 // ===================================
-// קומפוננטה ליצירת משימה
+// קומפוננטה חלון פופה ליצירת משימה חדשה
+// תומך ב-2 מצבים:
+// 1. report - מתוך דיווח
+// 2. manual - יצירה ידנית ע"י מנהל
 // ===================================
+
 import { useEffect, useState } from "react";
 import styles from "./createTaskModal.module.css";
 import API_BASE from "../../config/api";
 
-export default function CreateTaskModal({ report, onClose, onSuccess }) {
+export default function CreateTaskModal({
+  report,
+  mode = "report",
+  onClose,
+  onSuccess,
+}) {
   // =========================
   // state
   // =========================
-  const [taskType, setTaskType] = useState(report.problem_type || "");
-  const [description, setDescription] = useState(report.description || "");
-  const [image, setImage] = useState(report.image_path || "");
+const [taskType, setTaskType] = useState(report?.problem_type || "");
+const [description, setDescription] = useState(report?.description || "");
+const [image, setImage] = useState(report?.image_path || "");
 
   const [startTime, setStartTime] = useState("");
   const [dueTime, setDueTime] = useState("");
@@ -20,6 +29,23 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
   const [selectedWorkers, setSelectedWorkers] = useState([]);
 
   const [msg, setMsg] = useState({ type: "", text: "" });
+  // =========================
+  // מסלולים (רק למנהל)
+  // =========================
+  const [trails, setTrails] = useState([]);
+  const [selectedTrail, setSelectedTrail] = useState("");
+
+  // =========================
+  // טעינת מסלולים רק במצב manual
+  // =========================
+  useEffect(() => {
+    if (mode !== "manual") return;
+
+    fetch(`${API_BASE}/api/ManagementTrails`)
+      .then((res) => res.json())
+      .then((data) => setTrails(data))
+      .catch(() => setTrails([]));
+  }, [mode]);
 
   // =========================
   // טעינת עובדים לפי זמן שנבחר
@@ -29,7 +55,7 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
   }, [startTime, dueTime]);
 
   async function loadWorkers() {
-    if (!startTime || !dueTime) return; 
+    if (!startTime || !dueTime) return;
 
     try {
       const res = await fetch(
@@ -80,7 +106,10 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
     // בדיקות בסיסיות
     if (!taskType) errors.push("חסר סוג משימה");
     if (!description) errors.push("חסר תיאור");
-    if (!image) errors.push("חסר תמונה");
+    // חובה תמונה רק אם זה מדיווח
+    if (mode === "report" && !image) {
+      errors.push("חסר תמונה");
+    }
     if (!startTime) errors.push("חסר זמן התחלה");
     if (!dueTime) errors.push("חסר זמן סיום");
 
@@ -121,6 +150,11 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
       }
     });
 
+    // חובה לבחור מסלול אם זה מצב מנהל
+    if (mode === "manual" && !selectedTrail) {
+      errors.push("חייב לבחור מסלול");
+    }
+
     return errors;
   }
 
@@ -139,39 +173,54 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
       return;
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/api/CreateTaskModal/tasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          task_type: taskType,
-          description,
-          image,
-          start_time: startTime,
-          due_time: dueTime,
-          report_id: report.report_id,
-          latitude: report.latitude,
-          longitude: report.longitude,
-          workers: selectedWorkers,
-        }),
-      });
+try {
+  const formData = new FormData();
 
-      const data = await res.json();
+  // אותם שדות בדיוק
+  formData.append("task_type", taskType);
+  formData.append("description", description);
 
-      setMsg({
-        type: res.ok ? "success" : "error",
-        text: data.message,
-      });
+  // אם זה יצירה ידנית  שולחים קובץ
+  if (mode === "manual" && image) {
+    formData.append("image", image);
+  }
 
-      if (res.ok) {
-        setTimeout(() => {
-          onClose();
-          onSuccess();
-        }, 2200);
-      }
-    } catch {
-      setMsg({ type: "error", text: "שגיאה ביצירת משימה" });
-    }
+  // אם זה מתוך דיווח שולחים את הנתיב של התמונה הקיימת
+  if (mode === "report") {
+    formData.append("image", report.image_path);
+  }
+
+  formData.append("start_time", startTime);
+  formData.append("due_time", dueTime);
+  formData.append("report_id", mode === "report" ? report.report_id : "");
+  formData.append("latitude", mode === "report" ? report.latitude : "");
+  formData.append("longitude", mode === "report" ? report.longitude : "");
+  formData.append(
+    "trail_id",
+    mode === "manual" ? selectedTrail : report?.trail_id,
+  );
+  formData.append("workers", JSON.stringify(selectedWorkers));
+
+  const res = await fetch(`${API_BASE}/api/CreateTaskModal/tasks`, {
+    method: "POST",
+    body: formData,
+  });
+  const data = await res.json();
+
+  setMsg({
+    type: res.ok ? "success" : "error",
+    text: data.message,
+  });
+
+  if (res.ok) {
+    setTimeout(() => {
+      onClose();
+      onSuccess();
+    }, 2200);
+  }
+} catch {
+  setMsg({ type: "error", text: "שגיאה ביצירת משימה" });
+}
   }
 
   // =========================
@@ -233,6 +282,29 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
           <option value="תחזוקה">תחזוקה</option>
           <option value="ניקיון">ניקיון</option>
         </select>
+
+        {/* =========================
+         בחירת מסלול (רק למנהל)
+        ========================= */}
+        {mode === "manual" && (
+          <>
+            <label className={styles.label}>בחר מסלול</label>
+
+            <select
+              className={styles.input}
+              value={selectedTrail}
+              onChange={(e) => setSelectedTrail(e.target.value)}
+            >
+              <option value="">בחר מסלול</option>
+
+              {trails.map((t) => (
+                <option key={t.trail_id} value={t.trail_id}>
+                  {t.trail_name}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         {/* תיאור */}
         <label className={styles.label}>תיאור</label>
         <textarea
@@ -241,6 +313,21 @@ export default function CreateTaskModal({ report, onClose, onSuccess }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="תיאור..."
         />
+        {/* =========================
+   תמונה (רק במצב ידני)
+========================= */}
+        {mode === "manual" && (
+          <>
+            <label className={styles.label}>תמונה (אופציונלי)</label>
+
+            <input
+              type="file"
+              accept="image/*"
+              className={styles.input}
+              onChange={(e) => setImage(e.target.files[0])}
+            />
+          </>
+        )}
         {/* תמונה */}
         {image && (
           <img

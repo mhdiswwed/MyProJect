@@ -1,5 +1,5 @@
 /**
- * קומפוננטה: חלון פופאפ לפרטי משימה (עובד)
+ * קומפוננטה: חלון פופאפ לפרטי משימה ( צד העובד)
  * נפתח בלחיצה על האייקון של העין ב-MyTasks
  */
 
@@ -61,7 +61,6 @@ export default function TaskDetailsModal({ task, onClose }) {
 
   // ניקיון
   const cleanIcon = createIcon("#16a34a", "🧹");
-
 
   /**
    * אייקון פשוט של מיקום עובד (בלי עיצוב)
@@ -126,6 +125,13 @@ export default function TaskDetailsModal({ task, onClose }) {
   }
 
   if (!task) return null;
+
+  // בודק אם יש מיקום תקין (לא null ולא 0)
+  const hasLocation =
+    task?.latitude &&
+    task?.longitude &&
+    task.latitude !== 0 &&
+    task.longitude !== 0;
 
   return (
     <>
@@ -192,30 +198,33 @@ export default function TaskDetailsModal({ task, onClose }) {
           )}
 
           {/* ================= מפה קטנה ================= */}
-          <div
-            className={styles.mapWrapper}
-            onClick={() => setShowBigMap(true)}
-          >
-            <MapContainer center={position} zoom={16} className={styles.map}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {/* מציג מפה רק אם יש מיקום */}
+          {hasLocation && (
+            <div
+              className={styles.mapWrapper}
+              onClick={() => setShowBigMap(true)}
+            >
+              <MapContainer center={position} zoom={16} className={styles.map}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {/* נקודת המשימה */}
-              <Marker
-                position={position}
-                icon={getIconByType(task.task_type)}
-              />
+                {/* נקודת המשימה */}
+                <Marker
+                  position={position}
+                  icon={getIconByType(task.task_type)}
+                />
 
-              {/* מיקום עובד */}
-              {userPosition && (
-                <Marker position={userPosition} icon={userIcon} />
-              )}
+                {/* מיקום עובד */}
+                {userPosition && (
+                  <Marker position={userPosition} icon={userIcon} />
+                )}
 
-              <AutoCenter position={userPosition || position} />
+                <AutoCenter position={userPosition || position} />
 
-              {/* GPX */}
-              {task.gpx_file && <GPXLayer fileName={task.gpx_file} />}
-            </MapContainer>
-          </div>
+                {/* GPX */}
+                {task.gpx_file && <GPXLayer fileName={task.gpx_file} />}
+              </MapContainer>
+            </div>
+          )}
 
           <button className={styles.closeBtn} onClick={onClose}>
             סגור
@@ -224,7 +233,8 @@ export default function TaskDetailsModal({ task, onClose }) {
       </div>
 
       {/* ================= מפה גדולה ================= */}
-      {showBigMap && (
+      {/* מציג מפה גדולה רק אם יש מיקום */}
+      {showBigMap && hasLocation && (
         <div
           className={styles.modalOverlay}
           onClick={() => setShowBigMap(false)}

@@ -894,8 +894,8 @@ export default function ManageGuidances() {
       )}
 
       {/* =========================================
-   מודאל פרטי מדריך
-========================================= */}
+         מודאל פרטי מדריך
+      ========================================= */}
       {showGuideModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -907,8 +907,8 @@ export default function ManageGuidances() {
             </p>
 
             {/* =========================
-         טלפון
-      ========================= */}
+             טלפון
+            ========================= */}
             <p>
               <strong>טלפון:</strong>{" "}
               {selectedGuide?.guide_phone ? (
@@ -935,8 +935,8 @@ export default function ManageGuidances() {
             </p>
 
             {/* =========================
-         אימייל
-      ========================= */}
+               אימייל
+            ========================= */}
             <p>
               <strong>אימייל:</strong>{" "}
               {selectedGuide?.guide_email ? (

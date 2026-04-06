@@ -20,7 +20,9 @@ import {
   FaBell,
   FaMapMarkerAlt,
   FaInfoCircle,
+  FaClipboardList,
 } from "react-icons/fa";
+
 
 import { MdAccessTime, MdAttachMoney } from "react-icons/md";
 
@@ -372,6 +374,7 @@ export default function MyTasks({ user }) {
         <thead>
           <tr>
             <th>משימה</th>
+            <th>מקור</th>
             <th>סוג</th>
             <th>תפקיד שלי</th>
             <th>טיול</th>
@@ -417,6 +420,19 @@ export default function MyTasks({ user }) {
                 `}
               >
                 <td>{t.task_id}</td>
+                <td>
+                  <p>
+                    {t.report_id ? (
+                      <span className={styles.reportBadge}>
+                        <FaMapMarkerAlt /> מבוסס על דיווח מהשטח
+                      </span>
+                    ) : (
+                      <span className={styles.manualBadge}>
+                        <FaClipboardList /> משימה מתוזמנת
+                      </span>
+                    )}
+                  </p>
+                </td>
                 <td>{t.task_type}</td>
                 <td>{t.role}</td>
                 <td>{t.trail_name}</td>

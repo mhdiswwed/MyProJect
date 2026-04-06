@@ -1,14 +1,38 @@
 // ===================================
-// ראוטר לחלון פופה יוצר משימה חדשה מתוך דיווח
+// רוותיר : חלון פופה ליצירת משימה
+// תומך ב-2 מצבים:
+// 1. report - יצירה מתוך דיווח מהשטח (כולל מיקום ותמונה חובה)
+// 2. manual - יצירה ידנית ע"י מנהל (כולל בחירת מסלול, תמונה אופציונלית)
 // ===================================
-
 
 const express = require("express");
 const router = express.Router();
 
 const dbSingleton = require("../dbSingleton");
 const db = dbSingleton.getConnection();
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 
+const uploadPath = path.join(__dirname, "../uploads/tasks");
+
+// אם התיקייה לא קיימת  ליצור
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+//מגדירים שם לתמונה
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const ext = file.originalname.split(".").pop();
+    const name = Date.now() + "-" + Math.floor(Math.random() * 1000);
+    cb(null, `-${name}.${ext}`);
+  },
+});
+//משתמשים בשם
+const upload = multer({ storage });
 
 // =========================================
 // GET
@@ -65,7 +89,7 @@ router.get("/workers", (req, res) => {
       }
 
       res.json(Array.isArray(results) ? results : []);
-    }
+    },
   );
 });
 
@@ -75,28 +99,44 @@ router.get("/workers", (req, res) => {
  * יצירת משימה חדשה + שיוך עובדים + עדכון דיווח
  * =========================================
  */
-router.post("/tasks", (req, res) => {
+router.post("/tasks", upload.single("image"), (req, res) => {
   // =========================
   // קבלת נתונים מהלקוח
   // =========================
   const {
     task_type,
     description,
-    image,
     start_time,
     due_time,
     report_id,
     latitude,
     longitude,
     workers,
+    trail_id,
   } = req.body;
+let image = null;
+
+// אם העלו קובץ (manual)
+if (req.file) {
+  image = `uploads/tasks/${req.file.filename}`;
+}
+// אם זה report → יש תמונה קיימת
+else if (req.body.image) {
+  image = req.body.image;
+}
 
   // =========================
   // בדיקות בסיסיות
   // =========================
-  if (!task_type || !description || !image || !start_time || !due_time) {
+  if (!task_type || !description || !start_time || !due_time) {
     return res.status(400).json({
       message: "חסרים נתוני חובה במשימה",
+    });
+  }
+
+  if (report_id && !image) {
+    return res.status(400).json({
+      message: "חסרה תמונה",
     });
   }
 
@@ -106,7 +146,9 @@ router.post("/tasks", (req, res) => {
     });
   }
 
-  if (!Array.isArray(workers) || workers.length === 0) {
+  const workersParsed = JSON.parse(workers);
+
+  if (!Array.isArray(workersParsed) || workersParsed.length === 0) {
     return res.status(400).json({
       message: "חייב לבחור לפחות עובד אחד",
     });
@@ -115,7 +157,7 @@ router.post("/tasks", (req, res) => {
   // =========================
   // בדיקה שלכל עובד יש user_id ותפקיד
   // =========================
-  for (const worker of workers) {
+  for (const worker of workersParsed) {
     if (!worker.user_id || !worker.role) {
       return res.status(400).json({
         message: "חייב לבחור תפקיד לכל עובד",
@@ -148,9 +190,10 @@ router.post("/tasks", (req, res) => {
         due_time,
         report_id,
         latitude,
-        longitude
+        longitude,
+        trail_id
       )
-      VALUES (?, ?, ?, 'פתוחה', ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, 'פתוחה', ?, ?, ?, ?, ?,?)
     `;
 
     const taskValues = [
@@ -162,6 +205,7 @@ router.post("/tasks", (req, res) => {
       report_id || null,
       latitude,
       longitude,
+      trail_id|| null,
     ];
 
     db.query(insertTaskSql, taskValues, (taskErr, taskResult) => {
@@ -183,7 +227,7 @@ router.post("/tasks", (req, res) => {
       // בניית ערכים ל-task_workers
       // כל עובד עם התפקיד שלו
       // =========================
-      const taskWorkersValues = workers.map((worker) => [
+      const taskWorkersValues = workersParsed.map((worker) => [
         taskId,
         worker.user_id,
         worker.role,

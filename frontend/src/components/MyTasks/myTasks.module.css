@@ -387,3 +387,19 @@ color: #9ca3af;
   margin-left:5px;
   font-size:16px;
 }
+
+.reportBadge {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.manualBadge {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}

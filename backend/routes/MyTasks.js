@@ -22,6 +22,7 @@ router.get("/:userId", (req, res) => {
       t.task_id,
       t.task_type,
       t.status,
+        t.report_id,
       t.start_time,
       t.cancel_reason,
       te.start_time AS execution_start_time,
@@ -51,8 +52,8 @@ router.get("/:userId", (req, res) => {
     LEFT JOIN reports r
       ON t.report_id = r.report_id
 
-    LEFT JOIN trails tr
-      ON r.trail_id = tr.trail_id
+   LEFT JOIN trails tr
+  ON tr.trail_id = COALESCE(t.trail_id, r.trail_id)
 
     WHERE tw.user_id = ?
 

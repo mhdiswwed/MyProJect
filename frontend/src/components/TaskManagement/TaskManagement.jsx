@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./taskManagement.module.css";
+import CreateTaskModal from "../CreateTaskModal/CreateTaskModal";
 import API_BASE from "../../config/api";
 
 // אייקונים
@@ -41,6 +42,8 @@ export default function TaskManagement() {
   const [error, setError] = useState("");
 
   const [msg, setMsg] = useState({ type: "", text: "" });
+  // מודאל יצירת משימה
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   //===========================
   // שליפת משימות מהשרת
@@ -106,48 +109,48 @@ export default function TaskManagement() {
   /**=================
    * אישור ביטול
    ====================*/
-async function handleCancel() {
-  if (!cancelReason.trim()) {
-    setMsg({ type: "error", text: "חובה לכתוב סיבה לביטול" });
-    return;
-  }
-
-  try {
-    const res = await fetch(
-      `${API_BASE}/api/TaskManagement/cancel/${selectedTask.task_id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reason: cancelReason,
-        }),
-      },
-    );
-
-    if (!res.ok) {
-      setMsg({ type: "error", text: "שגיאה בביטול" });
+  async function handleCancel() {
+    if (!cancelReason.trim()) {
+      setMsg({ type: "error", text: "חובה לכתוב סיבה לביטול" });
       return;
     }
 
-    setMsg({ type: "success", text: "המשימה בוטלה" });
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/TaskManagement/cancel/${selectedTask.task_id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            reason: cancelReason,
+          }),
+        },
+      );
 
-    setTimeout(() => {
-      setShowCancelModal(false);
-      fetchTasks();
-    }, 2200);
-  } catch {
-    setMsg({ type: "error", text: "שגיאה בביטול" });
+      if (!res.ok) {
+        setMsg({ type: "error", text: "שגיאה בביטול" });
+        return;
+      }
+
+      setMsg({ type: "success", text: "המשימה בוטלה" });
+
+      setTimeout(() => {
+        setShowCancelModal(false);
+        fetchTasks();
+      }, 2200);
+    } catch {
+      setMsg({ type: "error", text: "שגיאה בביטול" });
+    }
   }
-}
 
-//מחיקת הודעות שגיה אם לחצתי כפתור ביטול במודל ביטול
-function closeCancelModal() {
-  setShowCancelModal(false);
-  setCancelReason("");
-  setMsg({ type: "", text: "" });
-}
+  //מחיקת הודעות שגיה אם לחצתי כפתור ביטול במודל ביטול
+  function closeCancelModal() {
+    setShowCancelModal(false);
+    setCancelReason("");
+    setMsg({ type: "", text: "" });
+  }
 
   return (
     <div className={styles.page} dir="rtl">
@@ -207,7 +210,10 @@ function closeCancelModal() {
           </select>
         </div>
 
-        <button className={styles.addBtn}>
+        <button
+          className={styles.addBtn}
+          onClick={() => setShowCreateModal(true)}
+        >
           <FaPlus /> הוספת משימה
         </button>
       </div>
@@ -348,6 +354,15 @@ function closeCancelModal() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* מודאל יצירת משימה */}
+      {showCreateModal && (
+        <CreateTaskModal
+          mode="manual" //  חשוב! זה מנהל
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={fetchTasks} // רענון אחרי יצירה
+        />
       )}
     </div>
   );
