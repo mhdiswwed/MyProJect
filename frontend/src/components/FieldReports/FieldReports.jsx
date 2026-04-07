@@ -317,7 +317,7 @@ export default function FieldReports() {
                     {/* =========================
                        טופל
                      ========================= */}
-                    {r.status !== "טופל" && (
+                    {r.status === "חדש" && (
                       <button
                         className={styles.cancelBtn}
                         onClick={() => openDoneModal(r)}

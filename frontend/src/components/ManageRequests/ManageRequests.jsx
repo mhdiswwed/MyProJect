@@ -26,9 +26,8 @@ import {
   FaWhatsapp,
   FaUser,
   FaCar,
+  FaBell,
 } from "react-icons/fa";
-
-
 
 export default function ManageRequests() {
   /* =========================
@@ -106,6 +105,8 @@ export default function ManageRequests() {
     guide_id: "",
     change_reason: "",
   });
+  // שומר איזה שורה מודגשת אחרי לחיצה
+  const [highlightedId, setHighlightedId] = useState(null);
 
   /* =========================
    פרטי לקוח (פופאפ)
@@ -803,12 +804,116 @@ export default function ManageRequests() {
     },
   );
 
+  // =========================================
+  // חישוב התראות למנהל (מחר / מחרתיים בלבד)
+  // =========================================
+  const alerts = requests.filter((req) => {
+    const today = new Date();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    const dayAfterTomorrow = new Date();
+    dayAfterTomorrow.setDate(today.getDate() + 2);
+
+    const tripDate = new Date(req.trip_date);
+
+    // איפוס שעות להשוואה מדויקת
+    today.setHours(0, 0, 0, 0);
+    tomorrow.setHours(0, 0, 0, 0);
+    dayAfterTomorrow.setHours(0, 0, 0, 0);
+    tripDate.setHours(0, 0, 0, 0);
+
+    // בדיקה אם מחר או מחרתיים
+    const isRelevant =
+      tripDate.getTime() === tomorrow.getTime() ||
+      tripDate.getTime() === dayAfterTomorrow.getTime();
+
+    // רק בקשות שדורשות טיפול
+    const needsAttention = req.status === "ממתין" || req.cancel_requested === 1;
+
+    return isRelevant && needsAttention;
+  });
+
   return (
     <div className={styles.page} dir="rtl">
       <div className={styles.topBar}>
-        {/* כפתורי סינון */}
+        {/* כותרת*/}
         <div className={styles.topBarRow}>
           <h1 className={styles.title}>ניהול בקשות טיול</h1>
+          {/* =========================================
+          התראות דחופות למנהל
+          ========================================= */}
+          {alerts.length > 0 && (
+            <div className={styles.alertBox}>
+              {/* כותרת */}
+              <div className={styles.alertTitle}>
+                <FaBell /> יש לך {alerts.length} בקשות דחופות
+              </div>
+
+              {/* רשימת התראות */}
+              {alerts.map((req) => {
+                const today = new Date();
+                const tripDate = new Date(req.trip_date);
+
+                const diffDays = Math.ceil(
+                  (tripDate - today) / (1000 * 60 * 60 * 24),
+                );
+
+                // טקסט לפי סוג
+                let text = "";
+                // חותך שניות מהשעה (רק HH:MM)
+                const time = req.trip_time?.slice(0, 5);
+                if (req.cancel_requested === 1) {
+                  text =
+                    diffDays === 1
+                      ? `מחר יש בקשת ביטול לטיול שמתחיל בשעה ${time}`
+                      : `מחרתיים יש בקשת ביטול לטיול שמתחיל בשעה ${time}`;
+                } else {
+                  text =
+                    diffDays === 1
+                      ? `מחר יש בקשת טיול בשעה ${time}`
+                      : `מחרתיים יש בקשת טיול בשעה ${time}`;
+                }
+
+                return (
+                  <div
+                    key={req.request_id}
+                    className={`${styles.alertItem} ${
+                      req.cancel_requested === 1 ? styles.cancelAlert : ""
+                    }`}
+                    // בלחיצה גם גולל וגם מפעיל הבהוב
+                    onClick={() => {
+                      const id = req.request_id;
+
+                      const el = document.getElementById("req-" + id);
+
+                      if (el) {
+                        el.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                      }
+
+                      // מפעיל highlight
+                      setHighlightedId(id);
+
+                      // מבטל אחרי 3 שניות
+                      setTimeout(() => {
+                        setHighlightedId(null);
+                      }, 3000);
+                    }}
+                  >
+                    {/* שימוש באייקונים שלך */}
+                    {req.cancel_requested === 1 ? <FaExchangeAlt /> : <FaEye />}
+
+                    <span>{text}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div className={styles.statsRow}>
             {/* סך הכל */}
             <div className={styles.statBox}>
@@ -864,6 +969,7 @@ export default function ManageRequests() {
           </div>
         </div>
       </div>
+
       {/* טבלת הבקשות */}
       <table className={styles.table}>
         <thead>
@@ -889,20 +995,20 @@ export default function ManageRequests() {
             </tr>
           ) : (
             filteredRequests.map((req) => (
+              // מוסיף class אם זו השורה שנבחרה
               <tr
-                key={req.request_id} // מזהה ייחודי לכל שורה
-                className={(() => {
+                id={`req-${req.request_id}`}
+                key={req.request_id}
+                className={`${(() => {
                   const now = new Date();
                   const tripDate = new Date(req.trip_date);
 
-                  // מאפסים שעות כדי לא לקבל שברים
                   now.setHours(0, 0, 0, 0);
                   tripDate.setHours(0, 0, 0, 0);
 
                   const diffDays = (tripDate - now) / (1000 * 60 * 60 * 24);
 
                   const isUrgent = diffDays >= 0 && diffDays <= 2;
-
                   const isPending = req.status === "ממתין";
                   const isCancelRequest = req.cancel_requested === 1;
 
@@ -910,7 +1016,9 @@ export default function ManageRequests() {
                     isUrgent && (isPending || isCancelRequest);
 
                   return shouldBlink ? styles.urgentRow : "";
-                })()}
+                })()} ${
+                  highlightedId === req.request_id ? styles.highlightRow : ""
+                }`}
               >
                 <td>
                   {/* שם לקוח לחיץ */}
@@ -921,7 +1029,13 @@ export default function ManageRequests() {
                     {req.user_name}
                   </span>
                 </td>
-                <td>{req.trail_name}</td>
+                <td>
+                  <div className={styles.trailCell}>
+                    <div className={styles.trailName}>{req.trail_name}</div>
+
+                    <div className={styles.trailType}>{req.trail_type}</div>
+                  </div>
+                </td>
                 <td>
                   <div>
                     {req.trip_date
