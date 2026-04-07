@@ -153,6 +153,41 @@ router.get("/vat", (req, res) => {
   );
 });
 
+//=====================================
+// מחזיר קבוצה פעילה של משתמש במסלול (כך שהטטוס של ההדרכה "בהתהליך" ,זות אומרת שהקבוצה בשטח בפועל)
+//=====================================
+router.get("/my-active-group", (req, res) => {
+  const { user_id, trail_id } = req.query;
+
+  if (!user_id || !trail_id) {
+    return res.status(400).json({ message: "חסר מידע" });
+  }
+
+  const sql = `
+    SELECT g.group_id
+    FROM groups g
+    JOIN guidances gd ON g.group_id = gd.group_id
+    WHERE g.trail_id = ?
+    AND gd.status = 'בתהליך'
+    AND g.status = 'פעיל'
+    LIMIT 1
+  `;
+
+  db.query(sql, [trail_id], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "שגיאת שרת" });
+    }
+
+    if (!result.length) {
+      return res.json({ group_id: null });
+    }
+
+    res.json({ group_id: result[0].group_id });
+  });
+});
+
+
 // ==============================
 // מחזיר מסלול לפי ID
 // ==============================
@@ -175,6 +210,9 @@ router.get("/:id", (req, res) => {
     res.json(results[0]);
   });
 });
+
+
+
 
 // ==============================
 // יצירת בקשת הצטרפות

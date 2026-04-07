@@ -6,7 +6,7 @@
 import { FaArrowRight } from "react-icons/fa";
 import styles from "./trailNavigation.module.css";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -15,8 +15,12 @@ import API_BASE from "../../config/api";
 // ייבוא פונקציית format מספריית date-fns לעבודה תקינה עם תאריך ושעה
 import { format } from "date-fns";
 
+
 export default function TrailNavigation({ user }) {
-  const { id } = useParams();
+
+  const { id } = useParams(); // זה trail_id
+  const [searchParams] = useSearchParams();
+  const groupId = searchParams.get("groupId"); // יכול להיות null
   const navigate = useNavigate();
 
   const [trail, setTrail] = useState(null);
@@ -35,13 +39,13 @@ export default function TrailNavigation({ user }) {
      טעינת מסלול
   ===================================== */
   useEffect(() => {
-    fetch(`${API_BASE}/api/trailNavigation/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("שגיאה בטעינת מסלול");
-        return res.json();
-      })
-      .then((data) => setTrail(data))
-      .catch((err) => console.error(err));
+  fetch(`${API_BASE}/api/trailNavigation/${id}`)
+    .then((res) => {
+      if (!res.ok) throw new Error("שגיאה בטעינת מסלול");
+      return res.json();
+    })
+    .then((data) => setTrail(data))
+    .catch((err) => console.error(err));
   }, [id]);
 
   /* =====================================
@@ -107,7 +111,11 @@ export default function TrailNavigation({ user }) {
     formData.append("image", image); // חובה
 
     try {
-      const res = await fetch(`${API_BASE}/api/trailNavigation/${id}/report`, {
+      if (!groupId) {
+        setReportMsg({ type: "error", text: "שגיאה: לא ניתן לדווח - הקבוצה אינה פעילה כרגע בשטח , הדיווח זמין רק בזמן טיול פעיל" });
+        return;
+      }
+      const res = await fetch(`${API_BASE}/api/trailNavigation/${groupId}/report`, {
         method: "POST",
         credentials: "include",
         body: formData,

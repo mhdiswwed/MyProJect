@@ -550,3 +550,25 @@ small{
   font-size:12px;
   opacity:0.7;
 }
+
+/* מרכז את הכפתור */
+.modalActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+/* טקסט באמצע */
+.modalText {
+  text-align: center;
+}
+/* כפתור בסגנון שגיאה / "עצוב" */
+.dangerBtn {
+  background-color: #e74c3c; /* אדום */
+  color: white;
+}
+
+/* אפקט hover */
+.dangerBtn:hover {
+  background-color: #c0392b;
+}

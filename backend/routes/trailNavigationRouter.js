@@ -48,11 +48,32 @@ router.get("/:id", (req, res) => {
   });
 });
 
+router.get("/group/:groupId", (req, res) => {
+  const { groupId } = req.params;
+
+  const sql = `
+    SELECT t.*
+    FROM groups g
+    JOIN trails t ON g.trail_id = t.trail_id
+    WHERE g.group_id = ?
+  `;
+
+  db.query(sql, [groupId], (err, results) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+    if (!results.length) {
+      return res.status(404).json({ message: "המסלול לא נמצא" });
+    }
+
+    res.json(results[0]);
+  });
+});
+
 /* ==============================
    POST דיווח מהשטח (תמונה חובה)
 ============================== */
-router.post("/:id/report", upload.single("image"), (req, res) => {
-  const { id } = req.params;
+router.post("/:groupId/report", upload.single("image"), async (req, res) => {
+  const { groupId } = req.params;
 
   const { user_id, latitude, longitude, problem_type, description } = req.body;
 
@@ -61,7 +82,7 @@ router.post("/:id/report", upload.single("image"), (req, res) => {
   // התחברות
   if (!user_id) errors.push("צריך להתחבר");
 
-  // GPS חובה + מספרים תקינים
+  // GPS
   const lat = Number(latitude);
   const lng = Number(longitude);
 
@@ -75,7 +96,7 @@ router.post("/:id/report", upload.single("image"), (req, res) => {
   if (!problem_type) errors.push("חובה לבחור סוג בעיה");
   if (!description) errors.push("חובה להזין תיאור");
 
-  // תמונה חובה לפי הדרישות
+  // תמונה
   if (!req.file) errors.push("חובה לצרף תמונה");
 
   if (errors.length > 0) {
@@ -84,30 +105,70 @@ router.post("/:id/report", upload.single("image"), (req, res) => {
     });
   }
 
-  // בדיקה שהמסלול קיים לפני שמירת דיווח
-  const checkTrailSql = "SELECT trail_id FROM trails WHERE trail_id = ?";
-
-  db.query(checkTrailSql, [id], (err, trailResults) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "שגיאת שרת" });
+  try {
+    // בדיקה שהמשתמש שייך לקבוצה
+    const userCheck = await checkUserInGroup(user_id, groupId);
+    if (!userCheck.ok) {
+      return res.status(403).json({ message: userCheck.message });
     }
 
-    if (!trailResults.length) {
-      return res.status(404).json({ message: "המסלול לא נמצא" });
+    //  בדיקה שהטיול בתהליך
+    const activeCheck = await checkGuidanceActive(groupId);
+    if (!activeCheck.ok) {
+      return res.status(400).json({ message: activeCheck.message });
     }
+
+    //  בדיקת כמות דיווחים
+    const limitCheck = await checkReportLimit(user_id, groupId);
+    if (!limitCheck.ok) {
+      return res.status(400).json({ message: limitCheck.message });
+    }
+
+    //  בדיקת זמן
+    const timeCheck = await checkReportCooldown(user_id, groupId);
+    if (!timeCheck.ok) {
+      return res.status(400).json({ message: timeCheck.message });
+    }
+
+    //  שליפת trail_id מתוך group
+    const trailResult = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT trail_id FROM groups WHERE group_id = ?",
+        [groupId],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        },
+      );
+    });
+
+    if (!trailResult.length) {
+      return res.status(404).json({ message: "הטיול לא נמצא" });
+    }
+
+    const trail_id = trailResult[0].trail_id;
 
     const imagePath = `uploads/reports/${req.file.filename}`;
 
+    //  INSERT נכון
     const insertSql = `
       INSERT INTO reports
-      (user_id, trail_id, latitude, longitude, problem_type, description, image_path, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'חדש')
+      (user_id, trail_id, group_id, latitude, longitude, problem_type, description, image_path, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'חדש')
     `;
 
     db.query(
       insertSql,
-      [user_id, id, lat, lng, problem_type, description, imagePath],
+      [
+        user_id,
+        trail_id,
+        groupId,
+        lat,
+        lng,
+        problem_type,
+        description,
+        imagePath,
+      ],
       (err2) => {
         if (err2) {
           console.error(err2);
@@ -117,7 +178,133 @@ router.post("/:id/report", upload.single("image"), (req, res) => {
         res.json({ message: "הדיווח נשלח בהצלחה" });
       },
     );
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "שגיאת שרת" });
+  }
 });
+
+//=====================================
+// בדיקה שעברו לפחות 30 דקות מהדיווח האחרון
+//======================================
+function checkReportCooldown(user_id, group_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT report_time
+      FROM reports
+      WHERE user_id = ? AND group_id = ?
+      ORDER BY report_time DESC
+      LIMIT 1
+    `;
+
+    db.query(sql, [user_id, group_id], (err, result) => {
+      if (err) return reject(err);
+
+      // אם אין דיווח קודם
+      if (!result.length) {
+        return resolve({ ok: true });
+      }
+
+      const lastTime = new Date(result[0].report_time);
+      const now = new Date();
+
+      const diffMinutes = (now - lastTime) / (1000 * 60);
+
+      // אם לא עברו 30 דקות
+      if (diffMinutes < 30) {
+        return resolve({
+          ok: false,
+          message: "יש להמתין 30 דקות בין דיווחים",
+        });
+      }
+
+      resolve({ ok: true });
+    });
+  });
+}
+
+
+//===============================
+// בדיקה שלא עברנו 4 דיווחים בטיול
+//============================
+function checkReportLimit(user_id, group_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT COUNT(*) AS total
+      FROM reports
+      WHERE user_id = ? AND group_id = ?
+    `;
+
+    db.query(sql, [user_id, group_id], (err, result) => {
+      if (err) return reject(err);
+
+      // אם יש כבר 4 דיווחים
+      if (result[0].total >= 4) {
+        return resolve({
+          ok: false,
+          message: "הגעת למספר הדיווחים המקסימלי לטיול זה ( מקסימום 4 דווחים)",
+        });
+      }
+
+      resolve({ ok: true });
+    });
+  });
+}
+//===================================
+// בדיקה שהטיול מתבצע כרגע (בתהליך)
+//===================================
+function checkGuidanceActive(group_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT guidance_id
+      FROM guidances
+      WHERE group_id = ? AND status = 'בתהליך'
+      LIMIT 1
+    `;
+
+    db.query(sql, [group_id], (err, result) => {
+      if (err) return reject(err);
+
+      // אם אין טיול שמתבצע כרגע
+      if (!result.length) {
+        return resolve({
+          ok: false,
+          message: "ניתן לדווח רק בזמן שהטיול מתבצע בפועל",
+        });
+      }
+
+      resolve({ ok: true });
+    });
+  });
+}
+
+//=====================================
+// בדיקה שהמשתמש שייך לקבוצה
+//=====================================
+function checkUserInGroup(user_id, group_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT g.group_id
+      FROM groups g
+      JOIN trip_requests tr ON g.request_id = tr.request_id
+      WHERE g.group_id = ?
+      AND (g.guide_id = ? OR tr.user_id = ?)
+    `;
+
+    db.query(sql, [group_id, user_id, user_id], (err, result) => {
+      if (err) return reject(err);
+
+      // אם המשתמש לא שייך לקבוצה
+      if (!result.length) {
+        return resolve({
+          ok: false,
+          message: "אין לך הרשאה לדווח על טיול זה",
+        });
+      }
+
+      resolve({ ok: true });
+    });
+  });
+}
 
 module.exports = router;

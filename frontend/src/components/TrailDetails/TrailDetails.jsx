@@ -69,6 +69,11 @@ export default function TrailDetails({ user }) {
   // ערך המע״מ מהמערכת
   const [vat, setVat] = useState(0);
 
+  // state לשמירת מזהה הקבוצה הפעילה של המשתמש במסלול
+  const [groupId, setGroupId] = useState(null);
+
+
+
   // שליפת המע״מ מהשרת
   useEffect(() => {
     fetch(`${API_BASE}/api/TrailDetailsAndrequests/vat`)
@@ -80,6 +85,28 @@ export default function TrailDetails({ user }) {
       })
       .catch(() => console.log("שגיאה בשליפת המע״מ"));
   }, []);
+
+  /* =====================================
+   שליפת קבוצה פעילה של המשתמש במסלול
+   אם יש טיול פעיל → נקבל group_id
+   אם אין → נקבל null
+===================================== */
+  useEffect(() => {
+    // אם אין משתמש מחובר – אין מה לבדוק
+    if (!user) return;
+
+    fetch(
+      `${API_BASE}/api/TrailDetailsAndrequests/my-active-group?user_id=${user.user_id}&trail_id=${id}`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        // שמירת מזהה הקבוצה (יכול להיות גם null)
+        setGroupId(data.group_id);
+      })
+      .catch(() => {
+        console.log("שגיאה בשליפת קבוצה פעילה");
+      });
+  }, [user, id]);
 
   // ===============================
   // שליפת מדריכים פנויים לפי בחירה
@@ -293,13 +320,21 @@ export default function TrailDetails({ user }) {
             <p className={styles.noMap}>לא קיימת מפת מסלול</p>
           )}
         </section>
-
         {/* כפתור ניווט בשטח */}
         {hasTrackFile && (
           <div className={styles.navigationBtnWrapper}>
             <button
               className={styles.navigationBtn}
-              onClick={() => navigate(`/trail-navigation/${trail.trail_id}`)}
+              onClick={() => {
+                // תמיד ניווט לפי מסלול
+                if (groupId) {
+                  navigate(
+                    `/trail-navigation/${trail.trail_id}?groupId=${groupId}`,
+                  );
+                } else {
+                  navigate(`/trail-navigation/${trail.trail_id}`);
+                }
+              }}
             >
               התחל ניווט בשטח
             </button>

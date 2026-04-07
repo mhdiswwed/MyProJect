@@ -168,7 +168,7 @@ const [image, setImage] = useState(report?.image_path || "");
     if (errors.length > 0) {
       setMsg({
         type: "error",
-        text: errors.join(" וגם "), // 🔥 מחבר הכל להודעה אחת
+        text: errors.join(" וגם "), //  מחבר הכל להודעה אחת
       });
       return;
     }
@@ -195,10 +195,9 @@ try {
   formData.append("report_id", mode === "report" ? report.report_id : "");
   formData.append("latitude", mode === "report" ? report.latitude : "");
   formData.append("longitude", mode === "report" ? report.longitude : "");
-  formData.append(
-    "trail_id",
-    mode === "manual" ? selectedTrail : report?.trail_id,
-  );
+ if (mode === "manual" && selectedTrail) {
+   formData.append("trail_id", selectedTrail);
+ }
   formData.append("workers", JSON.stringify(selectedWorkers));
 
   const res = await fetch(`${API_BASE}/api/CreateTaskModal/tasks`, {
