@@ -8,6 +8,8 @@ import CreateTaskModal from "../CreateTaskModal/CreateTaskModal";
 import API_BASE from "../../config/api";
 // קומפוננטה להצגת פרטי משימה במודאל (צד מנהל)
 import TaskDetailsModalAdmin from "../TaskDetailsModalAdmin/TaskDetailsModalAdmin";
+// קומפוננטת בקרה על ביצוע משימה
+import TaskControlPanel from "../TaskControlPanel/TaskControlPanel";
 
 // אייקונים
 import {
@@ -17,6 +19,7 @@ import {
   FaCalendarAlt,
   FaClock,
   FaPlay,
+  FaChartBar,
 } from "react-icons/fa";
 
 export default function TaskManagement() {
@@ -48,6 +51,8 @@ export default function TaskManagement() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   // האם להציג מודאל פרטי משימה
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  // מודאל בקרה
+  const [showControlModal, setShowControlModal] = useState(false);
 
   //===========================
   // שליפת משימות מהשרת
@@ -160,6 +165,14 @@ export default function TaskManagement() {
   function openDetailsModal(task) {
     setSelectedTask(task); // שומר את המשימה שנלחצה
     setShowDetailsModal(true); // פותח את המודאל
+  }
+
+  /**
+   * פתיחת מודאל בקרה על משימה
+   */
+  function openControlModal(task) {
+    setSelectedTask(task); // שומר את המשימה
+    setShowControlModal(true); // פותח מודאל
   }
   return (
     <div className={styles.page} dir="rtl">
@@ -314,7 +327,10 @@ export default function TaskManagement() {
                 {/* בקרה */}
                 <td>
                   {(t.status === "בוצעה" || t.status === "בוטלה") && (
-                    <FaEye className={styles.iconBtn} />
+                    <FaChartBar
+                      className={styles.iconBtn}
+                      onClick={() => openControlModal(t)} // פתיחת בקרה
+                    />
                   )}
                 </td>
 
@@ -385,6 +401,14 @@ export default function TaskManagement() {
         <TaskDetailsModalAdmin
           task={selectedTask} // מעביר את המשימה שנבחרה
           onClose={() => setShowDetailsModal(false)} // סגירה
+        />
+      )}
+
+      {/* מודאל בקרה על ביצוע */}
+      {showControlModal && selectedTask && (
+        <TaskControlPanel
+          task={selectedTask} // מעביר את המשימה
+          onClose={() => setShowControlModal(false)} // סגירה
         />
       )}
     </div>

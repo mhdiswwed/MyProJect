@@ -109,6 +109,62 @@ router.get("/:taskId/workers", (req, res) => {
   });
 });
 
+/**
+ * =========================================
+ * GET
+ * שליפת ביצועי משימה (בקרה)
+ * =========================================
+ */
+router.get("/:taskId/executions", (req, res) => {
+  const { taskId } = req.params;
+
+  const sql = `
+    SELECT
+      te.execution_id,
+
+      -- פרטי עובד
+      u.user_id,
+      u.full_name,
+      u.phone,
+      u.email,
+
+      -- תפקיד במשימה
+      tw.role,
+
+      -- זמני ביצוע בפועל
+      te.start_time,
+      te.end_time,
+
+      -- הערות + תמונה
+      te.note,
+      te.image
+
+    FROM task_executions te
+
+    -- חיבור לעובד
+    JOIN users u
+      ON u.user_id = te.user_id
+
+    -- חיבור לתפקיד העובד במשימה
+    LEFT JOIN task_workers tw
+      ON tw.task_id = te.task_id
+      AND tw.user_id = te.user_id
+
+    WHERE te.task_id = ?
+  `;
+
+  db.query(sql, [taskId], (err, results) => {
+    if (err) {
+      console.error("שגיאה בשליפת ביצועים:", err);
+      return res.status(500).json({
+        message: "שגיאה בשליפת ביצועים",
+      });
+    }
+
+    res.json(results);
+  });
+});
+
 
 /**
  * =========================================

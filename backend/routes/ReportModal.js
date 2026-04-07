@@ -16,16 +16,8 @@ const db = dbSingleton.getConnection();
  */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const { task_id, user_id } = req.body;
+    const dir = path.join(__dirname, "../uploads/reports");
 
-    // יצירת נתיב לפי משימה + עובד
-    const dir = path.join(
-      __dirname,
-      "../uploads/reports",
-      `${task_id}_${user_id}`,
-    );
-
-    // יצירת תיקייה אם לא קיימת
     fs.mkdirSync(dir, { recursive: true });
 
     cb(null, dir);
@@ -51,7 +43,7 @@ router.post("/report", upload.single("image"), (req, res) => {
 
   // בניית נתיב תמונה אם קיימת
   const imagePath = req.file
-    ? `/uploads/reports/${task_id}_${user_id}/${req.file.filename}`
+    ? `/uploads/reports/${req.file.filename}`
     : null;
 
   // עדכון הרשומה הקיימת של הביצוע
