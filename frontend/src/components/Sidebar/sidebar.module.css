@@ -6,7 +6,7 @@
   width: 260px;
   min-width: 200px;  /* 🔥 לא יקטן */
   max-width: 200px;  /* 🔥 לא יגדל */
-
+margin-top: 18px;
   flex-shrink: 0;    /* 🔥 לא יתכווץ בתוך flex */
 
   display: flex;
@@ -79,4 +79,66 @@ white-space: nowrap;
 .active svg {
   color: white;
   flex-shrink: 0;
+}
+
+/* ================================
+   Header (Top of Sidebar)
+================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 25px 24px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* טקסטים */
+.texts {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* כותרת ראשית */
+.mainTitle {
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+/* תת כותרת */
+.subTitle {
+    white-space: nowrap;
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+/* אייקון */
+.logo {
+  width: 45px;
+  height: 45px;
+
+
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+}
+
+/* תמונה בתוך האייקון */
+.logo img {
+  width: 42px;
+  height: 45px;
+}
+
+.links {
+  flex: 1; /* 🔥 זה הקסם */
+  display: flex;
+  flex-direction: column;
 }

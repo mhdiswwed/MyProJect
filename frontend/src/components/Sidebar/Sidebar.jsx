@@ -6,6 +6,8 @@
 
 import { NavLink } from "react-router-dom";
 import styles from "./sidebar.module.css";
+import logo from "../../assets/removebg-preview.png";
+import ServerStatus from "../ServerStatus/ServerStatus";
 
 /* ================================
    אייקונים
@@ -26,106 +28,116 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       {/* כותרת */}
-      <h2 className={styles.title}>לוח בקרה</h2>
+      <div className={styles.header}>
+        <div className={styles.logo}>
+          <img src={logo} alt="Trail Quest" />
+        </div>
+        <div className={styles.texts}>
+          <span className={styles.mainTitle}>מערכת ניהול</span>
+          <span className={styles.subTitle}>מסלולי טיולים</span>
+        </div>
+      </div>
+      <div className={styles.links}>
+        {/* לוח בקרה */}
+        <NavLink
+          to="/admin/dashboard"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiHome />
+          לוח בקרה
+        </NavLink>
 
-      {/* לוח בקרה */}
-      <NavLink
-        to="/admin/dashboard"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiHome />
-        לוח בקרה
-      </NavLink>
+        {/* בקשות */}
+        <NavLink
+          to="/admin/ManageRequests"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiClipboard />
+          בקשות ליציאה לטיול
+        </NavLink>
 
-      {/* בקשות */}
-      <NavLink
-        to="/admin/ManageRequests"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiClipboard />
-        בקשות ליציאה לטיול
-      </NavLink>
+        {/* מסלולים */}
+        <NavLink
+          to="/admin/ManagementTrails"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiMap />
+          ניהול מסלולים
+        </NavLink>
 
-      {/* מסלולים */}
-      <NavLink
-        to="/admin/ManagementTrails"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiMap />
-        ניהול מסלולים
-      </NavLink>
+        {/* הדרכות*/}
+        <NavLink
+          to="/admin/ManageGuidances"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiUserCheck />
+          ניהול הדרכות
+        </NavLink>
 
-      {/* הדרכות*/}
-      <NavLink
-        to="/admin/ManageGuidances"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiUserCheck />
-        ניהול הדרכות
-      </NavLink>
+        {/* קבוצות */}
+        <NavLink
+          to="/admin/ManageGroups/"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiUsers />
+          ניהול קבוצות
+        </NavLink>
 
-      {/* קבוצות */}
-      <NavLink
-        to="/admin/ManageGroups/"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiUsers />
-        ניהול קבוצות
-      </NavLink>
+        {/* דיווחים */}
+        <NavLink
+          to="/admin/FieldReports"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiFileText />
+          דיווחים מהשטח
+        </NavLink>
 
-      {/* דיווחים */}
-      <NavLink
-        to="/admin/FieldReports"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiFileText />
-        דיווחים מהשטח
-      </NavLink>
+        {/* משימות */}
+        <NavLink
+          to="/admin/TaskManagement"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiCheckSquare />
+          ניהול משימות
+        </NavLink>
 
-      {/* משימות */}
-      <NavLink
-        to="/admin/TaskManagement"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiCheckSquare />
-        ניהול משימות
-      </NavLink>
+        {/* משתמשים */}
+        <NavLink
+          to="/admin/UsersManagement"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiUsers />
+          ניהול משתמשים
+        </NavLink>
 
-      {/* משתמשים */}
-      <NavLink
-        to="/admin/UsersManagement"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiUsers />
-        ניהול משתמשים
-      </NavLink>
-
-      {/* הגדרות */}
-      <NavLink
-        to="/admin/SystemSettings"
-        className={({ isActive }) =>
-          isActive ? `${styles.link} ${styles.active}` : styles.link
-        }
-      >
-        <FiSettings />
-        הגדרות המערכת
-      </NavLink>
+        {/* הגדרות */}
+        <NavLink
+          to="/admin/SystemSettings"
+          className={({ isActive }) =>
+            isActive ? `${styles.link} ${styles.active}` : styles.link
+          }
+        >
+          <FiSettings />
+          הגדרות המערכת
+        </NavLink>
+      </div>
+      <ServerStatus />
     </aside>
   );
 }

@@ -121,6 +121,12 @@ app.use("/api/MyTasks", MyTasks);
 app.use("/api/ReportModal", ReportModal);
 app.use("/api/TaskManagement", TaskManagement);
 
+/* ==========================================================
+   health check (בדיקת שרת)
+========================================================== */
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 /* ==========================================================
    404
