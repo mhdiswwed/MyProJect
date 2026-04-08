@@ -24,9 +24,10 @@ export default function Header({ user, onLogout }) {
   // פונקציה שבודקת אם הנתיב הנוכחי שווה לנתיב שנשלח אליה
   // משמשת כדי להדגיש את העמוד הפעיל בתפריט
   function isActive(path) {
-    return location.pathname === path;
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
   }
-
   // שליפת התפקיד של המשתמש (אם קיים)
   const role = user?.role;
 
@@ -49,7 +50,7 @@ export default function Header({ user, onLogout }) {
     // Redirect user according to role
     switch (user.role) {
       case "מנהל":
-        navigate("/admin");
+        navigate("/admin/dashboard");
         break;
 
       case "נציג קבוצה":
@@ -102,13 +103,13 @@ export default function Header({ user, onLogout }) {
             ?מי אנחנו
           </button>
 
-          {/* כפתור ההדרכות שלי יוצג רק אם המשתמש מדריך */}
+          {/* כפתור ניהול מערכת יוצג רק אם המשתמש  מנהל */}
           {isAdmin && (
             <button
               className={`${styles.navBtn} ${
                 isActive("/admin") ? styles.active : ""
               }`}
-              onClick={() => navigate("/admin")}
+              onClick={() => navigate("/admin/dashboard")}
             >
               ניהול המערכת
             </button>

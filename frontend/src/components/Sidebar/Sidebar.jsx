@@ -7,6 +7,7 @@
 import { NavLink } from "react-router-dom";
 import styles from "./sidebar.module.css";
 import logo from "../../assets/removebg-preview.png";
+// מביא קומפוננטת רכיב סטטוס שרת לסרגל הצד עם בדיקת תקינות השרת" 
 import ServerStatus from "../ServerStatus/ServerStatus";
 
 /* ================================
@@ -40,7 +41,7 @@ export default function Sidebar() {
       <div className={styles.links}>
         {/* לוח בקרה */}
         <NavLink
-          to="/admin/dashboard"
+          to="/admin/Dashboard"
           className={({ isActive }) =>
             isActive ? `${styles.link} ${styles.active}` : styles.link
           }
@@ -137,6 +138,8 @@ export default function Sidebar() {
           הגדרות המערכת
         </NavLink>
       </div>
+
+      {/*רכיב סטטוס שרת בודיק תקינות השרת*/}
       <ServerStatus />
     </aside>
   );

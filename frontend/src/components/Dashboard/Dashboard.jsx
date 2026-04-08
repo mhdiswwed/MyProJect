@@ -1,59 +1,52 @@
-/**
- * Dashboard.jsx
- * ------------------------------------------------
- * קומפוננטת לוח הבקרה של המנהל
- *
- * תפקיד הקומפוננטה:
- * - להציג נתונים מרכזיים על פעילות המערכת
- * - להציג סטטיסטיקות למנהל בצורה מהירה וברורה
- *
- * דוגמאות לנתונים המוצגים:
- * - מספר בקשות פתוחות לטיול
- * - מספר טיולים פעילים
- * - מספר דיווחים חדשים מהשטח
- * - מספר משימות פתוחות
- * - מספר מסלולים פעילים
- * - מספר טיולים קרובים
- *
- * בעתיד ניתן לחבר נתונים אלו לבסיס הנתונים
- * באמצעות קריאות API מהשרת
- */
+import { useEffect, useState } from "react";
+import styles from "./Dashboard.module.css";
+import API_BASE from "../../config/api";
 
-import styles from "./dashboard.module.css";
+// קומפוננטות
+import StatsCards from "./components/StatsCards";
+import RequestsAndTasks from "./components/RequestsAndTasks";
+import ReportsTable from "./components/ReportsTable";
+import ChartsSection from "./components/ChartsSection";
 
 export default function Dashboard() {
+  // נתונים מהשרת
+  const [data, setData] = useState(null);
+
+  /**
+   * =========================================
+   * טעינת נתונים מהשרת
+   * =========================================
+   */
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  async function loadDashboard() {
+    try {
+      const res = await fetch(`${API_BASE}/api/dashboard`);
+      const json = await res.json();
+
+      setData(json);
+    } catch (err) {
+      console.error("שגיאה בדשבורד:", err);
+    }
+  }
+
+  if (!data) return <div className={styles.page}>טוען...</div>;
+
   return (
-    <div className={styles.dashboard}>
-      {/* כרטיס סטטיסטיקה */}
-      <div className={styles.card}>
-        <h3>בקשות פתוחות</h3>
-        <h1>3</h1>
-      </div>
+    <div className={styles.page} dir="rtl">
+      {/* כרטיסים עליונים */}
+      <StatsCards stats={data.stats} />
 
-      <div className={styles.card}>
-        <h3>טיולים פעילים</h3>
-        <h1>1</h1>
-      </div>
+      {/* גרפים*/}
+      <ChartsSection />
 
-      <div className={styles.card}>
-        <h3>דיווחים חדשים</h3>
-        <h1>2</h1>
-      </div>
+      {/* אזור אמצעי */}
+      <RequestsAndTasks requests={data.requests} tasks={data.tasks} />
 
-      <div className={styles.card}>
-        <h3>משימות פתוחות</h3>
-        <h1>4</h1>
-      </div>
-
-      <div className={styles.card}>
-        <h3>מסלולים פעילים</h3>
-        <h1>7</h1>
-      </div>
-
-      <div className={styles.card}>
-        <h3>טיולים קרובים</h3>
-        <h1>2</h1>
-      </div>
+      {/* טבלה תחתונה */}
+      <ReportsTable requests={data.requests} />
     </div>
   );
 }

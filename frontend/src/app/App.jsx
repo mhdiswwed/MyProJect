@@ -50,6 +50,7 @@ import RequireRole from "../components/RequireRole/RequireRole";
 import ManageGroups from "../components/ManageGroups/ManageGroups";
 import FieldReports from "../components/FieldReports/FieldReports";
 import TaskManagement from "../components/TaskManagement/TaskManagement";
+import Dashboard from "../components/Dashboard/Dashboard";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -160,30 +161,6 @@ export default function App() {
           />
           {/* פרופיל – רק למשתמש מחובר */}
           <Route
-            path="/profile"
-            element={
-              <RequireAuth isAuth={isAuth}>
-                <DataUpdate />
-              </RequireAuth>
-            }
-          />
-
-          {/* כל נתיב לא קיים */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-          {/* נתיב הקפתור של ההליכה במסלול כולל דיווח לפי מיקום*/}
-          <Route
-            path="/trail-navigation/:id"
-            element={<TrailNavigation user={user} />}
-          />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          {/* ראוטר הבקשות של המשתמש */}
-          <Route path="/myRequests" element={<MyRequests user={user} />} />
-          {/* ראוטר הדיווחים של המשתמש */}
-          <Route path="/myReports" element={<MyReports user={user} />} />
-
-          {/* ראוטר של מנהל – ניהול מסלולי טיול */}
-          {/* אזור ניהול – רק למנהל */}
-          <Route
             path="/admin"
             element={
               <RequireRole user={user} allowedRoles={["מנהל"]}>
@@ -191,26 +168,26 @@ export default function App() {
               </RequireRole>
             }
           >
-            {/* ניהול מסלולים */}
+            {/* ברירת מחדל - כשנכנסים ל /admin */}
+            <Route index element={<Navigate to="Dashboard" replace />} />
+
+            {/* לוח בקרה */}
+            <Route path="Dashboard" element={<Dashboard />} />
+
+            {/* שאר הראוטים */}
             <Route path="ManagementTrails" element={<ManagementTrails />} />
-            {/* הגדרות המערכת */}
             <Route path="SystemSettings" element={<SystemSettings />} />
-            {/*ניהול בקשה ליציאה לטיול*/}
             <Route path="ManageRequests" element={<ManageRequests />} />
-            {/*ניהול משתמשים*/}
             <Route
               path="UsersManagement"
               element={<UsersManagement currentUser={user} />}
             />
-            {/*ניהול הדרכות*/}
             <Route path="ManageGuidances" element={<ManageGuidances />} />
-            {/*ניהול קבוצות*/}
             <Route path="ManageGroups" element={<ManageGroups />} />
-            {/*ניהול דיווחים מהשטח*/}
             <Route path="FieldReports" element={<FieldReports />} />
-            {/*ניהול משימות*/}
             <Route path="TaskManagement" element={<TaskManagement />} />
           </Route>
+          
 
           {/* אזורר מדריך רק אם מדריך מחובר */}
           <Route

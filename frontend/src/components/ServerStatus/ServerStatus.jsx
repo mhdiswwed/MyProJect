@@ -1,3 +1,8 @@
+/*==========================================
+קומפוננטת רכיב סטטוס שרת לסרגל הצד (צד המנהל) עם בדיקת תקינות השרת" 
+מתחבר לSidebar
+========================================== */
+
 import { useEffect, useState } from "react";
 import styles from "./serverStatus.module.css"; // ייבוא המודול
 import API_BASE from "../../config/api";

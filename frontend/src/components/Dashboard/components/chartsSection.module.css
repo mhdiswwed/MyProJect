@@ -1,0 +1,131 @@
+/**
+------------------------------------------------
+קונטיינר ראשי של כל הגרפים
+------------------------------------------------
+*/
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 24px;
+  margin-bottom: 34px;
+
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/**
+------------------------------------------------
+כרטיס בודד של גרף
+------------------------------------------------
+*/
+
+.card {
+  min-width: 0;
+  width: 100%;
+
+  padding: 18px 18px 10px 18px;
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 27, 39, 0.96) 0%,
+      rgba(13, 18, 28, 0.96) 100%
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  backdrop-filter: blur(12px);
+
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 26px 55px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/**
+------------------------------------------------
+חלק עליון של הכרטיס
+------------------------------------------------
+*/
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.cardSubTitle {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/**
+------------------------------------------------
+אזור הגרף
+------------------------------------------------
+*/
+
+.chartWrapper {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/**
+------------------------------------------------
+תיקון מיוחד ל-ApexCharts
+------------------------------------------------
+*/
+
+.chartWrapper :global(.apexcharts-canvas),
+.chartWrapper :global(.apexcharts-svg),
+.chartWrapper :global(.apexcharts-inner) {
+  max-width: 100% !important;
+}
+
+.chartWrapper :global(.apexcharts-canvas) {
+  margin: 0 auto !important;
+}
+
+/**
+------------------------------------------------
+רספונסיביות
+------------------------------------------------
+*/
+
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+}

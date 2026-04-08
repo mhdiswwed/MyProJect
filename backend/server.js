@@ -34,6 +34,7 @@ const CreateTaskModal = require("./routes/CreateTaskModal");
 const MyTasks = require("./routes/MyTasks");
 const ReportModal = require("./routes/ReportModal");
 const TaskManagement = require("./routes/TaskManagement");
+const dashboard = require("./routes/dashboard");
 
 
 
@@ -120,6 +121,7 @@ app.use("/api/CreateTaskModal", CreateTaskModal);
 app.use("/api/MyTasks", MyTasks);
 app.use("/api/ReportModal", ReportModal);
 app.use("/api/TaskManagement", TaskManagement);
+app.use("/api/dashboard", dashboard);
 
 /* ==========================================================
    health check (בדיקת שרת)
