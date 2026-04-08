@@ -161,6 +161,31 @@ export default function App() {
           />
           {/* פרופיל – רק למשתמש מחובר */}
           <Route
+            path="/profile"
+            element={
+              <RequireAuth isAuth={isAuth}>
+                <DataUpdate />
+              </RequireAuth>
+            }
+          />
+
+          {/* כל נתיב לא קיים */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* נתיב הקפתור של ההליכה במסלול כולל דיווח לפי מיקום*/}
+          <Route
+            path="/trail-navigation/:id"
+            element={<TrailNavigation user={user} />}
+          />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          {/* ראוטר הבקשות של המשתמש */}
+          <Route path="/myRequests" element={<MyRequests user={user} />} />
+          {/* ראוטר הדיווחים של המשתמש */}
+          <Route path="/myReports" element={<MyReports user={user} />} />
+
+          {/* ראוטר של מנהל – ניהול מסלולי טיול */}
+          {/* אזור ניהול – רק למנהל */}
+          {/* פרופיל – רק למשתמש מחובר */}
+          <Route
             path="/admin"
             element={
               <RequireRole user={user} allowedRoles={["מנהל"]}>
@@ -187,7 +212,6 @@ export default function App() {
             <Route path="FieldReports" element={<FieldReports />} />
             <Route path="TaskManagement" element={<TaskManagement />} />
           </Route>
-          
 
           {/* אזורר מדריך רק אם מדריך מחובר */}
           <Route
