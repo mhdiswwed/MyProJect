@@ -584,9 +584,8 @@ tr:hover{
 }
 
 .topBarRow h1{
-  white-space: nowrap; /* לא יורד שורה */
-  margin:30px;
-  margin-left:auto;
+   white-space: nowrap; /* לא יורד שורה */
+  margin-left: auto;
 
 }
 .filterBox{

@@ -2,7 +2,13 @@
   padding: 32px;
   color: white;
 }
-
+/* ===============================
+   כותרת
+=============================== */
+.title{
+  font-size:32px;
+  margin-bottom:2px;
+}
 /* ======================
    כותרת עליונה
 ====================== */
@@ -14,28 +20,21 @@
 }
 
 .topBar h1 {
-  font-size:32px;
-  margin-bottom:30px;
-
-  margin-top:10px;
+   white-space: nowrap; /* לא יורד שורה */
+  margin-left: auto;
 }
 
 /* ======================
    כפתור הוספה
 ====================== */
 .addBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.25);
-  background: rgba(0,0,0,.35);
+  background: #22c55e;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
   color: white;
-  font-weight: 600;
   cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: .2s;
+  
 }
 
 .addBtn:hover {
@@ -753,4 +752,29 @@ small{
 
 .statBox{
   box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+/* שורת חיפוש + כפתור */
+.actionsRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:20px 0;
+}
+
+/* עטיפה לחיפוש */
+.filters{
+  display:flex;
+}
+
+/* שדה חיפוש */
+.search{
+  width:220px;
+  padding:10px 14px;
+
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.25);
+
+  background:rgba(0,0,0,.35);
+  color:white;
 }

@@ -5,7 +5,14 @@
 import { useEffect, useState } from "react";
 import styles from "./managementTrails.module.css";
 // אייקונים לכפתורים
-import { FaPlus, FaTrash, FaEdit, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaPlus,
+  FaTrash,
+  FaEdit,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import API_BASE from "../../config/api";
 
 export default function ManagementTrails() {
@@ -95,8 +102,7 @@ export default function ManagementTrails() {
     (t.trail_name || "").toLowerCase().includes(search.toLowerCase()),
   );
 
-
-//================================
+  //================================
   // useEffect שמתעדכן בכל שינוי גודל מסך
   //==============================
   useEffect(() => {
@@ -125,7 +131,6 @@ export default function ManagementTrails() {
     // ניקוי מאזין כשהקומפוננטה נסגרת (חשוב מאוד)
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
 
   // =========================
   // חישוב העמוד הנוכחי
@@ -366,7 +371,7 @@ export default function ManagementTrails() {
             {msg.text}
           </div>
         )}
-        <h1>ניהול מסלולים</h1>
+        <h1 className={styles.title}>ניהול מסלולים</h1>
         <div className={styles.statsRow}>
           {/* סה״כ */}
           <div className={styles.statBox}>
@@ -398,17 +403,8 @@ export default function ManagementTrails() {
             <div className={styles.statLabel}>סוסים</div>
           </div>
         </div>
+        {/*כפתור מוחק כל המסלולים לא בשימוש כרגע */}
         <div className={styles.buttonsRow}>
-          <button
-            className={styles.addBtn}
-            onClick={() => {
-              setEditingTrail(null);
-              setShowModal(true);
-            }}
-          >
-            <FaPlus /> הוספה
-          </button>
-
           {/*<button
             className={styles.addBtn}
             onClick={() => {
@@ -422,21 +418,32 @@ export default function ManagementTrails() {
             <FaTrash /> מחק הכל
           </button>*/}
         </div>
+        {/* חיפוש + כפתור כמו בניהול משימות */}
+        <div className={styles.actionsRow}>
+          {/* חיפוש */}
+          <div className={styles.filters}>
+            <input
+              type="text"
+              placeholder="חיפוש לפי שם מסלול..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className={styles.search}
+            />
+          </div>
 
-        {/* ======================
-שדה חיפוש באמצע מתחת לכותרת
-====================== */}
-        <div className={styles.searchWrapper}>
-          <input
-            type="text"
-            placeholder="חיפוש לפי שם מסלול..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
+          {/* כפתור הוספה */}
+          <button
+            className={styles.addBtn}
+            onClick={() => {
+              setEditingTrail(null);
+              setShowModal(true);
             }}
-            className={styles.search}
-          />
+          >
+            <FaPlus /> הוספת מסלול
+          </button>
         </div>
       </div>
 
