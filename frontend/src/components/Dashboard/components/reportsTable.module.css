@@ -99,21 +99,7 @@
   align-self: center; /* 🔥 שיהיה באמצע בצד */
 }
 
-/* צבעים */
-.חדש {
-  background: rgba(255, 0, 0, 0.2);
-  color: red;
-}
 
-.בטיפול {
-  background: rgba(255, 165, 0, 0.2);
-  color: orange;
-}
-
-.טופל {
-  background: rgba(0, 255, 0, 0.2);
-  color: #00ff88;
-}
 
 /* דחוף - אדום */
 .urgent {
@@ -129,7 +115,7 @@
 
 /* סכנה - אדום */
 .iconDanger {
-  color: #ef4444;
+  color: #e6ef44;
 }
 
 /* חסימה - כתום */

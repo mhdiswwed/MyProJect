@@ -169,8 +169,7 @@ export default function App() {
             }
           />
 
-          {/* כל נתיב לא קיים */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+     
           {/* נתיב הקפתור של ההליכה במסלול כולל דיווח לפי מיקום*/}
           <Route
             path="/trail-navigation/:id"

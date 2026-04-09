@@ -10,6 +10,76 @@ const db = dbSingleton.getConnection();
 const multer = require("multer");
 const path = require("path");
 
+// ===============================
+// שליחת מייל דחוף למנהל על דיווח סכנה
+// ===============================
+const nodemailer = require("nodemailer");
+
+// שימוש ב-ENV כמו בקובץ auth.js
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+async function sendDangerReportEmail({
+  description,
+  imagePath,
+  reportTime,
+  fullName,
+  phone,
+  email,
+}) {
+  //  שולח ללוגין בלבד (כמו שסיכמנו)
+  const link = `http://localhost:3000/login`;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: "mhdi.swwed1996+admin@gmail.com",
+    subject: "🚨 דיווח חדש מהשטח - סכנה",
+
+    html: `
+<div dir="rtl" style="font-family:Arial;text-align:right;line-height:1.6">
+
+  <h2 style="color:red;">🚨 דיווח חדש מהשטח - סכנה</h2>
+
+  <p><b>שם המדווח:</b> ${fullName}</p>
+
+  <p><b>טלפון:</b> 
+    <a href="tel:${phone}">${phone}</a>
+  </p>
+
+  <p><b>אימייל:</b> ${email}</p>
+
+  <hr/>
+
+  <p><b>תיאור:</b><br>${description}</p>
+
+  <p><b>זמן דיווח:</b> ${reportTime}</p>
+
+  <p>
+    <img src="http://localhost:3001/${imagePath}" 
+         style="width:250px;border-radius:8px;"/>
+  </p>
+
+  <a href="${link}" 
+     style="display:inline-block;
+            margin-top:10px;
+            padding:10px 18px;
+            background:#2563eb;
+            color:white;
+            text-decoration:none;
+            border-radius:6px;">
+    התחבר למערכת
+  </a>
+
+</div>
+`,
+  });
+}
+
 /* ==============================
    Multer – שמירת תמונות
 ============================== */
@@ -180,27 +250,24 @@ router.post("/:groupId/report", upload.single("image"), async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'חדש')
     `;
 
-    db.query(
-      insertSql,
-      [
-        user_id,
-        trail_id,
-        groupId,
-        lat,
-        lng,
-        problem_type,
-        description,
-        imagePath,
-      ],
-      (err2) => {
-        if (err2) {
-          console.error(err2);
-          return res.status(500).json({ message: "שגיאת שרת" });
-        }
+db.query(
+  insertSql,
+  [user_id, trail_id, groupId, lat, lng, problem_type, description, imagePath],
+  async (err2) => {
+    if (err2) {
+      console.error(err2);
+      return res.status(500).json({ message: "שגיאת שרת" });
+    }
 
-        res.json({ message: "הדיווח נשלח בהצלחה" });
-      },
-    );
+    //  קריאה לפונקצית עזר לשליחת מיל דחוף למנהל
+    if (problem_type === "סכנה") {
+      await handleDangerReport(user_id, description, imagePath);
+    }
+
+    res.json({ message: "הדיווח נשלח בהצלחה" });
+  },
+);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "שגיאת שרת" });
@@ -253,6 +320,43 @@ async function checkReportCooldown(user_id, group_id) {
     });
   });
 }
+
+// ===============================
+// טיפול בדיווח סכנה (שליחת מיל דחוף להמנהל  עם פרטי הדיווח)
+// ===============================
+async function handleDangerReport(user_id, description, imagePath) {
+  try {
+    // שליפת פרטי המשתמש
+    const userResult = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT full_name, phone, email FROM users WHERE user_id = ?",
+        [user_id],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
+    });
+
+    const fullName = userResult[0].full_name;
+    const phone = userResult[0].phone;
+    const email = userResult[0].email;
+
+    // שליחת מייל
+    await sendDangerReportEmail({
+      description,
+      imagePath,
+      reportTime: new Date().toLocaleString(),
+      fullName,
+      phone,
+      email,
+    });
+
+  } catch (err) {
+    console.error("שגיאה בטיפול בדיווח סכנה:", err);
+  }
+}
+
 
 //===============================
 // בדיקה שלא עברנו את כמות הדיווחים המותרת
