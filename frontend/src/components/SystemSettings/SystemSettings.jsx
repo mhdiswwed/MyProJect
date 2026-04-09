@@ -10,92 +10,144 @@ import { FaEdit, FaTimes } from "react-icons/fa";
 import API_BASE from "../../config/api";
 
 export default function SystemSettings() {
-  // ערך המע״מ
-  const [vat, setVat] = useState(0);
-
   // מצב פתיחת מודאל
   const [showModal, setShowModal] = useState(false);
-
-  // ערך לעריכה
-  const [vatInput, setVatInput] = useState("");
 
   // הודעת מערכת
   const [msg, setMsg] = useState({ type: "", text: "" });
 
-  // =========================
-  // טעינת המע״מ מהשרת
-  // =========================
+  // שמירת כל ההגדרות מהשרת כאובייקט
+  const [settings, setSettings] = useState({});
+
+  // שמירת שם ההגדרה הנוכחית לעריכה (לדוגמה: vat)
+  const [currentKey, setCurrentKey] = useState("");
+
+  // שמירת הערך שמכניסים במודאל
+  const [inputValue, setInputValue] = useState("");
+
+  //==================================
+  //שליפת כל הנתונים
+  //=================================
   useEffect(() => {
-    fetch(`${API_BASE}/api/SystemSettings/vat`)
-      .then((res) => res.json())
+    // שליחת בקשה לשרת לשליפת כל ההגדרות
+    fetch(`${API_BASE}/api/SystemSettings`)
+      .then((res) => res.json()) // המרת התשובה ל־JSON
       .then((data) => {
-        setVat(Number(data.vat));
-        setVatInput(Number(data.vat));
+        // שמירת הנתונים ב־state
+        setSettings(data);
       })
       .catch(() => {
-        setMsg({
-          type: "error",
-          text: "❌ שגיאה בשליפת המע״מ מהשרת",
-        });
+        // במקרה של שגיאה
+        setMsg({ type: "error", text: " שגיאה בטעינת ההגדרות" });
       });
   }, []);
 
-  // =========================
-  // שמירת מע״מ
-  // =========================
-  async function saveVat() {
+  //=====================
+  //פונקצית שמירה לכל ההגדרות
+  //====================
+  async function saveSetting() {
+    // איפוס הודעה
     setMsg({ type: "", text: "" });
 
-    const vatNumber = Number(vatInput);
+    // המרת הערך למספר
+    const num = Number(inputValue);
 
-    // בדיקת תקינות
-    if (isNaN(vatNumber) || vatNumber < 0 || vatNumber > 100) {
-      setMsg({
-        type: "error",
-        text: "❌ ערך המע״מ חייב להיות בין 0 ל־100",
-      });
+    // בדיקה אם זה לא מספר
+    if (isNaN(num)) {
+      setMsg({ type: "error", text: "ערך לא תקין" });
+      return;
+    }
 
+    // בדיקות לפי סוג ההגדרה
+    if (currentKey === "vat" && (num < 0 || num > 100)) {
+      setMsg({ type: "error", text: "מע״מ בין 0 ל-100" });
+      return;
+    }
+
+    // בדיקה לכמות דיווחים
+    if (currentKey === "max_reports_per_route" && num < 0) {
+      setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
+      return;
+    }
+
+    // בדיקה לזמן בין דיווחים
+    if (currentKey === "report_interval_minutes" && num < 0) {
+      setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/SystemSettings/vat`, {
+      // שליחת עדכון לשרת
+      const res = await fetch(`${API_BASE}/api/SystemSettings/${currentKey}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ vat: vatNumber }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: num }),
       });
 
+      // קריאת התשובה מהשרת
       const data = await res.json();
 
-      if (!res.ok) {
+      // אם הצליח
+      if (res.ok) {
+        // עדכון הנתונים במסך
+        setSettings((prev) => ({ ...prev, [currentKey]: num }));
+
+        // הצגת הודעת הצלחה מהשרת או ברירת מחדל
+        setMsg({ type: "success", text: data.message || "עודכן בהצלחה" });
+
+        // סגירה אוטומטית אחרי 1.2 שניות
+        setTimeout(() => {
+          setShowModal(false);
+          setMsg({ type: "", text: "" });
+        }, 1200);
+      } else {
+        // הצגת הודעת השגיאה האמיתית שהשרת החזיר
         setMsg({
           type: "error",
-          text: data.message || "❌ שגיאה בעדכון המע״מ",
+          text: data.message || "שגיאה בעדכון",
         });
-
-        return;
       }
-
-      // עדכון UI
-      setVat(vatNumber);
-
-      setMsg({
-        type: "success",
-        text: "✅ המע״מ עודכן בהצלחה",
-      });
-
-      // סגירת המודאל אחרי רגע
-      setTimeout(() => {
-        setShowModal(false);
-        setMsg({ type: "", text: "" });
-      }, 1200);
     } catch {
-      setMsg({
-        type: "error",
-        text: "❌ שגיאת תקשורת עם השרת",
-      });
+      // שגיאת תקשורת
+      setMsg({ type: "error", text: "שגיאת שרת" });
+    }
+  }
+
+  //===================================
+  // פונקציה שמחזירה כותרת לפי סוג ההגדרה
+  //===================================
+  function getSettingTitle(key) {
+    // בדיקה לפי שם ההגדרה
+    switch (key) {
+      case "vat":
+        return "עדכון מע״מ";
+
+      case "max_reports_per_route":
+        return "עדכון כמות דיווחים למסלול";
+
+      case "report_interval_minutes":
+        return "עדכון זמן בין דיווחים (בדקות)";
+
+      default:
+        return "עדכון הגדרה";
+    }
+  }
+  //===================================
+  // פונקציה שמחזירה placeholder מתאים
+  //==================================
+  function getPlaceholder(key) {
+    switch (key) {
+      case "vat":
+        return "הכנס אחוז מע״מ (0-100)";
+
+      case "max_reports_per_route":
+        return "הכנס מספר דיווחים מקסימלי";
+
+      case "report_interval_minutes":
+        return "הכנס זמן בדקות";
+
+      default:
+        return "הכנס ערך";
     }
   }
 
@@ -114,19 +166,65 @@ export default function SystemSettings() {
         </thead>
 
         <tbody>
+          {/* שורת מע״מ */}
           <tr>
             <td>מע״מ</td>
 
-            <td>{vat}%</td>
+            <td>{settings.vat}%</td>
 
             <td>
               <button
                 className={styles.editIcon}
                 onClick={() => {
-                  setVatInput(vat);
+                  // שמירת שם ההגדרה
+                  setCurrentKey("vat");
+
+                  // הכנסת הערך הנוכחי לשדה
+                  setInputValue(settings.vat);
+
+                  // פתיחת מודאל
                   setShowModal(true);
                 }}
-                title="עדכן"
+              >
+                <FaEdit />
+              </button>
+            </td>
+          </tr>
+
+          {/* כמות דיווחים */}
+          <tr>
+            <td>כמות דיווחים אפשרית למסלול</td>
+
+            <td>{settings.max_reports_per_route} דיווחים</td>
+
+            <td>
+              <button
+                className={styles.editIcon}
+                onClick={() => {
+                  setCurrentKey("max_reports_per_route");
+                  setInputValue(settings.max_reports_per_route);
+                  setShowModal(true);
+                }}
+              >
+                <FaEdit />
+              </button>
+            </td>
+          </tr>
+
+          {/* זמן בין דיווחים */}
+          <tr>
+            <td>זמן בין דיווחים (דקות)</td>
+
+            <td>{settings.report_interval_minutes} דקות</td>
+
+            <td>
+              <button
+                className={styles.editIcon}
+                onClick={() => {
+                  setCurrentKey("report_interval_minutes");
+                  setInputValue(settings.report_interval_minutes);
+                  setShowModal(true);
+                }}
               >
                 <FaEdit />
               </button>
@@ -139,27 +237,29 @@ export default function SystemSettings() {
       {showModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
+            {/* כפתור סגירה */}
             <button
               className={styles.closeIcon}
               onClick={() => {
-                setShowModal(false);
-                setMsg({ type: "", text: "" });
+                setShowModal(false); // סגירת המודאל
+                setMsg({ type: "", text: "" }); // איפוס הודעות
               }}
             >
               <FaTimes />
             </button>
 
-            <h3>עדכון מע״מ</h3>
+            {/* כותרת דינמית לפי סוג ההגדרה */}
+            <h3 className={styles.modalTitle}>{getSettingTitle(currentKey)}</h3>
 
+            {/* שדה קלט */}
             <input
               type="number"
-              min="0"
-              max="100"
-              value={vatInput}
-              onChange={(e) => setVatInput(e.target.value)}
+              value={inputValue} // הערך הנוכחי
+              placeholder={getPlaceholder(currentKey)} // placeholder לפי סוג
+              onChange={(e) => setInputValue(e.target.value)} // עדכון הערך
             />
 
-            {/* הודעה בתוך הפופאפ */}
+            {/* הודעת מערכת */}
             {msg.text && (
               <div
                 className={`${styles.formMsg} ${
@@ -170,8 +270,13 @@ export default function SystemSettings() {
               </div>
             )}
 
+            {/* כפתורים */}
             <div className={styles.modalButtons}>
-              <button className={styles.confirmBtn} onClick={saveVat}>
+              {/* כפתור שמירה */}
+              <button
+                className={styles.confirmBtn}
+                onClick={saveSetting} // קריאה לפונקציית שמירה
+              >
                 שמור
               </button>
             </div>

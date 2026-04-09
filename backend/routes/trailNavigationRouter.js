@@ -2,7 +2,6 @@
 //רוותיר לניהול ניווט שטח בזמן אמת + דיווח בעיה
 //============================
 
-
 const express = require("express");
 const router = express.Router();
 const dbSingleton = require("../dbSingleton");
@@ -69,6 +68,30 @@ router.get("/group/:groupId", (req, res) => {
   });
 });
 
+//=====================================
+// שליפת הגדרה מהמערכת לפי שם
+//=====================================
+function getSetting(name) {
+  return new Promise((resolve, reject) => {
+    // שליפת ערך מהטבלה
+    db.query(
+      "SELECT setting_value FROM system_settings WHERE setting_name = ?",
+      [name],
+      (err, result) => {
+        // שגיאת DB
+        if (err) return reject(err);
+
+        // אם לא נמצא
+        if (!result.length) {
+          return resolve(null);
+        }
+
+        // החזרת הערך כמספר
+        resolve(Number(result[0].setting_value));
+      },
+    );
+  });
+}
 /* ==============================
    POST דיווח מהשטח (תמונה חובה)
 ============================== */
@@ -185,9 +208,12 @@ router.post("/:groupId/report", upload.single("image"), async (req, res) => {
 });
 
 //=====================================
-// בדיקה שעברו לפחות 30 דקות מהדיווח האחרון
+// בדיקה שעבר זמן מינימלי בין דיווחים
 //======================================
-function checkReportCooldown(user_id, group_id) {
+async function checkReportCooldown(user_id, group_id) {
+  // שליפת זמן מהמערכת
+  const interval = await getSetting("report_interval_minutes");
+
   return new Promise((resolve, reject) => {
     const sql = `
       SELECT report_time
@@ -210,11 +236,16 @@ function checkReportCooldown(user_id, group_id) {
 
       const diffMinutes = (now - lastTime) / (1000 * 60);
 
-      // אם לא עברו 30 דקות
-      if (diffMinutes < 30) {
+      // אם מוגדר 0 → אין הגבלה בכלל
+      if (interval === 0) {
+        return resolve({ ok: true });
+      }
+
+      // אם לא עבר מספיק זמן
+      if (interval !== null && diffMinutes < interval) {
         return resolve({
           ok: false,
-          message: "יש להמתין 30 דקות בין דיווחים",
+          message: `יש להמתין ${interval} דקות בין דיווחים`,
         });
       }
 
@@ -223,11 +254,13 @@ function checkReportCooldown(user_id, group_id) {
   });
 }
 
-
 //===============================
-// בדיקה שלא עברנו 4 דיווחים בטיול
+// בדיקה שלא עברנו את כמות הדיווחים המותרת
 //============================
-function checkReportLimit(user_id, group_id) {
+async function checkReportLimit(user_id, group_id) {
+  // שליפת הגדרה מהמערכת
+  const maxReports = await getSetting("max_reports_per_route");
+
   return new Promise((resolve, reject) => {
     const sql = `
       SELECT COUNT(*) AS total
@@ -238,11 +271,19 @@ function checkReportLimit(user_id, group_id) {
     db.query(sql, [user_id, group_id], (err, result) => {
       if (err) return reject(err);
 
-      // אם יש כבר 4 דיווחים
-      if (result[0].total >= 4) {
+      // אם 0 → אסור בכלל לדווח
+      if (maxReports === 0) {
         return resolve({
           ok: false,
-          message: "הגעת למספר הדיווחים המקסימלי לטיול זה ( מקסימום 4 דווחים)",
+          message: "דיווחים אינם זמינים במסלול זה",
+        });
+      }
+
+      // אם עברנו את המקסימום
+      if (maxReports !== null && result[0].total >= maxReports) {
+        return resolve({
+          ok: false,
+          message: `הגעת למספר הדיווחים המקסימלי (${maxReports})`,
         });
       }
 
@@ -250,6 +291,7 @@ function checkReportLimit(user_id, group_id) {
     });
   });
 }
+
 //===================================
 // בדיקה שהטיול מתבצע כרגע (בתהליך)
 //===================================

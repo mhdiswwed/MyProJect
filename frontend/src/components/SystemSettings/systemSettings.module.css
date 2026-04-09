@@ -339,3 +339,9 @@ tr:hover{
     transform:translateY(0);
   }
 }
+
+/* כותרת המודאל */
+.modalTitle {
+  text-align: center; /* ממרכז טקסט */
+  margin-bottom: 15px; /* רווח מתחת */
+}
