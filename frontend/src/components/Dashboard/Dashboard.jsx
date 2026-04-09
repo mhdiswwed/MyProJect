@@ -57,10 +57,10 @@ export default function Dashboard() {
       <ChartsSection />
 
       {/* בקשות ומשימות */}
-      <RequestsAndTasks requests={data.requests} tasks={data.tasks} />
+      <RequestsAndTasks requests={data.latestRequests} tasks={data.tasks} />
 
       {/* טבלת דוחות */}
-      <ReportsTable requests={data.requests} />
+      <ReportsTable reports={data.reports} />
     </div>
   );
 }

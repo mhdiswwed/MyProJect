@@ -1,17 +1,139 @@
-.container{
-  display:flex;
-  gap:20px;
-  margin-bottom:30px;
+.container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
-.box{
-  flex:1;
-  background:rgba(18,22,28,.9);
-  border-radius:16px;
-  padding:20px;
+.box1 {
+  flex: 1;
+  background: rgba(18, 22, 28, 0.9);
+  border-radius: 16px;
+  padding: 20px;
+}
+.box2 {
+
+  background: rgba(18, 22, 28, 0.9);
+  border-radius: 16px;
+  padding: 20px;
 }
 
-.item{
-  padding:10px 0;
-  border-bottom:1px solid rgba(255,255,255,.05);
+/* ===== טבלה ===== */
+.tableHeader {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  font-weight: bold;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row:hover {
+  background: rgba(255,255,255,0.06);
+  transition: 0.2s;
+}
+
+/* ===== סטטוסים ===== */
+.status {
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* צבעים */
+.ממתין {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.מאושר {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff88;
+}
+
+.נדחה {
+  background: rgba(255, 0, 0, 0.2);
+  color: red;
+}
+
+.מבקש\ ביטול {
+  background: rgba(255, 255, 0, 0.2);
+  color: yellow;
+}
+
+/* ===== משימות ===== */
+.taskItem {
+  background: rgba(255, 255, 255, 0.03); /* 🔥 רקע עדין */
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px; /* 🔥 רווח בין משימות */
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* שורה עליונה */
+.taskTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+/* סוג משימה */
+.taskType {
+  background: rgba(0, 150, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+/* תיאור */
+.taskDesc {
+  margin: 6px 0;
+  font-size: 13px;
+}
+
+/* תאריך */
+.taskDate {
+  font-size: 12px;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.taskItem:hover {
+  background: rgba(255,255,255,0.06);
+  transition: 0.2s;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  direction: rtl;
+  margin-bottom: 15px; /* 🔥 זה הפתרון המרכזי */
+}
+.count {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #aaa;
+  display: block;
+  margin-top: 4px;
+  margin-bottom: 6px; /* 🔥 מוסיף הפרדה יפה */
 }

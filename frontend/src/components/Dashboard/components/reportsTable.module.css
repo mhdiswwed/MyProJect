@@ -1,21 +1,116 @@
-.tableBox{
-  background:rgba(18,22,28,.9);
-  padding:20px;
-  border-radius:16px;
+.box {
+  background: rgba(18, 22, 28, 0.9);
+  padding: 20px;
+  border-radius: 16px;
 }
 
-.table{
-  width:100%;
-  border-collapse:collapse;
+/* כותרת */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-th{
-  text-align:right;
-  padding:12px;
-  color:#7dd3fc;
+.subtitle {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 4px; /* רווח קטן מתחת לכותרת */
 }
 
-td{
-  padding:12px;
-  border-bottom:1px solid rgba(255,255,255,.05);
+.count {
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* פריט */
+.item {
+  display: flex;
+  align-items: flex-start; /* 🔥 יישור למעלה כמו בתמונה */
+  gap: 15px; /* 🔥 רווח בין תמונה לטקסט */
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+.item:hover {
+  background: rgba(255,255,255,0.06);
+  transition: 0.2s;
+}
+
+/* תוכן */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* 🔥 רווח בין שורות */
+}
+
+/* סוג בעיה */
+.problem {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* תיאור */
+.description {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* מסלול */
+.trail {
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* זמן */
+.time {
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* תמונה */
+.image {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* אייקונים */
+.icon {
+  color: #facc15;
+}
+
+.iconSmall {
+  font-size: 12px;
+}
+
+/* סטטוס */
+.status {
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  align-self: center; /* 🔥 שיהיה באמצע בצד */
+}
+
+/* צבעים */
+.חדש {
+  background: rgba(255, 0, 0, 0.2);
+  color: red;
+}
+
+.בטיפול {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.טופל {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff88;
 }

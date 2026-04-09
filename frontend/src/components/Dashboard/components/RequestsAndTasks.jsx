@@ -1,35 +1,101 @@
+/*=======================================================
+קומבוננטה שבונה ומחזירה שתי טבלאות של בקשות אחרונות, 7 ימים אחרונים 
++
+ משימות קרובות ,יומיים הקרובים
+=========================================================*/
+
 import styles from "./requestsAndTasks.module.css";
+import { FaCalendarAlt } from "react-icons/fa";
+
+// פונקציה שממירה תאריך לפורמט קריא
+function formatDate(date) {
+  const d = new Date(date);
+  return (
+    d.toLocaleDateString("he-IL") +
+    " " +
+    d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })
+  );
+}
 
 export default function RequestsAndTasks({ requests = [], tasks = [] }) {
   return (
     <div className={styles.container}>
-      {/* ===== משימות ===== */}
-      <div className={styles.box}>
-        <h3>משימות קרובות</h3>
+      {/* ===== בקשות אחרונות ===== */}
+      <div className={styles.box1}>
+        {/* כותרת עם מספר בקשות */}
+        <div className={styles.header}>
+          <div>
+            <h3>בקשות אחרונות</h3>
+            <span className={styles.subtitle}>7 ימים אחרונים</span>
+          </div>
 
-        {tasks.length === 0 ? (
-          <p>אין משימות</p>
+          <span className={styles.count}>{requests.length} בקשות</span>
+        </div>
+        {/* כותרת טבלה */}
+        <div className={styles.tableHeader}>
+          <span>תאריך</span>
+          <span>מבקש</span>
+          <span>מסלול</span>
+          <span>סטטוס</span>
+        </div>
+
+        {/* אם אין בקשות */}
+        {requests.length === 0 ? (
+          <p>אין בקשות</p>
         ) : (
-          tasks.map((t) => (
-            <div key={t.task_id} className={styles.item}>
-              {/* תיאור משימה */}
-              {t.description} - {t.status}
+          // מעבר על כל הבקשות
+          requests.map((r) => (
+            <div key={r.request_id} className={styles.row}>
+              {/* תאריך + אייקון */}
+              <span className={styles.date}>
+                <FaCalendarAlt /> {formatDate(r.created_at)}
+              </span>
+
+              {/* שם מבקש */}
+              <span>{r.full_name}</span>
+
+              {/* שם מסלול */}
+              <span>{r.trail_name}</span>
+
+              {/* סטטוס עם צבע */}
+              <span className={`${styles.status} ${styles[r.status]}`}>
+                {r.status}
+              </span>
             </div>
           ))
         )}
       </div>
 
-      {/* ===== בקשות ===== */}
-      <div className={styles.box}>
-        <h3>בקשות אחרונות</h3>
+      {/* ===== משימות קרובות ===== */}
+      <div className={styles.box2}>
+        {/* כותרת עם מספר משימות */}
+        <div className={styles.header}>
+          <div>
+            <h3>{tasks.length} משימות קרובות </h3>
+            <span className={styles.subtitle}>יומיים הקרובים</span>
+          </div>
+        </div>
 
-        {requests.length === 0 ? (
-          <p>אין בקשות</p>
+        {/* אם אין משימות */}
+        {tasks.length === 0 ? (
+          <p>אין משימות</p>
         ) : (
-          requests.map((r) => (
-            <div key={r.request_id} className={styles.item}>
-              {/* שם מסלול + סטטוס */}
-              {r.trail_name} - {r.status}
+          // מעבר על כל המשימות
+          tasks.map((t) => (
+            <div key={t.task_id} className={styles.taskItem}>
+              {/* שורה עליונה - סוג + סטטוס */}
+              <div className={styles.taskTop}>
+                <span className={styles.taskType}>{t.task_type}</span>
+                <span className={styles.status}>{t.status}</span>
+              </div>
+
+              {/* תיאור המשימה */}
+              <div className={styles.taskDesc}>{t.description}</div>
+
+              {/* תאריך התחלה */}
+              <div className={styles.taskDate}>
+                <FaCalendarAlt /> {formatDate(t.start_time)}
+              </div>
             </div>
           ))
         )}
