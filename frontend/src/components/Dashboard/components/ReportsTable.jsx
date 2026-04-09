@@ -1,5 +1,11 @@
 import styles from "./reportsTable.module.css";
-import { FaClock, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaClock,
+  FaExclamationTriangle,
+  FaBan,
+  FaTools,
+  FaBroom,
+} from "react-icons/fa";
 import API_BASE from "../../../config/api";
 
 /**
@@ -17,13 +23,78 @@ import API_BASE from "../../../config/api";
  */
 export default function ReportsTable({ reports = [] }) {
   // פונקציה שמחזירה "לפני כמה זמן"
-  function timeAgo(date) {
-    const diff = Math.floor((new Date() - new Date(date)) / 1000);
+  function formatReportTime(date) {
+    const reportDate = new Date(date);
+    const diffSeconds = Math.floor((new Date() - reportDate) / 1000);
 
-    if (diff < 60) return "לפני רגע";
-    if (diff < 3600) return `לפני ${Math.floor(diff / 60)} דקות`;
-    if (diff < 86400) return `לפני ${Math.floor(diff / 3600)} שעות`;
-    return `לפני ${Math.floor(diff / 86400)} ימים`;
+    // אם פחות מדקה
+    if (diffSeconds < 60) {
+      return "לפני רגע";
+    }
+
+    // אם פחות משעה
+    if (diffSeconds < 3600) {
+      const minutes = Math.floor(diffSeconds / 60);
+      return `לפני ${minutes} דקות`;
+    }
+
+    // אם פחות מיום
+    if (diffSeconds < 86400) {
+      const hours = Math.floor(diffSeconds / 3600);
+      const minutes = Math.floor((diffSeconds % 3600) / 60);
+
+      if (minutes === 0) {
+        return `לפני ${hours} שעות`;
+      }
+
+      return `לפני ${hours} שעות ו־${minutes} דקות`;
+    }
+
+    // אם יותר מיום – מציגים תאריך ושעה
+    return reportDate.toLocaleString("he-IL", {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  }
+  //===================================
+  // פונקציה שממירה סוג בעיה לסטטוס תצוגה
+  //=================================
+  function getDisplayStatus(problemType) {
+    // אם סכנה → דחוף
+    if (problemType === "סכנה") {
+      return {
+        text: "דחוף",
+        className: "urgent", // CSS
+      };
+    }
+
+    // אחרת → בינוני
+    return {
+      text: "בינוני",
+      className: "medium",
+    };
+  }
+
+  //===================================
+  // פונקציה שמחזירה אייקון לפי סוג בעיה
+  //===================================
+  function getProblemIcon(type) {
+    switch (type) {
+      case "סכנה":
+        return <FaExclamationTriangle className={styles.iconDanger} />;
+
+      case "חסימה":
+        return <FaBan className={styles.iconBlock} />;
+
+      case "תחזוקה":
+        return <FaTools className={styles.iconMaintenance} />;
+
+      case "ניקיון":
+        return <FaBroom className={styles.iconClean} />;
+
+      default:
+        return <FaExclamationTriangle className={styles.icon} />;
+    }
   }
 
   return (
@@ -32,7 +103,6 @@ export default function ReportsTable({ reports = [] }) {
       <div className={styles.header}>
         <div>
           <h3>דיווחים חדשים מהשטח</h3>
-          <span className={styles.subtitle}>יומיים אחרונים</span>
         </div>
 
         {/* ספירה */}
@@ -43,42 +113,45 @@ export default function ReportsTable({ reports = [] }) {
       {reports.length === 0 ? (
         <p>אין דיווחים</p>
       ) : (
-        reports.map((r) => (
-          <div key={r.report_id} className={styles.item}>
-            {/* תמונה בצד (ימין כי RTL) */}
-            <img
-              src={`${API_BASE}/${r.image_path}`}
-              alt="report"
-              className={styles.image}
-            />
+        reports.map((r) => {
+          const status = getDisplayStatus(r.problem_type);
+          return (
+            <div key={r.report_id} className={styles.item}>
+              {/* תמונה בצד (ימין כי RTL) */}
+              <img
+                src={`${API_BASE}/${r.image_path}`}
+                alt="report"
+                className={styles.image}
+              />
+              {/* תוכן */}
+              <div className={styles.content}>
+                {/* סוג בעיה */}
+                <div className={styles.problem}>
+                  {getProblemIcon(r.problem_type)}
+                  {r.problem_type}
+                </div>
 
-            {/* תוכן */}
-            <div className={styles.content}>
-              {/* סוג בעיה */}
-              <div className={styles.problem}>
-                <FaExclamationTriangle className={styles.icon} />
-                {r.problem_type}
+                {/* תיאור */}
+                <div className={styles.description}>{r.description}</div>
+
+                {/* מסלול */}
+                <div className={styles.trail}>
+                  {r.trail_name || "ללא מסלול"}
+                </div>
+
+                {/* זמן */}
+                <div className={styles.time}>
+                  <FaClock className={styles.iconSmall} />
+                  {formatReportTime(r.report_time)}
+                </div>
               </div>
-
-              {/* תיאור */}
-              <div className={styles.description}>{r.description}</div>
-
-              {/* מסלול */}
-              <div className={styles.trail}>{r.trail_name || "ללא מסלול"}</div>
-
-              {/* זמן */}
-              <div className={styles.time}>
-                <FaClock className={styles.iconSmall} />
-                {timeAgo(r.report_time)}
+              {/* סוג דיווח  בצד */}
+              <div className={`${styles.status} ${styles[status.className]}`}>
+                {status.text}
               </div>
             </div>
-
-            {/* סטטוס בצד */}
-            <div className={`${styles.status} ${styles[r.status]}`}>
-              {r.status}
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

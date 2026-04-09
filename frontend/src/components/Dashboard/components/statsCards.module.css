@@ -89,10 +89,10 @@
   border: 1px solid rgba(34, 197, 94, 0.22);
 }
 
-.redIcon {
-  color: #f87171;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.22);
+.openIcon {
+  color: #9e9e9e; /* gray */
+  background: rgba(158, 158, 158, 0.12);
+  border: 1px solid rgba(158, 158, 158, 0.22);
 }
 
 /**

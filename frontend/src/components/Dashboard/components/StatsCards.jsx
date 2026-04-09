@@ -64,7 +64,7 @@ export default function StatsCards({ stats }) {
 
       {/* כרטיס 4 - משימות פתוחות */}
       <div className={styles.card}>
-        <div className={`${styles.iconBox} ${styles.redIcon}`}>
+        <div className={`${styles.iconBox} ${styles.openIcon}`}>
           <FaTasks />
         </div>
 

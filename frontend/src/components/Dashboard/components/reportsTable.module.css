@@ -93,7 +93,7 @@
 
 /* סטטוס */
 .status {
-  padding: 4px 10px;
+  padding: 4px 18px;
   border-radius: 10px;
   font-size: 12px;
   align-self: center; /* 🔥 שיהיה באמצע בצד */
@@ -113,4 +113,36 @@
 .טופל {
   background: rgba(0, 255, 0, 0.2);
   color: #00ff88;
+}
+
+/* דחוף - אדום */
+.urgent {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+/* בינוני - צהוב */
+.medium {
+  background-color: #facc15;
+  color: black;
+}
+
+/* סכנה - אדום */
+.iconDanger {
+  color: #ef4444;
+}
+
+/* חסימה - כתום */
+.iconBlock {
+  color: #f97316;
+}
+
+/* תחזוקה - כחול */
+.iconMaintenance {
+  color: #3b82f6;
+}
+
+/* ניקיון - ירוק */
+.iconClean {
+  color: #22c55e;
 }

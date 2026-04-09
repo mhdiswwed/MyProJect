@@ -56,21 +56,21 @@ AND start_time <= DATE_ADD(NOW(), INTERVAL 2 DAY)
 ORDER BY start_time ASC
     `);
 
-    //דיווחים אחרונים, 2 ימים אחרונים
-    const [reports] = await db.promise().query(`
-    SELECT 
-      r.report_id,
-      r.description,
-      r.status,
-      r.report_time,
-      r.problem_type,
-      r.image_path,
-      t.trail_name   
-    FROM reports r
-    LEFT JOIN trails t ON r.trail_id = t.trail_id
-    WHERE r.report_time >= DATE_SUB(NOW(), INTERVAL 2 DAY)
-    ORDER BY r.report_time DESC
-    `);
+    //דיווחים חדשים, 
+ const [reports] = await db.promise().query(`
+  SELECT
+    r.report_id,
+    r.description,
+    r.status,
+    r.report_time,
+    r.problem_type,
+    r.image_path,
+    t.trail_name
+  FROM reports r
+  LEFT JOIN trails t ON r.trail_id = t.trail_id
+  WHERE r.status = 'חדש'
+  ORDER BY r.report_time DESC
+`);
 
     res.json({
       stats: {
