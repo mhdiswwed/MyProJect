@@ -60,7 +60,7 @@ export default function ManagementTrails() {
     trail_type: "",
     difficulty_level: "",
     length_km: "",
-    duration_minutes: "",
+    duration_time: "",
     start_point: "",
     end_point: "",
     price_per_person: "",
@@ -162,15 +162,26 @@ export default function ManagementTrails() {
   async function handleSubmit(e) {
     e.preventDefault();
     setMsg({ type: "", text: "" });
-
     // FormData מאפשר שליחת קבצים
     const formData = new FormData();
+    //המרת זמן לדקות קדי להכניס לבסיס נתונים בדקות
+    const [hours, minutes] = (form.duration_time || "0:0")
+      .split(":")
+      .map(Number);
 
+    const totalMinutes = hours * 60 + minutes;
+
+    // עובר על כל השדות ומדלג על שדות הזמן
     Object.entries(form).forEach(([key, value]) => {
+      if (key === "duration_time" || key === "duration_minutes") return;
+
       if (value !== null && value !== "") {
         formData.append(key, value);
       }
     });
+
+    // מוסיף רק את הזמן המחושב
+    formData.append("duration_minutes", totalMinutes);
 
     try {
       // אם יש editingTrail → עדכון, אחרת הוספה
@@ -541,7 +552,7 @@ export default function ManagementTrails() {
                       trail_type: t.trail_type,
                       difficulty_level: t.difficulty_level,
                       length_km: t.length_km,
-                      duration_minutes: t.duration_minutes,
+                      duration_time: `${String(Math.floor(t.duration_minutes / 60)).padStart(2, "0")}:${String(t.duration_minutes % 60).padStart(2, "0")}`,
                       start_point: t.start_point,
                       end_point: t.end_point,
                       price_per_person: t.price_per_person,
@@ -610,7 +621,7 @@ export default function ManagementTrails() {
                   trail_type: "",
                   difficulty_level: "",
                   length_km: "",
-                  duration_minutes: "",
+                  duration_time: "",
                   start_point: "",
                   end_point: "",
                   price_per_person: "",
@@ -669,12 +680,21 @@ export default function ManagementTrails() {
                 onChange={handleChange}
               />
 
+              <label className={styles.fileLabel}>
+                משך זמן הטיול (שעות ודקות)
+              </label>
               <input
-                type="number"
-                name="duration_minutes"
-                value={form.duration_minutes}
-                placeholder="משך זמן בדקות"
-                onChange={handleChange}
+                type="time"
+                name="duration_time"
+                value={form.duration_time || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  setForm((prev) => ({
+                    ...prev,
+                    duration_time: value,
+                  }));
+                }}
               />
               <input
                 name="start_point"

@@ -114,8 +114,14 @@ router.post(
       errors.push("מחיר לאדם לא תקין");
     }
     // בדיקת זמן המסלול
-    if (isNaN(duration_minutes) || Number(duration_minutes) <= 0) {
-      errors.push("משך זמן המסלול לא תקין");
+    const duration = Number(duration_minutes);
+
+    if (isNaN(duration)) {
+      errors.push("משך זמן המסלול חייב להיות מספר");
+    } else if (duration <= 0) {
+      errors.push("משך זמן המסלול חייב להיות גדול מ-0");
+    } else if (duration > 600) {
+      errors.push("משך זמן המסלול לא יכול לעלות על 10 שעות (600 דקות)");
     }
     if (trail_type !== "רגלי") {
       if (!price_per_vehicle) {
@@ -343,11 +349,17 @@ router.put(
    2. בדיקות מספרים (לעדכון)
 ========================= */
     // בדיקת זמן המסלול
-    if (duration_minutes !== undefined) {
-      if (isNaN(duration_minutes) || Number(duration_minutes) <= 0) {
-        errors.push("משך זמן המסלול לא תקין");
-      }
-    }
+if (duration_minutes !== undefined) {
+  const duration = Number(duration_minutes);
+
+  if (isNaN(duration)) {
+    errors.push("משך זמן המסלול חייב להיות מספר");
+  } else if (duration <= 0) {
+    errors.push("משך זמן המסלול חייב להיות גדול מ-0");
+  } else if (duration > 600) {
+    errors.push("משך זמן המסלול לא יכול לעלות על 10 שעות (600 דקות)");
+  }
+}
     // בודקים רק אם השדה נשלח
     if (length_km !== undefined) {
       if (isNaN(length_km) || Number(length_km) < 0) {
