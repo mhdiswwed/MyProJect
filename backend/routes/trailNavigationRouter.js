@@ -31,19 +31,31 @@ async function sendDangerReportEmail({
   fullName,
   phone,
   email,
+  trailName,
+  emails,
 }) {
   //  שולח ללוגין בלבד (כמו שסיכמנו)
   const link = `http://localhost:3000/login`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
-    to: "mhdi.swwed1996+admin@gmail.com",
+    to: emails,
     subject: "🚨 דיווח חדש מהשטח - סכנה",
 
     html: `
 <div dir="rtl" style="font-family:Arial;text-align:right;line-height:1.6">
 
-  <h2 style="color:red;">🚨 דיווח חדש מהשטח - סכנה</h2>
+  <h1 style="color:#2563eb;">
+    📢 הודעה דחופה ממערכת TrailQuest
+  </h1>
+
+  <h2 style="color:red;">
+    🚨 דיווח סכנה מהשטח
+  </h2>
+
+  <hr/>
+
+  <p><b>שם המסלול:</b> ${trailName}</p>
 
   <p><b>שם המדווח:</b> ${fullName}</p>
 
@@ -55,7 +67,7 @@ async function sendDangerReportEmail({
 
   <hr/>
 
-  <p><b>תיאור:</b><br>${description}</p>
+  <p><b>תיאור הבעיה:</b><br>${description}</p>
 
   <p><b>זמן דיווח:</b> ${reportTime}</p>
 
@@ -72,8 +84,9 @@ async function sendDangerReportEmail({
             color:white;
             text-decoration:none;
             border-radius:6px;">
-    התחבר למערכת
+    כניסה למערכת
   </a>
+
 
 </div>
 `,
@@ -261,7 +274,7 @@ db.query(
 
     //  קריאה לפונקצית עזר לשליחת מיל דחוף למנהל
     if (problem_type === "סכנה") {
-      await handleDangerReport(user_id, description, imagePath);
+      await handleDangerReport(user_id, description, imagePath, groupId);
     }
 
     res.json({ message: "הדיווח נשלח בהצלחה" });
@@ -321,10 +334,10 @@ async function checkReportCooldown(user_id, group_id) {
   });
 }
 
-// ===============================
-// טיפול בדיווח סכנה (שליחת מיל דחוף להמנהל  עם פרטי הדיווח)
-// ===============================
-async function handleDangerReport(user_id, description, imagePath) {
+// ===========================================
+// טיפול בדיווח סכנה (שליחת מייל דחוף להמנהל  עם פרטי הדיווח)
+// ==============================================
+async function handleDangerReport(user_id, description, imagePath, group_id) {
   try {
     // שליפת פרטי המשתמש
     const userResult = await new Promise((resolve, reject) => {
@@ -334,13 +347,46 @@ async function handleDangerReport(user_id, description, imagePath) {
         (err, result) => {
           if (err) return reject(err);
           resolve(result);
-        }
+        },
       );
     });
 
     const fullName = userResult[0].full_name;
     const phone = userResult[0].phone;
     const email = userResult[0].email;
+
+    // שליפת שם המסלול לפי group
+    const trailResult = await new Promise((resolve, reject) => {
+      db.query(
+        `SELECT t.trail_name 
+         FROM groups g
+         JOIN trails t ON g.trail_id = t.trail_id
+         WHERE g.group_id = ?`,
+        [group_id],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        },
+      );
+    });
+
+    const trailName = trailResult[0]?.trail_name || "לא ידוע";
+
+    // שליפת כל המנהלים
+    const admins = await new Promise((resolve, reject) => {
+      db.query("SELECT email FROM users WHERE role = 'מנהל'", (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+
+    // הפיכה למערך של מיילים
+    const emails = admins.map((a) => a.email);
+
+    if (!emails.length) {
+      console.log("אין מנהלים לשליחת מייל");
+      return;
+    }
 
     // שליחת מייל
     await sendDangerReportEmail({
@@ -350,8 +396,9 @@ async function handleDangerReport(user_id, description, imagePath) {
       fullName,
       phone,
       email,
+      trailName,
+      emails,
     });
-
   } catch (err) {
     console.error("שגיאה בטיפול בדיווח סכנה:", err);
   }
