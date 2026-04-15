@@ -106,6 +106,8 @@ export default function TrailNavigation({ user }) {
     formData.append("user_id", user.user_id);
     formData.append("latitude", position[0]);
     formData.append("longitude", position[1]);
+   /*formData.append("latitude", 32.96506);//מיקום נכון מקובץ GPX 
+    formData.append("longitude", 35.382479);*/
     formData.append("problem_type", problemType);
     formData.append("description", description);
     formData.append("image", image); // חובה

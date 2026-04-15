@@ -23,6 +23,206 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
+//===============================================================================================
+// ============================================
+// בדיקה שהמשתמש נמצא בתוך תחום המסלול (GPX אמיתי)
+// ============================================
+// NOTE: פונקציה מופרדת כדי שנוכל לנטרל אותה בהערה בזמן הדגמה
+const fs = require("fs"); // ספרייה לקריאת קבצים
+const xml2js = require("xml2js"); // ספרייה להמרת XML לאובייקט JS
+
+// ============================================
+// פונקציה לחישוב מרחק בין שתי נקודות GPS (במטרים)
+// ============================================
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // רדיוס כדור הארץ במטרים
+
+  // המרה מרדיאנים
+  const toRad = (x) => (x * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1); // הפרש קווי רוחב
+  const dLon = toRad(lon2 - lon1); // הפרש קווי אורך
+
+  // נוסחת Haversine לחישוב מרחק
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // החזרת מרחק במטרים
+}
+
+// ============================================
+// פונקציה לקריאת קובץ GPX והוצאת נקודות המסלול
+// ============================================
+async function parseGPX(filePath) {
+  // קריאת הקובץ כטקסט
+  const xml = fs.readFileSync(filePath, "utf-8");
+
+  // המרת XML לאובייקט JS
+  const result = await xml2js.parseStringPromise(xml);
+
+  const points = []; // מערך נקודות
+
+  // גישה לנקודות המסלול בתוך GPX
+  const trkpts = result.gpx.trk[0].trkseg[0].trkpt;
+
+  // מעבר על כל נקודה והכנסה למערך
+  trkpts.forEach((p) => {
+    points.push({
+      lat: Number(p.$.lat), // קו רוחב
+      lng: Number(p.$.lon), // קו אורך
+    });
+  });
+
+  return points; // החזרת כל הנקודות
+}
+
+// =====================================================
+// פונקציה לחישוב המרחק הקצר ביותר מנקודת משתמש
+// אל קו שמורכב משתי נקודות GPX (segment)
+// =====================================================
+function pointToSegmentDistance(lat, lng, p1, p2) {
+  // lat, lng = מיקום המשתמש
+  // p1, p2 = שתי נקודות עוקבות מהמסלול (קו)
+
+  // -------------------------------------------
+  // שמירת קואורדינטות המשתמש
+  // -------------------------------------------
+  const x = lng; // קו אורך של המשתמש
+  const y = lat; // קו רוחב של המשתמש
+
+  // -------------------------------------------
+  // נקודת התחלה של הקטע (segment)
+  // -------------------------------------------
+  const x1 = p1.lng;
+  const y1 = p1.lat;
+
+  // -------------------------------------------
+  // נקודת סוף של הקטע (segment)
+  // -------------------------------------------
+  const x2 = p2.lng;
+  const y2 = p2.lat;
+
+  // -------------------------------------------
+  // חישוב וקטורים (Vectors)
+  // A,B = וקטור מהנקודה הראשונה למשתמש
+  // C,D = וקטור מהנקודה הראשונה לשנייה
+  // -------------------------------------------
+  const A = x - x1;
+  const B = y - y1;
+  const C = x2 - x1;
+  const D = y2 - y1;
+
+  // -------------------------------------------
+  // מכפלה סקלרית (dot product)
+  // -------------------------------------------
+  const dot = A * C + B * D;
+
+  // -------------------------------------------
+  // אורך הקטע בריבוע
+  // -------------------------------------------
+  const lenSq = C * C + D * D;
+
+  // -------------------------------------------
+  // param אומר לנו איפה הנקודה נופלת על הקו:
+  // < 0  → לפני תחילת הקטע
+  // > 1  → אחרי סוף הקטע
+  // בין 0 ל-1 → על הקטע עצמו
+  // -------------------------------------------
+  let param = -1;
+  if (lenSq !== 0) {
+    param = dot / lenSq;
+  }
+
+  let xx, yy; // הנקודה הכי קרובה על הקו
+
+  // -------------------------------------------
+  // אם הנקודה לפני תחילת הקטע
+  // -------------------------------------------
+  if (param < 0) {
+    xx = x1;
+    yy = y1;
+  }
+  // -------------------------------------------
+  // אם הנקודה אחרי סוף הקטע
+  // -------------------------------------------
+  else if (param > 1) {
+    xx = x2;
+    yy = y2;
+  }
+  // -------------------------------------------
+  // אם הנקודה נמצאת על הקטע עצמו
+  // -------------------------------------------
+  else {
+    xx = x1 + param * C;
+    yy = y1 + param * D;
+  }
+
+  // -------------------------------------------
+  // חישוב מרחק אמיתי (במטרים)
+  // משתמשים בפונקציית Haversine שלך
+  // -------------------------------------------
+  return getDistance(y, x, yy, xx);
+}
+
+// ============================================
+// פונקציה ראשית לבדיקה אם המשתמש בתוך המסלול
+// ============================================
+async function checkUserInsideTrail(lat, lng, trail_id) {
+  try {
+    // שליפת שם קובץ GPX מהמסד
+    const trail = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT gpx_file FROM trails WHERE trail_id = ?",
+        [trail_id],
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result[0]);
+        },
+      );
+    });
+
+    // אם אין קובץ GPX – לא חוסמים
+    if (!trail || !trail.gpx_file) {
+      return { ok: true };
+    }
+
+    // בניית נתיב לקובץ GPX בשרת
+    const filePath = `uploads/gpx/${trail.gpx_file}`;
+
+    // קריאת נקודות המסלול
+    const points = await parseGPX(filePath);
+
+    // רדיוס מותר (עיגול מקום)
+    const MAX_DISTANCE = 80; // מטרים
+
+    // מעבר על כל נקודה במסלול
+    for (let i = 0; i < points.length - 1; i++) {
+      const dist = pointToSegmentDistance(lat, lng, points[i], points[i + 1]);
+
+      if (dist <= MAX_DISTANCE) {
+        return { ok: true };
+      }
+    }
+
+    // אם לא נמצאה אף נקודה קרובה – מחוץ למסלול
+    return {
+      ok: false,
+      message: "אינך נמצא במסלול – לא ניתן לדווח",
+    };
+  } catch (err) {
+    console.error("שגיאה בבדיקת מיקום:", err);
+
+    // במקרה של שגיאה – לא חוסמים (כדי לא לפגוע במשתמש)
+    return { ok: true };
+  }
+}
+//==================================================================================================
 
 async function sendDangerReportEmail({
   description,
@@ -175,6 +375,7 @@ function getSetting(name) {
     );
   });
 }
+
 /* ==============================
    POST דיווח מהשטח (תמונה חובה)
 ============================== */
@@ -254,6 +455,15 @@ router.post("/:groupId/report", upload.single("image"), async (req, res) => {
 
     const trail_id = trailResult[0].trail_id;
 
+    // ============================================
+    // בדיקת מיקום GPS בתוך המסלול
+    // NOTE: מנוטרל לצורך בדיקות והדגמה
+    // ============================================
+   /* const locationCheck = await checkUserInsideTrail(lat, lng, trail_id);
+    if (!locationCheck.ok) {
+      return res.status(400).json({ message: locationCheck.message });
+    }*/
+
     const imagePath = `uploads/reports/${req.file.filename}`;
 
     //  INSERT נכון
@@ -263,24 +473,32 @@ router.post("/:groupId/report", upload.single("image"), async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'חדש')
     `;
 
-db.query(
-  insertSql,
-  [user_id, trail_id, groupId, lat, lng, problem_type, description, imagePath],
-  async (err2) => {
-    if (err2) {
-      console.error(err2);
-      return res.status(500).json({ message: "שגיאת שרת" });
-    }
+    db.query(
+      insertSql,
+      [
+        user_id,
+        trail_id,
+        groupId,
+        lat,
+        lng,
+        problem_type,
+        description,
+        imagePath,
+      ],
+      async (err2) => {
+        if (err2) {
+          console.error(err2);
+          return res.status(500).json({ message: "שגיאת שרת" });
+        }
 
-    //  קריאה לפונקצית עזר לשליחת מיל דחוף למנהל
-    if (problem_type === "סכנה") {
-      await handleDangerReport(user_id, description, imagePath, groupId);
-    }
+        //  קריאה לפונקצית עזר לשליחת מיל דחוף למנהל
+        if (problem_type === "סכנה") {
+          await handleDangerReport(user_id, description, imagePath, groupId);
+        }
 
-    res.json({ message: "הדיווח נשלח בהצלחה" });
-  },
-);
-
+        res.json({ message: "הדיווח נשלח בהצלחה" });
+      },
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "שגיאת שרת" });
@@ -403,7 +621,6 @@ async function handleDangerReport(user_id, description, imagePath, group_id) {
     console.error("שגיאה בטיפול בדיווח סכנה:", err);
   }
 }
-
 
 //===============================
 // בדיקה שלא עברנו את כמות הדיווחים המותרת
