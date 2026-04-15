@@ -308,6 +308,60 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+
+//=================================================
+// מחזיר את הקבוצה הפעילה של המשתמש במסלול הזה
+//=================================================
+router.get("/active-group/:trailId/:userId", (req, res) => {
+  const { trailId, userId } = req.params;
+
+  const sql = `
+    SELECT g.group_id
+    FROM groups g
+    JOIN guidances gu ON g.group_id = gu.group_id
+    LEFT JOIN trip_requests tr ON g.request_id = tr.request_id
+    WHERE g.trail_id = ?
+      AND gu.status = 'בתהליך'
+      AND (g.guide_id = ? OR tr.user_id = ?)
+    LIMIT 1
+  `;
+
+  db.query(sql, [trailId, userId, userId], (err, result) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+    if (!result.length) {
+      return res.status(404).json({ message: "אין קבוצה פעילה למשתמש" });
+    }
+
+    res.json({ groupId: result[0].group_id });
+  });
+});
+
+
+//==============================================================
+// מקבל מזהה קבוצה מהבקשה, שולף מהמסד את המסלול ששייך אליה ומחזיר אותו ללקוח
+//==============================================================
+router.get("/group/:groupId", (req, res) => {
+  const { groupId } = req.params;
+
+  const sql = `
+    SELECT t.*
+    FROM groups g
+    JOIN trails t ON g.trail_id = t.trail_id
+    WHERE g.group_id = ?
+  `;
+
+  db.query(sql, [groupId], (err, results) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+    if (!results.length) {
+      return res.status(404).json({ message: "המסלול לא נמצא" });
+    }
+
+    res.json(results[0]);
+  });
+});
+
 /* ==============================
    GET מסלול לניווט
 ============================== */
@@ -330,26 +384,7 @@ router.get("/:id", (req, res) => {
   });
 });
 
-router.get("/group/:groupId", (req, res) => {
-  const { groupId } = req.params;
 
-  const sql = `
-    SELECT t.*
-    FROM groups g
-    JOIN trails t ON g.trail_id = t.trail_id
-    WHERE g.group_id = ?
-  `;
-
-  db.query(sql, [groupId], (err, results) => {
-    if (err) return res.status(500).json({ message: "שגיאת שרת" });
-
-    if (!results.length) {
-      return res.status(404).json({ message: "המסלול לא נמצא" });
-    }
-
-    res.json(results[0]);
-  });
-});
 
 //=====================================
 // שליפת הגדרה מהמערכת לפי שם

@@ -17,10 +17,8 @@ import { format } from "date-fns";
 
 
 export default function TrailNavigation({ user }) {
-
   const { id } = useParams(); // זה trail_id
   const [searchParams] = useSearchParams();
-  const groupId = searchParams.get("groupId"); // יכול להיות null
   const navigate = useNavigate();
 
   const [trail, setTrail] = useState(null);
@@ -33,19 +31,33 @@ export default function TrailNavigation({ user }) {
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
   const [reportMsg, setReportMsg] = useState({ type: "", text: "" });
+  // מביא מהשרת את מזהה הקבוצה הפעילה של המשתמש במסלול ושומר אותו ב-state
+  const [groupId, setGroupId] = useState(null);
 
+  
+  //=====================================
+  //שולף מהשרת את מזהה הקבוצה הפעילה של המשתמש במסלול ושומר אותו ב-state
+  //====================================
+  useEffect(() => {
+    if (!user) return;
+
+    fetch(`${API_BASE}/api/trailNavigation/active-group/${id}/${user.user_id}`)
+      .then((res) => res.json())
+      .then((data) => setGroupId(data.groupId))
+      .catch(() => setGroupId(null));
+  }, [id, user]);
 
   /* =====================================
      טעינת מסלול
   ===================================== */
   useEffect(() => {
-  fetch(`${API_BASE}/api/trailNavigation/${id}`)
-    .then((res) => {
-      if (!res.ok) throw new Error("שגיאה בטעינת מסלול");
-      return res.json();
-    })
-    .then((data) => setTrail(data))
-    .catch((err) => console.error(err));
+    fetch(`${API_BASE}/api/trailNavigation/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("שגיאה בטעינת מסלול");
+        return res.json();
+      })
+      .then((data) => setTrail(data))
+      .catch((err) => console.error(err));
   }, [id]);
 
   /* =====================================
@@ -106,7 +118,7 @@ export default function TrailNavigation({ user }) {
     formData.append("user_id", user.user_id);
     formData.append("latitude", position[0]);
     formData.append("longitude", position[1]);
-   /*formData.append("latitude", 32.96506);//מיקום נכון מקובץ GPX 
+    /*formData.append("latitude", 32.96506);//מיקום נכון מקובץ GPX 
     formData.append("longitude", 35.382479);*/
     formData.append("problem_type", problemType);
     formData.append("description", description);
@@ -114,14 +126,20 @@ export default function TrailNavigation({ user }) {
 
     try {
       if (!groupId) {
-        setReportMsg({ type: "error", text: "שגיאה: לא ניתן לדווח - הקבוצה אינה פעילה כרגע בשטח , הדיווח זמין רק בזמן טיול פעיל" });
+        setReportMsg({
+          type: "error",
+          text: "שגיאה: לא ניתן לדווח - הקבוצה אינה פעילה כרגע בשטח , הדיווח זמין רק בזמן טיול פעיל",
+        });
         return;
       }
-      const res = await fetch(`${API_BASE}/api/trailNavigation/${groupId}/report`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
+      const res = await fetch(
+        `${API_BASE}/api/trailNavigation/${groupId}/report`,
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        },
+      );
 
       // אם השרת מחזיר message – נקרא אותו
       const data = await res.json().catch(() => ({}));

@@ -153,37 +153,31 @@ router.get("/vat", (req, res) => {
   );
 });
 
-//=====================================
-// מחזיר קבוצה פעילה של משתמש במסלול (כך שהטטוס של ההדרכה "בהתהליך" ,זות אומרת שהקבוצה בשטח בפועל)
-//=====================================
-router.get("/my-active-group", (req, res) => {
-  const { user_id, trail_id } = req.query;
-
-  if (!user_id || !trail_id) {
-    return res.status(400).json({ message: "חסר מידע" });
-  }
+//=================================================
+// מחזיר את הקבוצה הפעילה של המשתמש במסלול הזה
+//=================================================
+router.get("/active-group/:trailId/:userId", (req, res) => {
+  const { trailId, userId } = req.params;
 
   const sql = `
     SELECT g.group_id
     FROM groups g
-    JOIN guidances gd ON g.group_id = gd.group_id
+    JOIN guidances gu ON g.group_id = gu.group_id
+    LEFT JOIN trip_requests tr ON g.request_id = tr.request_id
     WHERE g.trail_id = ?
-    AND gd.status = 'בתהליך'
-    AND g.status = 'פעיל'
+      AND gu.status = 'בתהליך'
+      AND (g.guide_id = ? OR tr.user_id = ?)
     LIMIT 1
   `;
 
-  db.query(sql, [trail_id], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "שגיאת שרת" });
-    }
+  db.query(sql, [trailId, userId, userId], (err, result) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
 
     if (!result.length) {
-      return res.json({ group_id: null });
+      return res.status(404).json({ message: "אין קבוצה פעילה למשתמש" });
     }
 
-    res.json({ group_id: result[0].group_id });
+    res.json({ groupId: result[0].group_id });
   });
 });
 

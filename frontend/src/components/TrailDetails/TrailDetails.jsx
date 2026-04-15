@@ -92,19 +92,17 @@ export default function TrailDetails({ user }) {
    אם אין → נקבל null
 ===================================== */
   useEffect(() => {
-    // אם אין משתמש מחובר – אין מה לבדוק
     if (!user) return;
 
     fetch(
-      `${API_BASE}/api/TrailDetailsAndrequests/my-active-group?user_id=${user.user_id}&trail_id=${id}`,
+      `${API_BASE}/api/TrailDetailsAndrequests/active-group/${id}/${user.user_id}`,
     )
       .then((res) => res.json())
       .then((data) => {
-        // שמירת מזהה הקבוצה (יכול להיות גם null)
-        setGroupId(data.group_id);
+        setGroupId(data.groupId);
       })
       .catch(() => {
-        console.log("שגיאה בשליפת קבוצה פעילה");
+        setGroupId(null);
       });
   }, [user, id]);
 
@@ -165,7 +163,7 @@ export default function TrailDetails({ user }) {
       // הצגת הודעה למשתמש – אי אפשר לשלוח בקשה בלי התחברות
       setRequestMsg({ type: "error", text: "יש להתחבר כדי לשלוח בקשה למסלול" });
       //מעביר אותו להתחבר
-      setTimeout(() => navigate("/login"), 1600);
+      setTimeout(() => navigate("/login"), 3500);
       return;
     }
 
@@ -206,7 +204,7 @@ export default function TrailDetails({ user }) {
       setTimeout(() => {
         setShowRequest(false);
         setMsg({ type: "", text: "" });
-      }, 1500);
+      }, 2400);
     } else {
       // הודעת שגיאה שמגיעה מהשרת
       setRequestMsg({

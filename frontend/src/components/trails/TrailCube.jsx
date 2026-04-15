@@ -46,7 +46,6 @@ export default function TrailCube() {
      ברירת מחדל: מושתק*/
   const [isMuted, setIsMuted] = useState(true);
 
-
   /**
    * 8 כל פעם שליפת מסלולים מהשרת לפי עמוד
    * כל שינוי בעמוד – שולח בקשה חדשה לשרת
@@ -90,19 +89,6 @@ export default function TrailCube() {
    */
   function goTo(i) {
     setFaceIndex(((i % 4) + 4) % 4);
-
-    const types = ["רגלי", "גיפים", "טרקטורונים", "סוסים"];
-    const selectedType = types[i];
-
-    setTypeFilter(selectedType);
-
-    fetch(`${API_BASE}/api/trails/type/${selectedType}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setTrails(data.data);
-        }
-      });
   }
 
   /**
@@ -156,20 +142,6 @@ export default function TrailCube() {
       <div className={styles.cubeUi} dir="rtl">
         {/* פאנל ניווט וחיפוש */}
         <nav className={styles.faceNav}>
-          {/* תיבת חיפוש לפי שם */}
-          <div className={styles.searchBox}>
-            <input
-              type="search"
-              placeholder="חפש לפי שם..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <button type="button" onClick={handleSearch}>
-              חיפוש
-            </button>
-          </div>
-
           {/* לוגו */}
           <img src={logo} alt="Trail Quest" className={styles.panelLogo} />
 
@@ -318,10 +290,51 @@ export default function TrailCube() {
       {/* אזור כרטיסי המסלולים */}
       <div>
         {/* כפתור החזרת כל המסלולים */}
-        <div className={styles.resetArea}>
-          <button className={styles.resetBtn} onClick={resetTrails}>
-            הצג את כל המסלולים
-          </button>
+        <div className={styles.toolbar}>
+          {/* חיפוש לפי שם */}
+          <input
+            type="search"
+            placeholder="חפש לפי שם..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+          />
+
+          <button onClick={handleSearch}>חיפוש</button>
+
+          {/* סינון לפי סוג */}
+          <span className={styles.filterText}>סינון:</span>
+          <select
+            onChange={(e) => {
+              const value = e.target.value;
+
+              if (value === "all") {
+                resetTrails();
+                return;
+              }
+
+              fetch(`${API_BASE}/api/trails/type/${value}`)
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.success) {
+                    setTrails(data.data);
+                  }
+                });
+            }}
+          >
+            <option value="all">כל המסלולים</option>
+            <option value="רגלי">מסלולי רגל</option>
+            <option value="גיפים">ג׳יפים</option>
+            <option value="טרקטורונים">טרקטורונים</option>
+            <option value="סוסים">סוסים</option>
+          </select>
+
+          {/* כפתור איפוס */}
+          <button onClick={resetTrails}>הצג את כל המסלולים</button>
         </div>
         <div className={styles.cardsArea}>
           {trails.map((trail) => (
