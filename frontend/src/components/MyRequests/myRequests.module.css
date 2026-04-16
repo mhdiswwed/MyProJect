@@ -873,3 +873,51 @@ border-top:1px solid #ccc;
   font-size: 12px;
   color: #64748b;
 }
+
+.priceSection {
+  background: rgba(255,255,255,0.04);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.priceSection h4 {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #ddd;
+  margin: 4px 0;
+}
+
+.priceRowTotal {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  color: #4caf50;
+  margin-top: 6px;
+}
+
+.priceSummary {
+  margin-top: 10px;
+}
+
+.priceTotal {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #00e676;
+  margin-top: 8px;
+}
+
+.priceDivider {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 10px 0;
+}

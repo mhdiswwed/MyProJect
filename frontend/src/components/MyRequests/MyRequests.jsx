@@ -833,79 +833,89 @@ export default function MyRequests({ user }) {
       {/*חלון פופה לפירוט המחיר */}
       {showPriceModal && selectedPrice && (
         <div className={styles.modalOverlay}>
-          {/* הקופסה המרכזית של הפופאפ */}
           <div className={styles.modal} dir="rtl">
-            {/* כותרת עם אייקון */}
             <h3 className={styles.priceTitle}>
               <FaFileInvoiceDollar /> פירוט מחירים
             </h3>
 
-            {/* שם המסלול */}
             <h4 className={styles.priceSubtitle}>{selectedPrice.trail_name}</h4>
 
+            {/* ================= משתתפים ================= */}
+            <div className={styles.priceSection}>
+              <h4>משתתפים</h4>
+
+              <p className={styles.priceRow}>
+                <FaUsers /> כמות: {selectedPrice.number_of_participants}
+              </p>
+
+              <p className={styles.priceRow}>
+                <FaShekelSign /> ליחיד: ₪{selectedPrice.price_per_person}
+              </p>
+
+              <p className={styles.priceRow}>
+                <FaReceipt /> ליחיד כולל מע״מ: ₪
+                {Number(selectedPrice.price_per_person_with_vat).toFixed(2)}
+              </p>
+
+              <p className={styles.priceRowTotal}>
+                <FaUsers />
+                סה״כ משתתפים: ₪
+                {(
+                  selectedPrice.number_of_participants *
+                  selectedPrice.price_per_person_with_vat
+                ).toFixed(2)}
+              </p>
+            </div>
+
             {/* ================= כלי רכב ================= */}
-            {/* מוצג רק אם יש מחיר כלי */}
             {selectedPrice.price_per_vehicle > 0 && (
-              <>
-                {/* מחיר כלי ללא מע״מ */}
+              <div className={styles.priceSection}>
+                <h4>כלי רכב</h4>
+
                 <p className={styles.priceRow}>
-                  <FaCar className={styles.priceIcon} />
-                  מחיר כלי ליחיד: ₪{selectedPrice.price_per_vehicle}
+                  <FaCar /> כמות: {selectedPrice.number_of_vehicles}
                 </p>
 
-                {/* מחיר כלי עם מע״מ */}
                 <p className={styles.priceRow}>
-                  <FaCar className={styles.priceIcon} />
-                  מחיר כלי ליחיד כולל מע״מ: ₪
-                  {selectedPrice.price_per_vehicle_with_vat != null
-                    ? Number(selectedPrice.price_per_vehicle_with_vat).toFixed(
-                        2,
-                      )
-                    : "—"}
+                  <FaShekelSign /> לכלי: ₪{selectedPrice.price_per_vehicle}
                 </p>
-              </>
+
+                <p className={styles.priceRow}>
+                  <FaReceipt /> לכלי כולל מע״מ: ₪
+                  {Number(selectedPrice.price_per_vehicle_with_vat).toFixed(2)}
+                </p>
+
+                <p className={styles.priceRowTotal}>
+                  <FaCar />
+                  סה״כ רכבים: ₪
+                  {(
+                    selectedPrice.number_of_vehicles *
+                    selectedPrice.price_per_vehicle_with_vat
+                  ).toFixed(2)}
+                </p>
+              </div>
             )}
 
-            {/* ================= משתתפים ================= */}
-            {/* מחיר משתתף ללא מע״מ */}
-            <p className={styles.priceRow}>
-              <FaUsers className={styles.priceIcon} />
-              מחיר השתתפות ליחיד: ₪{selectedPrice.price_per_person}
-            </p>
-
-            {/* מחיר משתתף עם מע״מ */}
-            <p className={styles.priceRow}>
-              <FaUsers className={styles.priceIcon} />
-              מחיר השתתפות ליחיד כולל מע״מ: ₪
-              {selectedPrice.price_per_person_with_vat != null
-                ? Number(selectedPrice.price_per_person_with_vat).toFixed(2)
-                : "—"}
-            </p>
-
-            {/* קו הפרדה */}
             <hr className={styles.priceDivider} />
 
             {/* ================= סיכום ================= */}
-            {/* מחיר לפני מע״מ */}
-            <p className={styles.priceRow}>
-              <MdAttachMoney className={styles.priceIcon} />
-              מחיר כולל לפני מע״מ: ₪
-              {Number(selectedPrice.total_before_vat).toFixed(2)}
-            </p>
+            <div className={styles.priceSummary}>
+              <p className={styles.priceRow}>
+                <MdAttachMoney /> לפני מע״מ: ₪
+                {Number(selectedPrice.total_before_vat).toFixed(2)}
+              </p>
 
-            {/* סכום מע״מ */}
-            <p className={styles.priceRow}>
-              <FaReceipt className={styles.priceIcon} />
-              מע״מ: ₪{Number(selectedPrice.vat_amount).toFixed(2)}
-            </p>
+              <p className={styles.priceRow}>
+                <FaReceipt /> מע״מ: ₪
+                {Number(selectedPrice.vat_amount).toFixed(2)}
+              </p>
 
-            {/* ================= מחיר סופי ================= */}
-            <p className={styles.priceTotal}>
-              <FaShekelSign className={styles.priceIcon} /> מחיר כולל: ₪
-              {Number(selectedPrice.total_with_vat).toFixed(2)}
-            </p>
+              <p className={styles.priceTotal}>
+                <FaFileInvoiceDollar /> סה״כ לתשלום: ₪
+                {Number(selectedPrice.total_with_vat).toFixed(2)}
+              </p>
+            </div>
 
-            {/* ================= כפתור סגירה ================= */}
             <div className={styles.modalButtons}>
               <button
                 className={styles.closeBtn}

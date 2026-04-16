@@ -72,8 +72,6 @@ export default function TrailDetails({ user }) {
   // state לשמירת מזהה הקבוצה הפעילה של המשתמש במסלול
   const [groupId, setGroupId] = useState(null);
 
-
-
   // שליפת המע״מ מהשרת
   useEffect(() => {
     fetch(`${API_BASE}/api/TrailDetailsAndrequests/vat`)
@@ -453,6 +451,12 @@ export default function TrailDetails({ user }) {
               </div>
 
               {/* בחירת שעה */}
+              {/* הסבר למשתמש */}
+              <small className={styles.timeNote}>
+                שעות הפעילות הן בין 08:00 ל־18:00. השעות המוצגות הן שעות התחלה
+                אפשריות כך שהטיול יסתיים עד 18:00.
+              </small>
+
               <div className={styles.dateWrapper}>
                 <FaClock className={styles.dateIcon} />
 
