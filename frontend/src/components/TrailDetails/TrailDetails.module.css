@@ -583,3 +583,16 @@ small{
   border-radius: 8px;
   line-height: 1.5;
 }
+
+.modalCard {
+  max-height: 90vh;        /* שלא יחרוג מהמסך */
+  overflow-y: auto;        /* מאפשר גלילה */
+padding-bottom: 20px;
+  /* 🔥 הסתרת פס גלילה */
+  scrollbar-width: none;   /* Firefox */
+}
+
+/* Chrome / Edge / Safari */
+.modalCard::-webkit-scrollbar {
+  display: none;
+}

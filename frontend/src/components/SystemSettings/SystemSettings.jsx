@@ -24,6 +24,10 @@ export default function SystemSettings() {
 
   // שמירת הערך שמכניסים במודאל
   const [inputValue, setInputValue] = useState("");
+//מינימום אנשים משתתפים בטיול
+  const [minValue, setMinValue] = useState("");
+  //מקסימום אנשים משתתפים בטיול
+  const [maxValue, setMaxValue] = useState("");
 
   //==================================
   //שליפת כל הנתונים
@@ -48,6 +52,54 @@ export default function SystemSettings() {
   async function saveSetting() {
     // איפוס הודעה
     setMsg({ type: "", text: "" });
+
+    if (currentKey === "participants") {
+      const min = Number(minValue);
+      const max = Number(maxValue);
+
+      if (isNaN(min) || isNaN(max)) {
+        setMsg({ type: "error", text: "ערכים לא תקינים" });
+        return;
+      }
+
+      if (min < 0 || max < 0) {
+        setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
+        return;
+      }
+
+      try {
+        // עדכון מינימום
+        await fetch(`${API_BASE}/api/SystemSettings/min_participants`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: min }),
+        });
+
+        // עדכון מקסימום
+        await fetch(`${API_BASE}/api/SystemSettings/max_participants`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: max }),
+        });
+
+        setSettings((prev) => ({
+          ...prev,
+          min_participants: min,
+          max_participants: max,
+        }));
+
+        setMsg({ type: "success", text: "עודכן בהצלחה" });
+
+        setTimeout(() => {
+          setShowModal(false);
+          setMsg({ type: "", text: "" });
+        }, 1200);
+      } catch {
+        setMsg({ type: "error", text: "שגיאת שרת" });
+      }
+
+      return;
+    }
 
     // המרת הערך למספר
     const num = Number(inputValue);
@@ -127,6 +179,9 @@ export default function SystemSettings() {
 
       case "report_interval_minutes":
         return "עדכון זמן בין דיווחים (בדקות)";
+
+      case "participants":
+        return "עדכון משתתפים בטיול";
 
       default:
         return "עדכון הגדרה";
@@ -230,6 +285,30 @@ export default function SystemSettings() {
               </button>
             </td>
           </tr>
+
+          {/* כמות משתתפים בטיול( מינימום ומקסימום )*/}
+          <tr>
+            <td>כמות משתתפים בטיול</td>
+
+            <td>
+              מינימום: {settings.min_participants} | מקסימום:{" "}
+              {settings.max_participants}
+            </td>
+
+            <td>
+              <button
+                className={styles.editIcon}
+                onClick={() => {
+                  setCurrentKey("participants"); // מפתח מיוחד
+                  setMinValue(settings.min_participants);
+                  setMaxValue(settings.max_participants);
+                  setShowModal(true);
+                }}
+              >
+                <FaEdit />
+              </button>
+            </td>
+          </tr>
         </tbody>
       </table>
 
@@ -251,13 +330,30 @@ export default function SystemSettings() {
             {/* כותרת דינמית לפי סוג ההגדרה */}
             <h3 className={styles.modalTitle}>{getSettingTitle(currentKey)}</h3>
 
-            {/* שדה קלט */}
-            <input
-              type="number"
-              value={inputValue} // הערך הנוכחי
-              placeholder={getPlaceholder(currentKey)} // placeholder לפי סוג
-              onChange={(e) => setInputValue(e.target.value)} // עדכון הערך
-            />
+            {currentKey === "participants" ? (
+              <>
+                <input
+                  type="number"
+                  value={minValue}
+                  placeholder="מינימום משתתפים"
+                  onChange={(e) => setMinValue(e.target.value)}
+                />
+
+                <input
+                  type="number"
+                  value={maxValue}
+                  placeholder="מקסימום משתתפים"
+                  onChange={(e) => setMaxValue(e.target.value)}
+                />
+              </>
+            ) : (
+              <input
+                type="number"
+                value={inputValue}
+                placeholder={getPlaceholder(currentKey)}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+            )}
 
             {/* הודעת מערכת */}
             {msg.text && (

@@ -72,6 +72,26 @@ export default function TrailDetails({ user }) {
   // state לשמירת מזהה הקבוצה הפעילה של המשתמש במסלול
   const [groupId, setGroupId] = useState(null);
 
+  // ===============================
+  // שמירת מינימום ומקסימום משתתפים מהמערכת
+  // ===============================
+  const [minParticipants, setMinParticipants] = useState(1); // ברירת מחדל
+  const [maxParticipants, setMaxParticipants] = useState(100); // ברירת מחדל
+
+  // ===============================
+  // שליפת מינימום ומקסימום משתתפים מהשרת
+  // ===============================
+  useEffect(() => {
+    fetch(`${API_BASE}/api/TrailDetailsAndrequests/participants-limits`)
+      .then((res) => res.json()) // המרת תשובה ל־JSON
+      .then((data) => {
+        // שמירת הערכים ב־state
+        if (data.min !== undefined) setMinParticipants(data.min);
+        if (data.max !== undefined) setMaxParticipants(data.max);
+      })
+      .catch(() => console.log("שגיאה בשליפת מגבלות משתתפים"));
+  }, []);
+
   // שליפת המע״מ מהשרת
   useEffect(() => {
     fetch(`${API_BASE}/api/TrailDetailsAndrequests/vat`)
@@ -165,6 +185,7 @@ export default function TrailDetails({ user }) {
       return;
     }
 
+    
     const body = {
       user_id: user.user_id,
       trail_id: id,
@@ -414,14 +435,47 @@ export default function TrailDetails({ user }) {
 
             <div className={styles.modalForm}>
               {/* מספר משתתפים */}
+              <div className={styles.timeNote}>
+                מינימום משתתפים: {minParticipants} | מקסימום משתתפים:{" "}
+                {maxParticipants}
+              </div>
               <input
                 type="number"
-                min="1"
+                min={minParticipants} // לא מאפשר פחות מהמינימום
+                max={maxParticipants} // לא מאפשר יותר מהמקסימום
                 placeholder="מספר משתתפים"
                 value={participants}
-                onChange={(e) => setParticipants(e.target.value)}
-              />
+                onChange={(e) => {
+                  const value = Number(e.target.value); // המרה למספר
 
+                  setParticipants(value); // שמירה ב־state
+
+                  // ===============================
+                  // בדיקות בזמן אמת
+                  // ===============================
+
+                  // פחות מהמינימום
+                  if (value < minParticipants) {
+                    setRequestMsg({
+                      type: "error",
+                      text: `המינימום הוא ${minParticipants} משתתפים`,
+                    });
+                  }
+
+                  // יותר מהמקסימום
+                  else if (value > maxParticipants) {
+                    setRequestMsg({
+                      type: "error",
+                      text: `המקסימום הוא ${maxParticipants} משתתפים`,
+                    });
+                  }
+
+                  // תקין → מנקה הודעה
+                  else {
+                    setRequestMsg({ type: "", text: "" });
+                  }
+                }}
+              />
               {/* מספר כלים – רק אם המסלול לא רגלי */}
               {trail.trail_type !== "רגלי" && (
                 <input
@@ -432,7 +486,6 @@ export default function TrailDetails({ user }) {
                   onChange={(e) => setVehicles(e.target.value)}
                 />
               )}
-
               {/* בחירת תאריך */}
               {/* ===============================
                DatePicker תאריך (חוסם היום והעבר)
@@ -449,14 +502,12 @@ export default function TrailDetails({ user }) {
                 />
                 <FaCalendarAlt className={styles.dateIcon} />
               </div>
-
               {/* בחירת שעה */}
               {/* הסבר למשתמש */}
               <small className={styles.timeNote}>
                 שעות הפעילות הן בין 08:00 ל־18:00. השעות המוצגות הן שעות התחלה
                 אפשריות כך שהטיול יסתיים עד 18:00.
               </small>
-
               <div className={styles.dateWrapper}>
                 <FaClock className={styles.dateIcon} />
 
@@ -506,7 +557,6 @@ export default function TrailDetails({ user }) {
                   customInput={<input readOnly className={styles.dateInput} />}
                 />
               </div>
-
               {/* בחירת מדריך */}
               <select
                 value={selectedGuide}
@@ -519,7 +569,6 @@ export default function TrailDetails({ user }) {
                   </option>
                 ))}
               </select>
-
               {/* הודעת הצלחה / שגיאה למשתמש */}
               {requestMsg.text && (
                 <div
@@ -532,7 +581,6 @@ export default function TrailDetails({ user }) {
                   {requestMsg.text}
                 </div>
               )}
-
               {/* כפתור שליחה */}
               <button
                 className={styles.submitBtn}

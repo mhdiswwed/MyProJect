@@ -9,6 +9,35 @@ const dbSingleton = require("../dbSingleton");
 // Execute a query to the database
 const db = dbSingleton.getConnection();
 
+// ===============================
+// פונקציה שמביאה מינימום ומקסימום משתתפים
+// ===============================
+function getParticipantsLimits(callback) {
+  const sql = `
+    SELECT setting_name, setting_value
+    FROM system_settings
+    WHERE setting_name IN ('min_participants', 'max_participants')
+  `;
+
+  db.query(sql, (err, rows) => {
+    if (err) return callback(err);
+
+    let min = 1;
+    let max = 100;
+
+    rows.forEach((row) => {
+      if (row.setting_name === "min_participants") {
+        min = Number(row.setting_value);
+      }
+      if (row.setting_name === "max_participants") {
+        max = Number(row.setting_value);
+      }
+    });
+
+    callback(null, { min, max });
+  });
+}
+
 //=============================
 // חשוב: אקספרס קורא רותיר מלמעלה למטה,
 // לכן רותיר ספציפיים חייבים להיות לפני דינמיים
@@ -69,7 +98,7 @@ router.get("/available-guides", (req, res) => {
       let checked = 0;
 
       guides.forEach((guide) => {
-   const checkSql = `
+        const checkSql = `
   SELECT trip_time, duration_minutes FROM (
     
     -- קבוצות פעילות
@@ -93,40 +122,44 @@ router.get("/available-guides", (req, res) => {
   ) AS all_trips
 `;
 
-        db.query(checkSql, [guide.user_id, trip_date, guide.user_id, trip_date], (err, trips) => {
-          if (err) return;
+        db.query(
+          checkSql,
+          [guide.user_id, trip_date, guide.user_id, trip_date],
+          (err, trips) => {
+            if (err) return;
 
-          let isAvailable = true;
+            let isAvailable = true;
 
-          for (let trip of trips) {
-            const existingStart = new Date(`${trip_date}T${trip.trip_time}`);
-            const existingEnd = new Date(
-              existingStart.getTime() + trip.duration_minutes * 60000
-            );
+            for (let trip of trips) {
+              const existingStart = new Date(`${trip_date}T${trip.trip_time}`);
+              const existingEnd = new Date(
+                existingStart.getTime() + trip.duration_minutes * 60000,
+              );
 
-            // מוסיפים הפסקה
-            const existingEndWithBuffer = new Date(
-              existingEnd.getTime() + buffer
-            );
+              // מוסיפים הפסקה
+              const existingEndWithBuffer = new Date(
+                existingEnd.getTime() + buffer,
+              );
 
-            // בדיקת חפיפה
-            if (newStart < existingEndWithBuffer && newEnd > existingStart) {
-              isAvailable = false;
-              break;
+              // בדיקת חפיפה
+              if (newStart < existingEndWithBuffer && newEnd > existingStart) {
+                isAvailable = false;
+                break;
+              }
             }
-          }
 
-          if (isAvailable) {
-            availableGuides.push(guide);
-          }
+            if (isAvailable) {
+              availableGuides.push(guide);
+            }
 
-          checked++;
+            checked++;
 
-          // כשסיימנו לבדוק את כולם
-          if (checked === guides.length) {
-            res.json(availableGuides);
-          }
-        });
+            // כשסיימנו לבדוק את כולם
+            if (checked === guides.length) {
+              res.json(availableGuides);
+            }
+          },
+        );
       });
     });
   });
@@ -151,6 +184,33 @@ router.get("/vat", (req, res) => {
       res.json({ vat: Number(rows[0].setting_value) });
     },
   );
+});
+
+// ===============================
+// שליפת מינימום ומקסימום משתתפים
+// ===============================
+router.get("/participants-limits", (req, res) => {
+  const sql = `
+    SELECT setting_name, setting_value
+    FROM system_settings
+    WHERE setting_name IN ('min_participants', 'max_participants')
+  `;
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      return res.status(500).json({ message: "שגיאת שרת" });
+    }
+
+    const result = {};
+    rows.forEach((row) => {
+      result[row.setting_name] = Number(row.setting_value);
+    });
+
+    res.json({
+      min: result.min_participants,
+      max: result.max_participants,
+    });
+  });
 });
 
 //=================================================
@@ -181,7 +241,6 @@ router.get("/active-group/:trailId/:userId", (req, res) => {
   });
 });
 
-
 // ==============================
 // מחזיר מסלול לפי ID
 // ==============================
@@ -204,9 +263,6 @@ router.get("/:id", (req, res) => {
     res.json(results[0]);
   });
 });
-
-
-
 
 // ==============================
 // יצירת בקשת הצטרפות
@@ -238,22 +294,19 @@ router.post("/request", (req, res) => {
     errors.push("חובה לבחור שעה");
   }
 
-  // 4) משתתפים
-  if (!number_of_participants || Number(number_of_participants) < 1) {
-    errors.push("מספר משתתפים חייב להיות 1 ומעלה");
-  }
 
-  // 5) מדריך
+
+  // 4) מדריך
   if (!guide_id) {
     errors.push("חובה לבחור מדריך");
   }
 
-  // 6) מסלול
+  // 5) מסלול
   if (!trail_id) {
     errors.push("חסר מזהה מסלול");
   }
 
-  // 7) מספר כלי רכב
+  // 6) מספר כלי רכב
   if (
     number_of_vehicles === undefined ||
     number_of_vehicles === null ||
@@ -261,55 +314,72 @@ router.post("/request", (req, res) => {
   ) {
     errors.push("מספר כלי רכב חייב להיות 0 או מספר חיובי");
   }
-
-  // אם יש שגיאות – מחזירים הודעה אחת (string)
-  if (errors.length > 0) {
-    return res.status(400).json({
-      message: errors.join(" וגם "),
-    });
-  }
-
-
   // ===============================
-// בדיקת זמן מינימלי להזמנה (לפחות 12 שעות מראש)
-// ===============================
-// זמן נוכחי
-const now = new Date();
-// זמן הטיול שהמשתמש בחר
-const tripDateTime = new Date(`${trip_date}T${trip_time}`);
-// חישוב הפרש שעות
-const diffHours = (tripDateTime - now) / (1000 * 60 * 60);
-// אם פחות מ־24 שעות → חוסמים
-if (diffHours < 24) {
-  return res.status(400).json({
-    message: "יש להזמין טיול לפחות 24 שעות מראש ⏳",
-  });
-}
-  const sql = `
+  // 7)שימוש בפונקציה במקום הקוד הארוך
+  // ===============================
+  getParticipantsLimits((err, limits) => {
+    if (err) {
+      return res.status(500).json({ message: "שגיאת שרת" });
+    }
+
+    const { min, max } = limits;
+
+    // 🔥 הבדיקה
+    if (
+      Number(number_of_participants) < min ||
+      Number(number_of_participants) > max
+    ) {
+      errors.push(`מספר משתתפים חייב להיות בין ${min} ל-${max}`);
+    }
+
+    // אם יש שגיאות – מחזירים הודעה אחת (string)
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: errors.join(" וגם "),
+      });
+    }
+
+    // ===============================
+    // בדיקת זמן מינימלי להזמנה (לפחות 12 שעות מראש)
+    // ===============================
+    // זמן נוכחי
+    const now = new Date();
+    // זמן הטיול שהמשתמש בחר
+    const tripDateTime = new Date(`${trip_date}T${trip_time}`);
+    // חישוב הפרש שעות
+    const diffHours = (tripDateTime - now) / (1000 * 60 * 60);
+    // אם פחות מ־24 שעות → חוסמים
+    if (diffHours < 24) {
+      return res.status(400).json({
+        message: "יש להזמין טיול לפחות 24 שעות מראש ⏳",
+      });
+    }
+    const sql = `
     INSERT INTO trip_requests
     (trip_date, trip_time, number_of_participants, number_of_vehicles, trail_id, user_id, guide_id, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'ממתין')
   `;
 
-  db.query(
-    sql,
-    [
-      trip_date,
-      trip_time,
-      Number(number_of_participants),
-      Number(number_of_vehicles) || 0,
-      trail_id,
-      user_id,
-      guide_id,
-    ],
-    (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "שגיאת שרת" });
-      }
-      res.json({ message: "הבקשה נשלחה בהצלחה" });
-    },
-  );
+    db.query(
+      sql,
+      [
+        trip_date,
+        trip_time,
+        Number(number_of_participants),
+        Number(number_of_vehicles) || 0,
+        trail_id,
+        user_id,
+        guide_id,
+      ],
+      (err) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "שגיאת שרת" });
+        }
+        res.json({ message: "הבקשה נשלחה בהצלחה" });
+      },
+    );
+  });
 });
 
 module.exports = router;
