@@ -19,7 +19,9 @@ router.get("/", (req, res) => {
       const settings = {};
 
       rows.forEach((row) => {
-        settings[row.setting_name] = Number(row.setting_value);
+        // אם זה מספר → המר למספר, אחרת השאר כטקסט (לשעות)
+        const num = Number(row.setting_value);
+        settings[row.setting_name] = isNaN(num) ? row.setting_value : num;
       });
 
       res.json(settings);
@@ -32,10 +34,24 @@ router.put("/:name", (req, res) => {
   const { name } = req.params;
   const { value } = req.body;
 
+  // ניסיון להמיר למספר
   const num = Number(value);
 
-  // בדיקה אם ערך לא תקין
-  if (value === "" || isNaN(num)) {
+  // ערך סופי שישמר (מספר או טקסט)
+  let finalValue = value;
+
+  // אם זה מספר תקין → נשמור כמספר
+  if (!isNaN(num)) {
+    finalValue = num;
+  }
+
+  // אם זה לא מספר וגם לא שעות → שגיאה
+  if (
+    value === "" ||
+    (isNaN(num) &&
+      name !== "working_hours_start" &&
+      name !== "working_hours_end")
+  ) {
     return res.status(400).json({ message: "ערך לא תקין" });
   }
 
@@ -73,10 +89,35 @@ router.put("/:name", (req, res) => {
       message: "מקסימום משתתפים לא יכול להיות שלילי",
     });
   }
-  
+
+  // הפסקת מדריך
+  if (name === "guide_break_minutes" && num < 0) {
+    return res.status(400).json({
+      message: "זמן הפסקה למדריך לא יכול להיות שלילי",
+    });
+  }
+
+  // הפסקת עובד
+  if (name === "worker_break_minutes" && num < 0) {
+    return res.status(400).json({
+      message: "זמן הפסקה לעובד לא יכול להיות שלילי",
+    });
+  }
+
+  // בדיקת שעות
+  if (name === "working_hours_start" || name === "working_hours_end") {
+    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+    if (!regex.test(value)) {
+      return res.status(400).json({
+        message: "פורמט שעה לא תקין (HH:MM)",
+      });
+    }
+  }
+
   db.query(
     "UPDATE system_settings SET setting_value=? WHERE setting_name=?",
-    [num, name],
+    [finalValue, name],
     (err) => {
       if (err) {
         return res.status(500).json({ message: "שגיאה בעדכון" });

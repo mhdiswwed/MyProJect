@@ -18,9 +18,9 @@ export default function CreateTaskModal({
   // =========================
   // state
   // =========================
-const [taskType, setTaskType] = useState(report?.problem_type || "");
-const [description, setDescription] = useState(report?.description || "");
-const [image, setImage] = useState(report?.image_path || "");
+  const [taskType, setTaskType] = useState(report?.problem_type || "");
+  const [description, setDescription] = useState(report?.description || "");
+  const [image, setImage] = useState(report?.image_path || "");
 
   const [startTime, setStartTime] = useState("");
   const [dueTime, setDueTime] = useState("");
@@ -34,6 +34,21 @@ const [image, setImage] = useState(report?.image_path || "");
   // =========================
   const [trails, setTrails] = useState([]);
   const [selectedTrail, setSelectedTrail] = useState("");
+  // שמירת שעת התחלה של המערכת מהשרת
+  const [workingStart, setWorkingStart] = useState("");
+
+  // שמירת שעת סיום של המערכת מהשרת
+  const [workingEnd, setWorkingEnd] = useState("");
+
+  // שליפת שעות פעילות מה־system_settings
+  useEffect(() => {
+    fetch(`${API_BASE}/api/SystemSettings`)
+      .then((res) => res.json()) // המרת תשובה ל־JSON
+      .then((data) => {
+        setWorkingStart(data.working_hours_start); // שמירת שעת התחלה
+        setWorkingEnd(data.working_hours_end); // שמירת שעת סיום
+      });
+  }, []);
 
   // =========================
   // טעינת מסלולים רק במצב manual
@@ -113,13 +128,13 @@ const [image, setImage] = useState(report?.image_path || "");
     if (!startTime) errors.push("חסר זמן התחלה");
     if (!dueTime) errors.push("חסר זמן סיום");
 
-    // בדיקת שעות עבודה
+    // בדיקת שעות עבודה לפי הגדרות מערכת
     if (startTime && !isValidWorkHour(startTime)) {
-      errors.push("זמן התחלה חייב להיות בין 08:00 ל־18:00");
+      errors.push(`זמן התחלה חייב להיות בין ${workingStart} ל־${workingEnd}`);
     }
 
     if (dueTime && !isValidWorkHour(dueTime)) {
-      errors.push("זמן סיום חייב להיות בין 08:00 ל־18:00");
+      errors.push(`זמן סיום חייב להיות בין ${workingStart} ל־${workingEnd}`);
     }
 
     // התחלה לא יכולה להיות בעבר / היום
@@ -173,76 +188,73 @@ const [image, setImage] = useState(report?.image_path || "");
       return;
     }
 
-try {
-  const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-  // אותם שדות בדיוק
-  formData.append("task_type", taskType);
-  formData.append("description", description);
+      // אותם שדות בדיוק
+      formData.append("task_type", taskType);
+      formData.append("description", description);
 
-  // אם זה יצירה ידנית  שולחים קובץ
-  if (mode === "manual" && image) {
-    formData.append("image", image);
+      // אם זה יצירה ידנית  שולחים קובץ
+      if (mode === "manual" && image) {
+        formData.append("image", image);
+      }
+
+      // אם זה מתוך דיווח שולחים את הנתיב של התמונה הקיימת
+      if (mode === "report") {
+        formData.append("image", report.image_path);
+      }
+
+      formData.append("start_time", startTime);
+      formData.append("due_time", dueTime);
+      formData.append("report_id", mode === "report" ? report.report_id : "");
+      formData.append("latitude", mode === "report" ? report.latitude : "");
+      formData.append("longitude", mode === "report" ? report.longitude : "");
+      if (mode === "manual" && selectedTrail) {
+        formData.append("trail_id", selectedTrail);
+      }
+      formData.append("workers", JSON.stringify(selectedWorkers));
+
+      const res = await fetch(`${API_BASE}/api/CreateTaskModal/tasks`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+
+      setMsg({
+        type: res.ok ? "success" : "error",
+        text: data.message,
+      });
+
+      if (res.ok) {
+        setTimeout(() => {
+          onClose();
+          onSuccess();
+        }, 2200);
+      }
+    } catch {
+      setMsg({ type: "error", text: "שגיאה ביצירת משימה" });
+    }
   }
 
-  // אם זה מתוך דיווח שולחים את הנתיב של התמונה הקיימת
-  if (mode === "report") {
-    formData.append("image", report.image_path);
-  }
-
-  formData.append("start_time", startTime);
-  formData.append("due_time", dueTime);
-  formData.append("report_id", mode === "report" ? report.report_id : "");
-  formData.append("latitude", mode === "report" ? report.latitude : "");
-  formData.append("longitude", mode === "report" ? report.longitude : "");
- if (mode === "manual" && selectedTrail) {
-   formData.append("trail_id", selectedTrail);
- }
-  formData.append("workers", JSON.stringify(selectedWorkers));
-
-  const res = await fetch(`${API_BASE}/api/CreateTaskModal/tasks`, {
-    method: "POST",
-    body: formData,
-  });
-  const data = await res.json();
-
-  setMsg({
-    type: res.ok ? "success" : "error",
-    text: data.message,
-  });
-
-  if (res.ok) {
-    setTimeout(() => {
-      onClose();
-      onSuccess();
-    }, 2200);
-  }
-} catch {
-  setMsg({ type: "error", text: "שגיאה ביצירת משימה" });
-}
-  }
-
-  // =========================
-  // בדיקת שעות עבודה (08:00 - 18:00)
-  // =========================
+  // בדיקה אם הזמן נמצא בתוך שעות הפעילות
   function isValidWorkHour(dateStr) {
-    const date = new Date(dateStr);
+    if (!workingStart || !workingEnd) return true; // אם עדיין לא נטען → לא חוסם
 
-    const hour = date.getHours();
-    const minutes = date.getMinutes();
+    const date = new Date(dateStr); // המרת זמן לאובייקט Date
 
-    // לפני 08:00
-    if (hour < 8) return false;
+    const hour = date.getHours(); // שליפת שעה
+    const minutes = date.getMinutes(); // שליפת דקות
 
-    // אחרי 18:00
-    if (hour > 18) return false;
+    const [startH, startM] = workingStart.split(":").map(Number); // פירוק שעת התחלה
+    const [endH, endM] = workingEnd.split(":").map(Number); // פירוק שעת סיום
 
-    // אם זה 18:00 בדיוק
-    if (hour === 18 && minutes > 0) return false;
+    const total = hour * 60 + minutes; // זמן נוכחי בדקות
+    const startTotal = startH * 60 + startM; // התחלה בדקות
+    const endTotal = endH * 60 + endM; // סיום בדקות
 
-    return true;
+    return total >= startTotal && total <= endTotal; // בדיקה אם בתוך הטווח
   }
-
   // =========================
   // מחשב זמן מינימלי - 12 שעות קדימה
   // =========================

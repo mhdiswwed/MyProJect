@@ -24,10 +24,15 @@ export default function SystemSettings() {
 
   // שמירת הערך שמכניסים במודאל
   const [inputValue, setInputValue] = useState("");
-//מינימום אנשים משתתפים בטיול
+  //מינימום אנשים משתתפים בטיול
   const [minValue, setMinValue] = useState("");
   //מקסימום אנשים משתתפים בטיול
   const [maxValue, setMaxValue] = useState("");
+  // שעת התחלה של המערכת
+  const [startHour, setStartHour] = useState("");
+
+  // שעת סיום של המערכת
+  const [endHour, setEndHour] = useState("");
 
   //==================================
   //שליפת כל הנתונים
@@ -52,6 +57,40 @@ export default function SystemSettings() {
   async function saveSetting() {
     // איפוס הודעה
     setMsg({ type: "", text: "" });
+
+    // טיפול בשעות פעילות
+    if (currentKey === "working_hours") {
+      try {
+        await fetch(`${API_BASE}/api/SystemSettings/working_hours_start`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: startHour }),
+        });
+
+        await fetch(`${API_BASE}/api/SystemSettings/working_hours_end`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: endHour }),
+        });
+
+        setSettings((prev) => ({
+          ...prev,
+          working_hours_start: startHour,
+          working_hours_end: endHour,
+        }));
+
+        setMsg({ type: "success", text: "עודכן בהצלחה" });
+
+        setTimeout(() => {
+          setShowModal(false);
+          setMsg({ type: "", text: "" });
+        }, 1200);
+      } catch {
+        setMsg({ type: "error", text: "שגיאת שרת" });
+      }
+
+      return;
+    }
 
     if (currentKey === "participants") {
       const min = Number(minValue);
@@ -182,6 +221,18 @@ export default function SystemSettings() {
 
       case "participants":
         return "עדכון משתתפים בטיול";
+        
+      // הפסקה בין טיולים למדריך
+      case "guide_break_minutes":
+        return "עדכון הפסקה בין טיולים למדריך";
+
+      // הפסקה בין משימות לעובד
+      case "worker_break_minutes":
+        return "עדכון הפסקה בין משימות לעובד";
+
+      // שעות פעילות מערכת
+      case "working_hours":
+        return "עדכון שעות פעילות המערכת";
 
       default:
         return "עדכון הגדרה";
@@ -309,6 +360,65 @@ export default function SystemSettings() {
               </button>
             </td>
           </tr>
+
+          <tr>
+            <td>הפסקה בין טיולים למדריך</td>
+
+            <td>{settings.guide_break_minutes} דקות</td>
+
+            <td>
+              <button
+                className={styles.editIcon}
+                onClick={() => {
+                  setCurrentKey("guide_break_minutes");
+                  setInputValue(settings.guide_break_minutes);
+                  setShowModal(true);
+                }}
+              >
+                <FaEdit />
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td>הפסקה בין משימות לעובד</td>
+
+            <td>{settings.worker_break_minutes} דקות</td>
+
+            <td>
+              <button
+                className={styles.editIcon}
+                onClick={() => {
+                  setCurrentKey("worker_break_minutes");
+                  setInputValue(settings.worker_break_minutes);
+                  setShowModal(true);
+                }}
+              >
+                <FaEdit />
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>שעות פעילות מערכת</td>
+
+            <td>
+              {settings.working_hours_start} - {settings.working_hours_end}
+            </td>
+
+            <td>
+              <button
+                className={styles.editIcon}
+                onClick={() => {
+                  setCurrentKey("working_hours");
+                  setStartHour(settings.working_hours_start);
+                  setEndHour(settings.working_hours_end);
+                  setShowModal(true);
+                }}
+              >
+                <FaEdit />
+              </button>
+            </td>
+          </tr>
         </tbody>
       </table>
 
@@ -330,7 +440,21 @@ export default function SystemSettings() {
             {/* כותרת דינמית לפי סוג ההגדרה */}
             <h3 className={styles.modalTitle}>{getSettingTitle(currentKey)}</h3>
 
-            {currentKey === "participants" ? (
+            {currentKey === "working_hours" ? (
+              <>
+                <input
+                  type="time"
+                  value={startHour}
+                  onChange={(e) => setStartHour(e.target.value)}
+                />
+
+                <input
+                  type="time"
+                  value={endHour}
+                  onChange={(e) => setEndHour(e.target.value)}
+                />
+              </>
+            ) : currentKey === "participants" ? (
               <>
                 <input
                   type="number"

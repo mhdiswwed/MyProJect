@@ -34,6 +34,20 @@ const storage = multer.diskStorage({
 //משתמשים בשם
 const upload = multer({ storage });
 
+// פונקציה שמחזירה את זמן ההפסקה לעובד מה־DB
+function getWorkerBreakMinutes(callback) {
+  db.query(
+    "SELECT setting_value FROM system_settings WHERE setting_name='worker_break_minutes'",
+    (err, result) => {
+      if (err || result.length === 0) {
+        return callback(30); // ברירת מחדל אם יש בעיה
+      }
+
+      callback(Number(result[0].setting_value));
+    }
+  );
+}
+
 // =========================================
 // GET
 // שליפת עובדים פנויים בלבד לפי זמן
@@ -41,14 +55,15 @@ const upload = multer({ storage });
 router.get("/workers", (req, res) => {
   const { start_time, due_time } = req.query;
 
-  // בדיקה אם הגיעו זמנים
   if (!start_time || !due_time) {
     return res.status(400).json({
       message: "חייב לשלוח זמן התחלה וסיום",
     });
   }
 
-  const sql = `
+  // שימוש בפונקציה
+  getWorkerBreakMinutes((breakMinutes) => {
+    const sql = `
     SELECT u.user_id, u.full_name
     FROM users u
     WHERE u.role = 'עובד'
@@ -66,10 +81,10 @@ router.get("/workers", (req, res) => {
 
         OR
 
-        -- מרווח של 30 דקות
+       -- מרווח לפי הגדרת הפסקה לעובד
         (
-          t.due_time > DATE_SUB(?, INTERVAL 30 MINUTE)
-          AND t.start_time < DATE_ADD(?, INTERVAL 30 MINUTE)
+          t.due_time > DATE_SUB(?,INTERVAL ? MINUTE)
+          AND t.start_time < DATE_ADD(?, INTERVAL ? MINUTE)
         )
       )
     )
@@ -77,20 +92,21 @@ router.get("/workers", (req, res) => {
     ORDER BY u.full_name ASC
   `;
 
-  db.query(
-    sql,
-    [start_time, due_time, start_time, due_time],
-    (err, results) => {
-      if (err) {
-        console.error("שגיאה בשליפת עובדים:", err);
-        return res.status(500).json({
-          message: "שגיאה בשליפת עובדים",
-        });
-      }
+    db.query(
+      sql,
+      [start_time, due_time, start_time, breakMinutes, due_time, breakMinutes],
+      (err, results) => {
+        if (err) {
+          console.error("שגיאה בשליפת עובדים:", err);
+          return res.status(500).json({
+            message: "שגיאה בשליפת עובדים",
+          });
+        }
 
-      res.json(Array.isArray(results) ? results : []);
-    },
-  );
+        res.json(Array.isArray(results) ? results : []);
+      },
+    );
+  });
 });
 
 /**
