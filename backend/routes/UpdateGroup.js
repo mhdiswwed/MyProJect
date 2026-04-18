@@ -1,6 +1,7 @@
 /**
  * =====================================================
  * ראוטר לעדכון קבוצה (קשור לפופאפ UpdateGroupModal)
+ * מעדכין מדריכים כמובן פנויים
  * =====================================================
  *
  * זה ראוטר ייעודי לפופאפ בלבד
@@ -17,6 +18,26 @@ const fs = require("fs");
 const path = require("path");
 
 const puppeteer = require("puppeteer");
+
+//==========================
+// שליפת זמן הפסקה של מדריך
+//==========================
+function getGuideBreakMinutes(callback) {
+  const sql = `
+    SELECT setting_value
+    FROM system_settings
+    WHERE setting_name = 'guide_break_minutes'
+    LIMIT 1
+  `;
+
+  db.query(sql, (err, rows) => {
+    if (err || !rows.length) {
+      return callback(30); // ברירת מחדל
+    }
+
+    callback(Number(rows[0].setting_value));
+  });
+}
 
 /**
  * ------------------------------------------------
@@ -95,7 +116,6 @@ function getVatRate(callback) {
   });
 }
 
-
 // =========================
 // המרת שעה לדקות
 // =========================
@@ -115,43 +135,49 @@ function checkGuideAvailability(
   ignoreGroupId,
   callback,
 ) {
-  const start = timeToMinutes(tripTime);
-  const BUFFER = 30;
-  const end = start + Number(duration) + BUFFER;
+  getGuideBreakMinutes((BUFFER) => {
+    const start = timeToMinutes(tripTime);
+    const end = start + Number(duration);
 
-  const sql = `
-    SELECT g.trip_time, t.duration_minutes
-    FROM groups g
-    JOIN trails t ON g.trail_id = t.trail_id
-    WHERE g.guide_id = ?
-      AND DATE(g.trip_date) = DATE(?)
-      AND g.status = 'פעיל'
-      AND g.group_id <> ?
-  `;
+    const sql = `
+      SELECT g.trip_time, t.duration_minutes
+      FROM groups g
+      JOIN trails t ON g.trail_id = t.trail_id
+      WHERE g.guide_id = ?
+        AND DATE(g.trip_date) = DATE(?)
+        AND g.status != 'בוטל'
+        AND g.group_id <> ?
+    `;
 
-  db.query(sql, [guideId, tripDate, ignoreGroupId], (err, rows) => {
-    if (err) return callback(err);
+    db.query(sql, [guideId, tripDate, ignoreGroupId], (err, rows) => {
+      if (err) return callback(err);
 
-    for (const row of rows) {
-      const s = timeToMinutes(row.trip_time);
-      const e = s + Number(row.duration_minutes) + BUFFER;
+      for (const row of rows) {
+        const existingStart = timeToMinutes(row.trip_time);
+        const existingEnd = existingStart + Number(row.duration_minutes || 0);
 
-      if (start < e && s < end) {
-        return callback(null, false);
+        const existingEndWithBuffer = existingEnd + BUFFER;
+        const newEndWithBuffer = end + BUFFER;
+
+        const isBefore = newEndWithBuffer <= existingStart;
+        const isAfter = start >= existingEndWithBuffer;
+
+        if (!(isBefore || isAfter)) {
+          return callback(null, false);
+        }
       }
-    }
 
-    callback(null, true);
+      callback(null, true);
+    });
   });
 }
-
 
 /**
  * ------------------------------------------------
  * שליפת מדריכים פנויים אמיתית (כולל חפיפות)
  * ------------------------------------------------
  */
-// שליפת מדריכים פנויים לפי תאריך, שעה, משך וחפיפות כולל 30 דקות הפסקה
+// שליפת מדריכים פנויים לפי תאריך, שעה, משך וחפיפות כולל הפסקה
 router.get("/available-guides", async (req, res) => {
   const { date, time, group_id } = req.query;
 
@@ -186,19 +212,20 @@ router.get("/available-guides", async (req, res) => {
 
     const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-    const buffer = 30 * 60000;
+    getGuideBreakMinutes((BUFFER_MINUTES) => {
+      const buffer = BUFFER_MINUTES * 60000;
 
-    // שליפת כל המדריכים
-    db.query(
-      `SELECT user_id, full_name FROM users WHERE role='מדריך'`,
-      (err, guides) => {
-        if (err) return res.status(500).json([]);
+      // שליפת כל המדריכים
+      db.query(
+        `SELECT user_id, full_name FROM users WHERE role='מדריך'`,
+        (err, guides) => {
+          if (err) return res.status(500).json([]);
 
-        const availableGuides = [];
-        let checked = 0;
+          const availableGuides = [];
+          let checked = 0;
 
-        guides.forEach((guide) => {
-          const checkSql = `
+          guides.forEach((guide) => {
+            const checkSql = `
             SELECT g.trip_time, t.duration_minutes
             FROM groups g
             JOIN trails t ON g.trail_id = t.trail_id
@@ -208,56 +235,57 @@ router.get("/available-guides", async (req, res) => {
             AND g.group_id <> ?
           `;
 
-          db.query(
-            checkSql,
-            [guide.user_id, cleanDate, group_id],
-            (err, trips) => {
-              if (err) return;
+            db.query(
+              checkSql,
+              [guide.user_id, cleanDate, group_id],
+              (err, trips) => {
+                if (err) return;
 
-              let isAvailable = true;
+                let isAvailable = true;
 
-              for (let trip of trips) {
-                const [h, m] = trip.trip_time.split(":");
+                for (let trip of trips) {
+                  const [h, m] = trip.trip_time.split(":");
 
-                const existingStart = new Date(cleanDate);
-                existingStart.setHours(h, m, 0, 0);
+                  const existingStart = new Date(cleanDate);
+                  existingStart.setHours(h, m, 0, 0);
 
-                const existingEnd = new Date(
-                  existingStart.getTime() + trip.duration_minutes * 60000,
-                );
+                  const existingEnd = new Date(
+                    existingStart.getTime() + trip.duration_minutes * 60000,
+                  );
 
-                const existingEndWithBuffer = new Date(
-                  existingEnd.getTime() + buffer,
-                );
+                  const existingEndWithBuffer = new Date(
+                    existingEnd.getTime() + buffer,
+                  );
 
-                // בדיקת חפיפה
-                if (
-                  newStart < existingEndWithBuffer &&
-                  newEnd > existingStart
-                ) {
-                  isAvailable = false;
-                  break;
+                  // בדיקת חפיפה
+                  const newEndWithBuffer = new Date(newEnd.getTime() + buffer);
+
+                  const isBefore = newEndWithBuffer <= existingStart;
+                  const isAfter = newStart >= existingEndWithBuffer;
+
+                  if (!(isBefore || isAfter)) {
+                    isAvailable = false;
+                    break;
+                  }
                 }
-              }
 
-              if (isAvailable) {
-                availableGuides.push(guide);
-              }
+                if (isAvailable) {
+                  availableGuides.push(guide);
+                }
 
-              checked++;
+                checked++;
 
-              if (checked === guides.length) {
-                res.json(availableGuides);
-              }
-            },
-          );
-        });
-      },
-    );
+                if (checked === guides.length) {
+                  res.json(availableGuides);
+                }
+              },
+            );
+          });
+        },
+      );
+    });
   });
 });
-
-
 
 // =========================
 // PUT החלפת מדריך בלבד
@@ -365,14 +393,15 @@ async function createInvoicePDF(data, VAT_RATE) {
    * חישובי מחירים
    * סכום משתתפים
    */
-const participantsTotal =
-  Number(data.number_of_participants || 0) * Number(data.price_per_person || 0);
+  const participantsTotal =
+    Number(data.number_of_participants || 0) *
+    Number(data.price_per_person || 0);
 
   /**
    * סכום כלי רכב
    */
-const vehiclesTotal =
-  Number(data.number_of_vehicles || 0) * Number(data.price_per_vehicle || 0);
+  const vehiclesTotal =
+    Number(data.number_of_vehicles || 0) * Number(data.price_per_vehicle || 0);
 
   /**
    * סכום כולל לפני מע״מ

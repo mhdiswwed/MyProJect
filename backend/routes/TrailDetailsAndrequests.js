@@ -9,6 +9,48 @@ const dbSingleton = require("../dbSingleton");
 // Execute a query to the database
 const db = dbSingleton.getConnection();
 
+//=============================
+// פונקציה לשליפת שעות פעילות
+//==============================
+function getWorkingHours(callback) {
+  const sql = `
+    SELECT setting_name, setting_value
+    FROM system_settings
+    WHERE setting_name IN ('working_hours_start','working_hours_end')
+  `;
+
+  db.query(sql, (err, rows) => {
+    if (err) return callback(err);
+
+    let start = "08:00";
+    let end = "18:00";
+
+    rows.forEach((row) => {
+      if (row.setting_name === "working_hours_start") {
+        start = row.setting_value;
+      }
+      if (row.setting_name === "working_hours_end") {
+        end = row.setting_value;
+      }
+    });
+
+    callback(null, { start, end });
+  });
+}
+//=================================
+// פונקציה  לשליפת הפסקת מדריך
+//===============================
+function getGuideBreak(callback) {
+  db.query(
+    "SELECT setting_value FROM system_settings WHERE setting_name='guide_break_minutes'",
+    (err, rows) => {
+      if (err || !rows.length) return callback(30);
+
+      callback(Number(rows[0].setting_value));
+    },
+  );
+}
+
 // ===============================
 // פונקציה שמביאה מינימום ומקסימום משתתפים
 // ===============================
@@ -46,59 +88,77 @@ function getParticipantsLimits(callback) {
 // החזרת מדריכים פנויים לפי תאריך ושעה
 // ===============================
 router.get("/available-guides", (req, res) => {
-  // קבלת נתונים מה־query
   const { trip_date, trip_time, trail_id } = req.query;
 
-  // בדיקה בסיסית
   if (!trip_date || !trip_time || !trail_id) {
     return res.status(400).json({ message: "חסר מידע" });
   }
 
-  // ===============================
-  // שליפת משך המסלול
-  // ===============================
-  const durationSql = `SELECT duration_minutes FROM trails WHERE trail_id = ?`;
+  // ⏱ שליפת שעות פעילות + הפסקה
+  getWorkingHours((err, hours) => {
+    if (err) return res.status(500).json({ message: "שגיאה" });
 
-  db.query(durationSql, [trail_id], (err, durationResult) => {
-    if (err || durationResult.length === 0) {
-      return res.status(500).json({ message: "שגיאה במסלול" });
-    }
+    getGuideBreak((breakMinutes) => {
+      // ===============================
+      // שליפת משך המסלול
+      // ===============================
+      const durationSql = `SELECT duration_minutes FROM trails WHERE trail_id = ?`;
 
-    // משך המסלול בדקות
-    const duration = durationResult[0].duration_minutes;
+      db.query(durationSql, [trail_id], (err, durationResult) => {
+        if (err || durationResult.length === 0) {
+          return res.status(500).json({ message: "שגיאה במסלול" });
+        }
 
-    // זמן התחלה
-    const newStart = new Date(`${trip_date}T${trip_time}`);
+        // משך המסלול בדקות
+        const duration = durationResult[0].duration_minutes;
 
-    // זמן סיום
-    const newEnd = new Date(newStart.getTime() + duration * 60000);
+        // זמן התחלה
+        const newStart = new Date(`${trip_date}T${trip_time}`);
 
-    // ⏱ הפסקה בין טיולים (30 דקות)
-    const buffer = 30 * 60000;
+        // זמן סיום
+        const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-    // ===============================
-    // שליפת כל המדריכים
-    // ===============================
-    const guidesSql = `
+        // פירוק שעות עבודה
+        const [startH, startM] = hours.start.split(":").map(Number);
+        const [endH, endM] = hours.end.split(":").map(Number);
+
+        const workStart = startH * 60 + startM;
+        const workEnd = endH * 60 + endM;
+
+        const startMinutes = newStart.getHours() * 60 + newStart.getMinutes();
+        const endMinutes = newEnd.getHours() * 60 + newEnd.getMinutes();
+
+        // אם מחוץ לשעות → אין מדריכים בכלל
+        if (startMinutes < workStart || endMinutes > workEnd) {
+          return res.json([]);
+        }
+
+        // הפסקה דינמית
+        const buffer = breakMinutes * 60000;
+
+        // ===============================
+        // שליפת כל המדריכים
+        // ===============================
+        const guidesSql = `
       SELECT user_id, full_name
       FROM users
       WHERE role = 'מדריך'
     `;
 
-    db.query(guidesSql, (err, guides) => {
-      if (err) {
-        return res.status(500).json({ message: "שגיאת שרת" });
-      }
+        db.query(guidesSql, (err, guides) => {
+          if (err) {
+            return res.status(500).json({ message: "שגיאת שרת" });
+          }
 
-      // ===============================
-      // בדיקת זמינות לכל מדריך
-      // ===============================
-      const availableGuides = [];
+          // ===============================
+          // בדיקת זמינות לכל מדריך
+          // ===============================
+          const availableGuides = [];
 
-      let checked = 0;
+          let checked = 0;
 
-      guides.forEach((guide) => {
-        const checkSql = `
+          guides.forEach((guide) => {
+            const checkSql = `
   SELECT trip_time, duration_minutes FROM (
     
     -- קבוצות פעילות
@@ -122,49 +182,59 @@ router.get("/available-guides", (req, res) => {
   ) AS all_trips
 `;
 
-        db.query(
-          checkSql,
-          [guide.user_id, trip_date, guide.user_id, trip_date],
-          (err, trips) => {
-            if (err) return;
+            db.query(
+              checkSql,
+              [guide.user_id, trip_date, guide.user_id, trip_date],
+              (err, trips) => {
+                if (err) return;
 
-            let isAvailable = true;
+                let isAvailable = true;
 
-            for (let trip of trips) {
-              const existingStart = new Date(`${trip_date}T${trip.trip_time}`);
-              const existingEnd = new Date(
-                existingStart.getTime() + trip.duration_minutes * 60000,
-              );
+                // פונקציה שממירה שעה לדקות
+                function toMinutes(timeStr) {
+                  const [h, m] = timeStr.split(":").map(Number);
+                  return h * 60 + m;
+                }
 
-              // מוסיפים הפסקה
-              const existingEndWithBuffer = new Date(
-                existingEnd.getTime() + buffer,
-              );
+                const newStartMin = toMinutes(trip_time);
+                const newEndMin = newStartMin + duration;
 
-              // בדיקת חפיפה
-              if (newStart < existingEndWithBuffer && newEnd > existingStart) {
-                isAvailable = false;
-                break;
-              }
-            }
+                for (let trip of trips) {
+                  const existingStartMin = toMinutes(trip.trip_time);
+                  const existingEndMin =
+                    existingStartMin + trip.duration_minutes;
 
-            if (isAvailable) {
-              availableGuides.push(guide);
-            }
+                  const bufferMin = breakMinutes;
 
-            checked++;
+                  const isBefore = newEndMin <= existingStartMin - bufferMin;
 
-            // כשסיימנו לבדוק את כולם
-            if (checked === guides.length) {
-              res.json(availableGuides);
-            }
-          },
-        );
+                  const isAfter = newStartMin >= existingEndMin + bufferMin;
+
+                  // אם לא לפני ולא אחרי → יש חפיפה
+                  if (!(isBefore || isAfter)) {
+                    isAvailable = false;
+                    break;
+                  }
+                }
+
+                if (isAvailable) {
+                  availableGuides.push(guide);
+                }
+
+                checked++;
+
+                // כשסיימנו לבדוק את כולם
+                if (checked === guides.length) {
+                  res.json(availableGuides);
+                }
+              },
+            );
+          });
+        });
       });
     });
   });
 });
-
 //=======================
 //שליפת המע''מ
 //=======================
@@ -293,8 +363,6 @@ router.post("/request", (req, res) => {
   if (!trip_time || trip_time === "") {
     errors.push("חובה לבחור שעה");
   }
-
-
 
   // 4) מדריך
   if (!guide_id) {

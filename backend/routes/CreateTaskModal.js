@@ -34,7 +34,10 @@ const storage = multer.diskStorage({
 //משתמשים בשם
 const upload = multer({ storage });
 
+
+//============================================
 // פונקציה שמחזירה את זמן ההפסקה לעובד מה־DB
+//============================================
 function getWorkerBreakMinutes(callback) {
   db.query(
     "SELECT setting_value FROM system_settings WHERE setting_name='worker_break_minutes'",

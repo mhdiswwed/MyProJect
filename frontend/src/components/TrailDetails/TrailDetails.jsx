@@ -77,6 +77,20 @@ export default function TrailDetails({ user }) {
   // ===============================
   const [minParticipants, setMinParticipants] = useState(1); // ברירת מחדל
   const [maxParticipants, setMaxParticipants] = useState(100); // ברירת מחדל
+  // שעות פעילות מערכת מהשרת
+  const [workingStart, setWorkingStart] = useState("");
+  const [workingEnd, setWorkingEnd] = useState("");
+  //=================================
+  // שליפת שעות פעילות מהמערכת
+  //================================
+  useEffect(() => {
+    fetch(`${API_BASE}/api/SystemSettings`)
+      .then((res) => res.json())
+      .then((data) => {
+        setWorkingStart(data.working_hours_start);
+        setWorkingEnd(data.working_hours_end);
+      });
+  }, []);
 
   // ===============================
   // שליפת מינימום ומקסימום משתתפים מהשרת
@@ -185,7 +199,6 @@ export default function TrailDetails({ user }) {
       return;
     }
 
-    
     const body = {
       user_id: user.user_id,
       trail_id: id,
@@ -262,37 +275,38 @@ export default function TrailDetails({ user }) {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // =========================
-  // בדיקת שעות עבודה (08:00 - 18:00)
-  // =========================
+  // בדיקה אם הזמן בתוך שעות מערכת
   function isValidTime(date) {
-    if (!date) return false;
+    if (!date || !workingStart || !workingEnd) return false;
+
     const hour = date.getHours();
     const minutes = date.getMinutes();
-    // לפני 08:00
-    if (hour < 8) return false;
-    // אחרי 18:00
-    if (hour > 18) return false;
-    // אם 18:XX → לא חוקי
-    if (hour === 18 && minutes > 0) return false;
-    return true;
+
+    const [startH, startM] = workingStart.split(":").map(Number);
+    const [endH, endM] = workingEnd.split(":").map(Number);
+
+    const total = hour * 60 + minutes;
+    const startTotal = startH * 60 + startM;
+    const endTotal = endH * 60 + endM;
+
+    return total >= startTotal && total <= endTotal;
   }
 
   // =========================
-  // בדיקה שהמסלול מסתיים עד 18:00
+  // בדיקה שהמסלול מסתיים עד שעה דינמית מותציגת
   // =========================
-  function isValidEndTime(startDate, durationMinutes) {
-    if (!startDate) return false;
-    // מחשבים זמן סיום
-    const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
-    const hour = endDate.getHours();
-    const minutes = endDate.getMinutes();
-    // אחרי 18:00
-    if (hour > 18) return false;
-    // אם 18:XX
-    if (hour === 18 && minutes > 0) return false;
-    return true;
-  }
+function isValidEndTime(startDate, durationMinutes) {
+  if (!startDate || !workingEnd) return false;
+
+  const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+
+  const [endH, endM] = workingEnd.split(":").map(Number);
+
+  const endLimit = endH * 60 + endM;
+  const actualEnd = endDate.getHours() * 60 + endDate.getMinutes();
+
+  return actualEnd <= endLimit;
+}
 
   return (
     <div className={styles.page} dir="rtl">
@@ -505,8 +519,8 @@ export default function TrailDetails({ user }) {
               {/* בחירת שעה */}
               {/* הסבר למשתמש */}
               <small className={styles.timeNote}>
-                שעות הפעילות הן בין 08:00 ל־18:00. השעות המוצגות הן שעות התחלה
-                אפשריות כך שהטיול יסתיים עד 18:00.
+                שעות הפעילות הן בין {workingStart} ל־{workingEnd}. השעות המוצגות
+                הן שעות התחלה אפשריות כך שהטיול יסתיים עד {workingEnd}.
               </small>
               <div className={styles.dateWrapper}>
                 <FaClock className={styles.dateIcon} />
@@ -545,11 +559,26 @@ export default function TrailDetails({ user }) {
                   dateFormat="HH:mm"
                   placeholderText="בחר שעה"
                   className={styles.dateInput}
-                  minTime={new Date().setHours(8, 0, 0, 0)}
+                  minTime={
+                    workingStart
+                      ? (() => {
+                          const [h, m] = workingStart.split(":").map(Number);
+                          const d = new Date();
+                          d.setHours(h, m, 0, 0); 
+                          return d;
+                        })()
+                      : (() => {
+                          const d = new Date();
+                          d.setHours(8, 0, 0, 0);
+                          return d;
+                        })()
+                  }
                   maxTime={
-                    trail
+                    workingEnd
                       ? new Date(
-                          new Date().setHours(18, 0, 0, 0) -
+                          new Date().setHours(
+                            ...workingEnd.split(":").map(Number),
+                          ) -
                             trail.duration_minutes * 60000,
                         )
                       : new Date().setHours(18, 0, 0, 0)

@@ -14,6 +14,27 @@ const fs = require("fs");
 const path = require("path");
 
 const puppeteer = require("puppeteer");
+//========================================
+// שליפת זמן הפסקה של מדריך מהמערכת (בדקות)
+//========================================
+function getGuideBreakMinutes(callback) {
+  const sql = `
+    SELECT setting_value
+    FROM system_settings
+    WHERE setting_name = 'guide_break_minutes'
+    LIMIT 1
+  `;
+
+  db.query(sql, (err, rows) => {
+    if (err) return callback(err);
+
+    if (!rows.length) {
+      return callback(null, 30); // ברירת מחדל 30 דקות
+    }
+
+    callback(null, Number(rows[0].setting_value));
+  });
+}
 
 /**
  * ------------------------------------------------
@@ -92,9 +113,6 @@ function getVatRate(callback) {
   });
 }
 
-
-
-
 /* =====================================================
    שליפת כל ההדרכות
 ===================================================== */
@@ -171,7 +189,6 @@ ORDER BY
   });
 });
 
-
 /**
  * ------------------------------------------------
  * שליפת מדריכים פנויים אמיתית (כולל חפיפות)
@@ -204,27 +221,31 @@ router.get("/available-guides", (req, res) => {
     }
 
     const duration = durationResult[0].duration_minutes;
+    getGuideBreakMinutes((err, breakMinutes) => {
+      if (err) {
+        return res.status(500).json({ message: "שגיאה בהפסקת מדריך" });
+      }
 
-    // יצירת זמן התחלה נכון (בלי בעיות timezone)
-    const [hours, minutes] = time.split(":");
-    const newStart = new Date(cleanDate);
-    newStart.setHours(hours, minutes, 0, 0);
+      // יצירת זמן התחלה נכון (בלי בעיות timezone)
+      const [hours, minutes] = time.split(":");
+      const newStart = new Date(cleanDate);
+      newStart.setHours(hours, minutes, 0, 0);
 
-    const newEnd = new Date(newStart.getTime() + duration * 60000);
+      const newEnd = new Date(newStart.getTime() + duration * 60000);
 
-    const buffer = 30 * 60000;
+      const buffer = breakMinutes * 60000; // הפסקה בדקות → מילישניות
 
-    // שליפת כל המדריכים
-    db.query(
-      `SELECT user_id, full_name FROM users WHERE role='מדריך'`,
-      (err, guides) => {
-        if (err) return res.status(500).json([]);
+      // שליפת כל המדריכים
+      db.query(
+        `SELECT user_id, full_name FROM users WHERE role='מדריך'`,
+        (err, guides) => {
+          if (err) return res.status(500).json([]);
 
-        const availableGuides = [];
-        let checked = 0;
+          const availableGuides = [];
+          let checked = 0;
 
-        guides.forEach((guide) => {
-          const checkSql = `
+          guides.forEach((guide) => {
+            const checkSql = `
             SELECT g.trip_time, t.duration_minutes
             FROM groups g
             JOIN trails t ON g.trail_id = t.trail_id
@@ -234,50 +255,57 @@ router.get("/available-guides", (req, res) => {
             AND g.group_id <> ?
           `;
 
-          db.query(
-            checkSql,
-            [guide.user_id, cleanDate, group_id],
-            (err, trips) => {
-              if (err) return;
+            db.query(
+              checkSql,
+              [guide.user_id, cleanDate, group_id],
+              (err, trips) => {
+                if (err) return;
 
-              let isAvailable = true;
+                let isAvailable = true;
 
-              for (let trip of trips) {
-                const [h, m] = trip.trip_time.split(":");
+                for (let trip of trips) {
+                  const [h, m] = trip.trip_time.split(":");
 
-                const existingStart = new Date(cleanDate);
-                existingStart.setHours(h, m, 0, 0);
+                  const existingStart = new Date(cleanDate);
+                  existingStart.setHours(h, m, 0, 0);
 
-                const existingEnd = new Date(
-                  existingStart.getTime() +
-                    trip.duration_minutes * 60000
-                );
+                  const existingEnd = new Date(
+                    existingStart.getTime() + trip.duration_minutes * 60000,
+                  );
 
-                const existingEndWithBuffer = new Date(
-                  existingEnd.getTime() + buffer
-                );
+                  // הוספת הפסקה לסיום
+                  const requestedEndWithBuffer = new Date(
+                    newEnd.getTime() + buffer,
+                  );
+                  const existingEndWithBuffer = new Date(
+                    existingEnd.getTime() + buffer,
+                  );
 
-                // בדיקת חפיפה
-                if (newStart < existingEndWithBuffer && newEnd > existingStart) {
-                  isAvailable = false;
-                  break;
+                  // בדיקת חפיפה נכונה
+                  const isBefore = requestedEndWithBuffer <= existingStart;
+                  const isAfter = newStart >= existingEndWithBuffer;
+
+                  if (!(isBefore || isAfter)) {
+                    isAvailable = false;
+                    break;
+                  }
                 }
-              }
 
-              if (isAvailable) {
-                availableGuides.push(guide);
-              }
+                if (isAvailable) {
+                  availableGuides.push(guide);
+                }
 
-              checked++;
+                checked++;
 
-              if (checked === guides.length) {
-                res.json(availableGuides);
-              }
-            }
-          );
-        });
-      }
-    );
+                if (checked === guides.length) {
+                  res.json(availableGuides);
+                }
+              },
+            );
+          });
+        },
+      );
+    });
   });
 });
 
@@ -441,14 +469,15 @@ async function createInvoicePDF(data, VAT_RATE) {
    * חישובי מחירים
    * סכום משתתפים
    */
-const participantsTotal =
-  Number(data.number_of_participants || 0) * Number(data.price_per_person || 0);
+  const participantsTotal =
+    Number(data.number_of_participants || 0) *
+    Number(data.price_per_person || 0);
 
   /**
    * סכום כלי רכב
    */
-const vehiclesTotal =
-  Number(data.number_of_vehicles || 0) * Number(data.price_per_vehicle || 0);
+  const vehiclesTotal =
+    Number(data.number_of_vehicles || 0) * Number(data.price_per_vehicle || 0);
 
   /**
    * סכום כולל לפני מע״מ
