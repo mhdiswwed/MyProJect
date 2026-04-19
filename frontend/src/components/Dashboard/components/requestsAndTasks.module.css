@@ -53,24 +53,29 @@
 }
 
 /* צבעים */
-.ממתין {
+.statusPending {
   background: rgba(255, 165, 0, 0.2);
   color: orange;
 }
 
-.מאושר {
+.statusApproved {
   background: rgba(0, 255, 0, 0.2);
   color: #00ff88;
 }
 
-.נדחה {
+.statusRejected {
   background: rgba(255, 0, 0, 0.2);
   color: red;
 }
 
-.מבקש\ ביטול {
-  background: rgba(255, 255, 0, 0.2);
-  color: yellow;
+.statusCancelled {
+  background: rgba(191, 189, 189, 0.2);
+  color: #6b7280;
+}
+
+.statusCancelRequest {
+  background: rgba(67, 133, 232, 0.2);
+  color: #3b82f6;
 }
 
 /* ===== משימות ===== */

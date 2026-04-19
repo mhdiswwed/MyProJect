@@ -18,6 +18,16 @@ function formatDate(date) {
 }
 
 export default function RequestsAndTasks({ requests = [], tasks = [] }) {
+//================================
+//פונקציה מחזירה הצבע המתאים לסטטוס
+//===============================
+  const statusClassMap = {
+    ממתין: styles.statusPending,
+    מאושר: styles.statusApproved,
+    נדחה: styles.statusRejected,
+    מבוטל: styles.statusCancelled,
+    "מבקש ביטול": styles.statusCancelRequest,
+  };
   return (
     <div className={styles.container}>
       {/* ===== בקשות אחרונות ===== */}
@@ -58,7 +68,7 @@ export default function RequestsAndTasks({ requests = [], tasks = [] }) {
               <span>{r.trail_name}</span>
 
               {/* סטטוס עם צבע */}
-              <span className={`${styles.status} ${styles[r.status]}`}>
+              <span className={`${styles.status} ${statusClassMap[r.status]}`}>
                 {r.status}
               </span>
             </div>

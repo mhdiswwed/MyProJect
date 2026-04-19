@@ -207,6 +207,13 @@ export default function ChartsSection() {
   /* =========================
      גרף 3 - סטטוס בקשות
   ========================= */
+  const statusColorMap = {
+    ממתין: "#facc15",
+    מאושר: "#22c55e",
+    נדחה: "#ef4444",
+    מבוטל: " #6b7280",
+    "מבקש ביטול": "#3b82f6",
+  };
   const statusChartOptions = {
     chart: {
       type: "donut",
@@ -276,13 +283,9 @@ export default function ChartsSection() {
     tooltip: {
       theme: "dark",
     },
-    colors: [
-      "#facc15", // ממתין
-      "#22c55e", // מאושר
-      "#ef4444", // נדחה
-      "#64748b", // מבוטל
-      "#a855f7", // מבקש ביטול - אם קיים
-    ],
+   colors :statusData.map(
+    (item) => statusColorMap[item.status] ||"#999"
+   )
   };
 
   const statusChartSeries = statusData.map((item) => Number(item.count || 0));
