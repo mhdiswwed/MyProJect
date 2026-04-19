@@ -147,20 +147,14 @@ export default function MyGuidances({ user }) {
       });
 
       // סגירה אחרי רגע
-      setTimeout(() => {
-        setShowReportModal(false);
-        setGuidances((prev) =>
-          prev.map((g) =>
-            g.group_id === selected.group_id
-              ? {
-                  ...g,
-                  notes: reportData.notes,
-                  images: "uploaded", // מספיק שיהיה לא null
-                }
-              : g,
-          ),
-        );
-      }, 1500);
+   setTimeout(() => {
+     setShowReportModal(false);
+
+     fetch(`${API_BASE}/api/myGuidances/${user.user_id}`)
+       .then((res) => res.json())
+       .then((data) => setGuidances(data));
+   }, 1500);
+   
     } catch (err) {
       console.error(err);
 

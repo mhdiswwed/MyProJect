@@ -196,6 +196,7 @@ router.post(
       const { group_id, notes } = req.body;
 
       const image = req.file ? req.file.filename : null;
+      
 
       db.query(
         `
