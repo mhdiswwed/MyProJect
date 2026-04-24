@@ -35,6 +35,7 @@ const MyTasks = require("./routes/MyTasks");
 const ReportModal = require("./routes/ReportModal");
 const TaskManagement = require("./routes/TaskManagement");
 const dashboard = require("./routes/dashboard");
+const contact = require("./routes/contact");
 
 
 
@@ -122,6 +123,7 @@ app.use("/api/MyTasks", MyTasks);
 app.use("/api/ReportModal", ReportModal);
 app.use("/api/TaskManagement", TaskManagement);
 app.use("/api/dashboard", dashboard);
+app.use("/api/contact", contact);
 
 /* ==========================================================
    health check (בדיקת שרת)

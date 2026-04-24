@@ -51,6 +51,7 @@ import ManageGroups from "../components/ManageGroups/ManageGroups";
 import FieldReports from "../components/FieldReports/FieldReports";
 import TaskManagement from "../components/TaskManagement/TaskManagement";
 import Dashboard from "../components/Dashboard/Dashboard";
+import Contact from "../components/Contact/Contact";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -148,6 +149,8 @@ export default function App() {
           <Route path="/" element={<Trails />} />
           {/* אודות */}
           <Route path="/about" element={<About />} />
+          {/* צור קשר*/}
+          <Route path="/contact" element={<Contact />} />
           {/* מסלולים – פתוח לכולם */}
           <Route path="/trails" element={<Trails />} />
           {/* פרטי מסלול */}
@@ -169,7 +172,6 @@ export default function App() {
             }
           />
 
-     
           {/* נתיב הקפתור של ההליכה במסלול כולל דיווח לפי מיקום*/}
           <Route
             path="/trail-navigation/:id"

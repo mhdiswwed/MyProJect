@@ -103,6 +103,14 @@ export default function Header({ user, onLogout }) {
             ?מי אנחנו
           </button>
 
+          {/* כפתור צור קשר */}
+          <button
+            className={`${styles.navBtn} ${isActive("/contact") ? styles.active : ""}`}
+            onClick={() => navigate("/contact")}
+          >
+            צור קשר
+          </button>
+
           {/* כפתור ניהול מערכת יוצג רק אם המשתמש  מנהל */}
           {isAdmin && (
             <button

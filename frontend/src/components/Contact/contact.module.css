@@ -1,46 +1,38 @@
-
-
-/* מעטפת כללית של הטופס */
-.wrapper{
-  /* רוחב רספונסיבי – מקסימום 420px או 92% מרוחב המסך */
+/* =========================
+   Wrapper – קופסה ראשית
+========================= */
+.wrapper {
   width: min(420px, 92vw);
-
-  /* ריווח ועיגול פינות */
   border-radius: 16px;
   padding: 18px;
 
-  /* רקע בסגנון Glass (זכוכית כהה) */
   background: linear-gradient(
     180deg,
     rgba(18,22,28,.86),
     rgba(10,14,18,.86)
   );
 
-  /* מסגרת וצל */
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 12px 30px rgba(0,0,0,.45);
 
-  /* טשטוש רקע מאחורי הקומפוננטה */
   backdrop-filter: blur(10px);
-
-  /* יישור טקסט */
   text-align: center;
 
-  /* הגבלת רוחב ומרכז במסך */
   max-width: 360px;
   margin: 76px auto;
 }
 
-/* כותרת הטופס (Login / Register) */
-.wrapper h2{
+/* =========================
+   כותרת
+========================= */
+.wrapper h2 {
   margin: 0 0 16px;
   font-size: 25px;
   color: aliceblue;
 }
 
-/* תיבת הודעת שגיאה */
 /* =========================
-   Messages
+   הודעות
 ========================= */
 .error {
   margin-bottom: 10px;
@@ -62,21 +54,22 @@
   font-size: 13px;
 }
 
-
-
-/* מבנה הטופס – סידור אנכי עם רווחים */
-form{
+/* =========================
+   Form
+========================= */
+form {
   display: grid;
   gap: 10px;
 }
 
-/* שדות קלט (שם משתמש / סיסמה וכו') */
-input{
+/* =========================
+   Inputs
+========================= */
+input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
 
-  /* צבעים כהים בהתאם לעיצוב הכללי */
   border: 1px solid #6e8b74;
   background: #2a2f26;
   color: #f3f1e7;
@@ -86,20 +79,50 @@ input{
   box-sizing: border-box;
 }
 
-/* טקסט placeholder */
-input::placeholder{
+input::placeholder {
   color: #c9c3a6;
   text-align: right;
 }
 
-/* מצב פוקוס – הדגשת שדה פעיל */
-input:focus{
+input:focus {
   border-color: #c9b458;
   box-shadow: 0 0 0 2px rgba(201,180,88,.35);
 }
 
-/* כפתורים כלליים (התחבר / הרשם) */
-button{
+/* =========================
+   Textarea (הערות)
+========================= */
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  border: 1px solid #6e8b74;
+  background: #2a2f26;
+  color: #f3f1e7;
+
+  font-size: 14px;
+  resize: none;
+  min-height: 90px;
+
+  outline: none;
+  box-sizing: border-box;
+}
+
+textarea::placeholder {
+  color: #c9c3a6;
+  text-align: right;
+}
+
+textarea:focus {
+  border-color: #c9b458;
+  box-shadow: 0 0 0 2px rgba(201,180,88,.35);
+}
+
+/* =========================
+   Button
+========================= */
+button {
   padding: 10px 16px;
   border-radius: 10px;
 
@@ -114,33 +137,22 @@ button{
   transition: background .2s ease;
 }
 
-/* מעבר עכבר על כפתור */
-button:hover{
+button:hover {
   background: #333a2f;
 }
 
-/* לחיצה על כפתור */
-button:active{
+button:active {
   background: #242821;
 }
 
-/* כפתור מעבר בין Login ל־Register */
-.switch{
-  margin-top: 12px;
-  width: 100%;
- font-size: 16px;
-  /* עיצוב משני – שקוף */
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.18);
-}
-
-.submitButton{
+/* כפתור שליחה */
+.submitButton {
   font-size: 18px;
 }
 
-
-
-/* שכבת רקע כהה */
+/* =========================
+   Loader Overlay
+========================= */
 .overlay {
   position: fixed;
   inset: 0;
@@ -151,7 +163,6 @@ button:active{
   z-index: 9999;
 }
 
-/* חלון קופץ */
 .loaderBox {
   background: linear-gradient(180deg, rgba(18,22,28,.9), rgba(10,14,18,.9));
   border: 1px solid rgba(255,255,255,.2);
@@ -162,13 +173,11 @@ button:active{
   box-shadow: 0 20px 40px rgba(0,0,0,.6);
 }
 
-/* טקסט */
 .loaderBox p {
   margin-top: 16px;
   font-size: 16px;
 }
 
-/* ספינר */
 .spinner {
   width: 46px;
   height: 46px;
@@ -179,20 +188,42 @@ button:active{
   margin: 0 auto;
 }
 
-/*עצוב הלוגו*/
+/* =========================
+   Logo
+========================= */
 .titleLogo {
   display: block;
-  margin: 0 auto 12px auto; /* מרכז + רווח למטה */
+  margin: 0 auto 12px auto;
   width: 100px;
   height: 45px;
 }
 
-
-/* אנימציה */
+/* =========================
+   Animation
+========================= */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+/*הערות*/
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #6e8b74;
+  background: #2a2f26;
+  color: #f3f1e7;
+  font-size: 14px;
+  resize: none;
+  min-height: 80px;
+}
+
+.fieldError {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #facc15; /* צהוב */
+  text-align: right;
 }
 
 .submitButton {
