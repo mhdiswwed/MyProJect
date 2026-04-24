@@ -52,6 +52,7 @@ import FieldReports from "../components/FieldReports/FieldReports";
 import TaskManagement from "../components/TaskManagement/TaskManagement";
 import Dashboard from "../components/Dashboard/Dashboard";
 import Contact from "../components/Contact/Contact";
+import Accessibility from "../components/Accessibility/Accessibility";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -151,6 +152,8 @@ export default function App() {
           <Route path="/about" element={<About />} />
           {/* צור קשר*/}
           <Route path="/contact" element={<Contact />} />
+          {/*הצהרת נגישות */}
+          <Route path="/accessibility" element={<Accessibility />} />
           {/* מסלולים – פתוח לכולם */}
           <Route path="/trails" element={<Trails />} />
           {/* פרטי מסלול */}

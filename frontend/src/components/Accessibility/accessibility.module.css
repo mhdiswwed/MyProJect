@@ -1,0 +1,43 @@
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: right;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.subTitle {
+  font-size: 1.4rem;
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+.text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.list {
+  padding-right: 20px;
+  margin-bottom: 15px;
+}
+
+.list li {
+  margin-bottom: 6px;
+}
+
+.contact {
+  margin-top: 10px;
+  font-size: 1rem;
+}
+
+.footerText {
+  margin-top: 30px;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}

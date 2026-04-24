@@ -29,3 +29,62 @@
 }
 
 
+.topNav {
+  padding: 10px 0;
+
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+
+  position: relative;
+}
+
+/* הקו רק מעל הכפתורים */
+.topNav::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 400px; /* 👈 תשחק עם זה אם צריך */
+  height: 1px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* הכפתורים */
+.linkBtn {
+  background: none !important;   /*  מבטל רקע */
+  box-shadow: none !important;   /*  מבטל צל */
+  border: none;
+
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+
+  position: relative;
+  padding-bottom: 4px;
+}
+
+/* קו מתחת בכאבר */
+.linkBtn::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0%;
+  height: 2px;
+  background: #c9b458;
+
+  transition: width 0.25s ease;
+}
+
+.linkBtn:hover::after {
+  width: 100%;
+}
+
+.linkBtn:hover {
+  background: none !important;
+  box-shadow: none !important;
+  color: #c9b458;
+}
