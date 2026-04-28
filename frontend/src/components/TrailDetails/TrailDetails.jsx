@@ -295,18 +295,37 @@ export default function TrailDetails({ user }) {
   // =========================
   // בדיקה שהמסלול מסתיים עד שעה דינמית מותציגת
   // =========================
-function isValidEndTime(startDate, durationMinutes) {
-  if (!startDate || !workingEnd) return false;
+  function isValidEndTime(startDate, durationMinutes) {
+    if (!startDate || !workingEnd) return false;
 
-  const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
 
-  const [endH, endM] = workingEnd.split(":").map(Number);
+    const [endH, endM] = workingEnd.split(":").map(Number);
 
-  const endLimit = endH * 60 + endM;
-  const actualEnd = endDate.getHours() * 60 + endDate.getMinutes();
+    const endLimit = endH * 60 + endM;
+    const actualEnd = endDate.getHours() * 60 + endDate.getMinutes();
 
-  return actualEnd <= endLimit;
-}
+    return actualEnd <= endLimit;
+  }
+
+  // ======================================
+  // בדיקה האם בכלל קיימות שעות התחלה חוקיות למסלול
+  // ======================================
+  const hasValidTimeRange = (() => {
+    // אם אין שעות מערכת או אין מסלול → אין מה לבדוק
+    if (!workingStart || !workingEnd || !trail) return false;
+    // פירוק שעת התחלה לשעות ודקות
+    const [startH, startM] = workingStart.split(":").map(Number);
+    // פירוק שעת סיום לשעות ודקות
+    const [endH, endM] = workingEnd.split(":").map(Number);
+    // המרת שעת התחלה לדקות (למשל 09:00 → 540)
+    const workStart = startH * 60 + startM;
+    // המרת שעת סיום לדקות (למשל 18:00 → 1080)
+    const workEnd = endH * 60 + endM;
+    // בדיקה: האם יש מספיק זמן לסיים את המסלול
+    // אם זמן התחלה + משך המסלול קטן או שווה לזמן סיום → תקין
+    return workStart + trail.duration_minutes <= workEnd;
+  })();
 
   return (
     <div className={styles.page} dir="rtl">
@@ -512,7 +531,7 @@ function isValidEndTime(startDate, durationMinutes) {
                   dateFormat="dd/MM/yyyy"
                   placeholderText="בחר תאריך"
                   className={styles.dateInput}
-                  minDate={tomorrow} // 🔥 זה המקום הנכון!
+                  minDate={tomorrow}
                 />
                 <FaCalendarAlt className={styles.dateIcon} />
               </div>
@@ -522,69 +541,80 @@ function isValidEndTime(startDate, durationMinutes) {
                 שעות הפעילות הן בין {workingStart} ל־{workingEnd}. השעות המוצגות
                 הן שעות התחלה אפשריות כך שהטיול יסתיים עד {workingEnd}.
               </small>
+              {/* ====================================== */}
+              {/* אם אין שעות זמינות → מציגים הודעה */}
+              {/* ====================================== */}
+              {!hasValidTimeRange && (
+                <div className={styles.error}>
+                  אין שעות זמינות למסלול זה במסגרת שעות הפעילות
+                </div>
+              )}
               <div className={styles.dateWrapper}>
-                <FaClock className={styles.dateIcon} />
+               { hasValidTimeRange && (<FaClock className={styles.dateIcon} />)}
+                {hasValidTimeRange && (
+                  <DatePicker
+                    selected={tripTime}
+                    // =========================
+                    // שינוי שעה עם בדיקה
+                    // =========================
+                    onChange={(date) => {
+                      // בדיקת שעות עבודה
+                      if (!isValidTime(date)) {
+                        setRequestMsg({
+                          type: "error",
+                          text: `ניתן לבחור שעות בין ${workingStart} ל־${workingEnd} בלבד`,
+                        });
+                        setTripTime(null);
+                        return;
+                      }
 
-                <DatePicker
-                  selected={tripTime}
-                  // =========================
-                  // שינוי שעה עם בדיקה
-                  // =========================
-                  onChange={(date) => {
-                    // בדיקת שעות עבודה
-                    if (!isValidTime(date)) {
-                      setRequestMsg({
-                        type: "error",
-                        text: "ניתן לבחור שעות בין 08:00 ל־18:00 בלבד",
-                      });
-                      setTripTime(null);
-                      return;
+                      // בדיקה שהמסלול לא חורג מ־18:00
+                      if (!isValidEndTime(date, trail.duration_minutes)) {
+                        setRequestMsg({
+                          type: "error",
+                          text: "שעת ההתחלה לא תקינה – המסלול יסתיים אחרי 18:00 אל תבחר שעה ידנית תבחר מתוך הרשימה",
+                        });
+                        setTripTime(null);
+                        return;
+                      }
+
+                      setTripTime(date);
+                    }}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={5}
+                    dateFormat="HH:mm"
+                    placeholderText="בחר שעה"
+                    className={styles.dateInput}
+                    minTime={
+                      workingStart
+                        ? (() => {
+                            const [h, m] = workingStart.split(":").map(Number);
+                            const d = new Date();
+                            d.setHours(h, m, 0, 0);
+                            return d;
+                          })()
+                        : (() => {
+                            const d = new Date();
+                            d.setHours(8, 0, 0, 0);
+                            return d;
+                          })()
                     }
-
-                    // בדיקה שהמסלול לא חורג מ־18:00
-                    if (!isValidEndTime(date, trail.duration_minutes)) {
-                      setRequestMsg({
-                        type: "error",
-                        text: "שעת ההתחלה לא תקינה – המסלול יסתיים אחרי 18:00 אל תבחר שעה ידנית תבחר מתוך הרשימה",
-                      });
-                      setTripTime(null);
-                      return;
+                    maxTime={
+                      workingEnd
+                        ? new Date(
+                            new Date().setHours(
+                              ...workingEnd.split(":").map(Number),
+                            ) -
+                              trail.duration_minutes * 60000,
+                          )
+                        : new Date().setHours(18, 0, 0, 0)
                     }
-
-                    setTripTime(date);
-                  }}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={5}
-                  dateFormat="HH:mm"
-                  placeholderText="בחר שעה"
-                  className={styles.dateInput}
-                  minTime={
-                    workingStart
-                      ? (() => {
-                          const [h, m] = workingStart.split(":").map(Number);
-                          const d = new Date();
-                          d.setHours(h, m, 0, 0); 
-                          return d;
-                        })()
-                      : (() => {
-                          const d = new Date();
-                          d.setHours(8, 0, 0, 0);
-                          return d;
-                        })()
-                  }
-                  maxTime={
-                    workingEnd
-                      ? new Date(
-                          new Date().setHours(
-                            ...workingEnd.split(":").map(Number),
-                          ) -
-                            trail.duration_minutes * 60000,
-                        )
-                      : new Date().setHours(18, 0, 0, 0)
-                  }
-                  customInput={<input readOnly className={styles.dateInput} />}
-                />
+                    customInput={
+                      <input readOnly className={styles.dateInput} />
+                    }
+                  />
+                )}
               </div>
               {/* בחירת מדריך */}
               <select
