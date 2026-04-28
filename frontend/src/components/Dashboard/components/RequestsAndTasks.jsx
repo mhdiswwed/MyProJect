@@ -43,9 +43,10 @@ export default function RequestsAndTasks({ requests = [], tasks = [] }) {
         </div>
         {/* כותרת טבלה */}
         <div className={styles.tableHeader}>
-          <span>תאריך</span>
+          <span>תאריך ושעת הגשת הבקשה</span>
           <span>מבקש</span>
           <span>מסלול</span>
+          <span>תאריך ושעה מבוקשת</span>
           <span>סטטוס</span>
         </div>
 

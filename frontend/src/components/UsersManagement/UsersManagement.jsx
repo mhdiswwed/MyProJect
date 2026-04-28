@@ -391,6 +391,7 @@ export default function UsersManagement({ currentUser }) {
               <div className={styles.statNumber}>{stats.groupRep}</div>
               <div className={styles.statLabel}>נציגי קבוצה</div>
             </div>
+
             {/* סינון לפי תפקיד */}
             <div className={styles.filterBox}>
               {/* חיפוש */}
@@ -416,7 +417,7 @@ export default function UsersManagement({ currentUser }) {
                 </select>
               </div>
               {/* סינון לפי סטטוס */}
-              <div className={styles.filterItem}>
+              {/*<div className={styles.filterItem}>
                 <label className={styles.filterLabel}>סטטוס:</label>
 
                 <select
@@ -428,7 +429,7 @@ export default function UsersManagement({ currentUser }) {
                   <option value="active">פעילים</option>
                   <option value="blocked">חסומים</option>
                 </select>
-              </div>
+              </div>*/}
             </div>
           </div>
         </div>
@@ -465,7 +466,7 @@ export default function UsersManagement({ currentUser }) {
                   <button onClick={() => openEdit(u)} title="עדכון פרטים">
                     <FaEdit />
                   </button>
-
+                {/*
                   {u.user_id !== currentUser.user_id && (
                     <button
                       onClick={() => toggleStatus(u)}
@@ -474,7 +475,7 @@ export default function UsersManagement({ currentUser }) {
                       {u.active ? <FaLock /> : <FaUnlock />}
                     </button>
                   )}
-
+                */}
                   {u.user_id !== currentUser.user_id && (
                     <button
                       onClick={() => {

@@ -155,11 +155,11 @@ tr:hover{
   color:#60a5fa; /* עריכה */
 }
 
-.actions button:nth-child(2) svg{
+.actions button:nth-child(3) svg{
   color:#f59e0b; /* חסימה */
 }
 
-.actions button:nth-child(3) svg{
+.actions button:nth-child(2) svg{
   color:#ef4444; /* מחיקה */
 }
 

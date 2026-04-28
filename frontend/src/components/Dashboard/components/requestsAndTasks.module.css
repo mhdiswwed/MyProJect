@@ -50,6 +50,7 @@
   border-radius: 10px;
   font-size: 12px;
   text-align: center;
+  display: block;
 }
 
 /* צבעים */
@@ -80,10 +81,10 @@
 
 /* ===== משימות ===== */
 .taskItem {
-  background: rgba(255, 255, 255, 0.03); /* 🔥 רקע עדין */
+  background: rgba(255, 255, 255, 0.03); /*  רקע עדין */
   padding: 12px;
   border-radius: 12px;
-  margin-bottom: 10px; /* 🔥 רווח בין משימות */
+  margin-bottom: 10px; /*  רווח בין משימות */
   border: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -128,7 +129,7 @@
   justify-content: space-between;
   align-items: center;
   direction: rtl;
-  margin-bottom: 15px; /* 🔥 זה הפתרון המרכזי */
+  margin-bottom: 15px;
 }
 .count {
   font-size: 14px;
@@ -140,5 +141,5 @@
   color: #aaa;
   display: block;
   margin-top: 4px;
-  margin-bottom: 6px; /* 🔥 מוסיף הפרדה יפה */
+  margin-bottom: 6px; /*  מוסיף הפרדה יפה */
 }
