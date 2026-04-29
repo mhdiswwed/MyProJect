@@ -234,29 +234,32 @@ async function sendDangerReportEmail({
   trailName,
   emails,
 }) {
-  //  שולח ללוגין בלבד (כמו שסיכמנו)
-  const link = `http://localhost:3000/login`;
+  const link = "http://localhost:3000/login";
+  //  שולח ללוגין בלבד
+await transporter.sendMail({
+  from: process.env.EMAIL_USER,
+  to: emails,
+  subject: "🚨 דיווח חדש מהשטח - סכנה",
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: emails,
-    subject: "🚨 דיווח חדש מהשטח - סכנה",
+  //  הוספת התמונה כקובץ מצורף
+  attachments: [
+    {
+      filename: "report.jpg",
+      path: path.join(__dirname, "..", imagePath), // 🔥 חשוב מאוד
+      cid: "reportImage",
+    },
+  ],
 
-    html: `
+  html: `
 <div dir="rtl" style="font-family:Arial;text-align:right;line-height:1.6">
 
-  <h1 style="color:#2563eb;">
-    📢 הודעה דחופה ממערכת TrailQuest
-  </h1>
+  <h1 style="color:#2563eb;">📢 הודעה דחופה ממערכת TrailQuest</h1>
 
-  <h2 style="color:red;">
-    🚨 דיווח סכנה מהשטח
-  </h2>
+  <h2 style="color:red;">🚨 דיווח סכנה מהשטח</h2>
 
   <hr/>
 
   <p><b>שם המסלול:</b> ${trailName}</p>
-
   <p><b>שם המדווח:</b> ${fullName}</p>
 
   <p><b>טלפון:</b> 
@@ -268,12 +271,12 @@ async function sendDangerReportEmail({
   <hr/>
 
   <p><b>תיאור הבעיה:</b><br>${description}</p>
-
   <p><b>זמן דיווח:</b> ${reportTime}</p>
 
+  <!-- 🔥 כאן התמונה -->
   <p>
-    <img src="http://localhost:3001/${imagePath}" 
-         style="width:250px;border-radius:8px;"/>
+    <img src="cid:reportImage" 
+         style="width:250px;border-radius:8px;" />
   </p>
 
   <a href="${link}" 
@@ -287,10 +290,9 @@ async function sendDangerReportEmail({
     כניסה למערכת
   </a>
 
-
 </div>
 `,
-  });
+});
 }
 
 /* ==============================

@@ -1,3 +1,5 @@
+/* ראוטר ללוח בקרה שולף כל המידע שצריך להציג אותו בלוח בקרה */
+
 const express = require("express");
 const router = express.Router();
 const dbSingleton = require("../dbSingleton");
@@ -9,7 +11,7 @@ const db = dbSingleton.getConnection();
 router.get("/", async (req, res) => {
   try {
     // שימוש ב־promise wrapper
-      // כמות לפי סטטוסים בלוח בקרה למעלה
+    // כמות לפי סטטוסים בלוח בקרה למעלה
     const [requestsCount] = await db
       .promise()
       .query("SELECT COUNT(*) AS total FROM trip_requests");
@@ -56,8 +58,8 @@ AND start_time <= DATE_ADD(NOW(), INTERVAL 2 DAY)
 ORDER BY start_time ASC
     `);
 
-    //דיווחים חדשים, 
- const [reports] = await db.promise().query(`
+    //דיווחים חדשים,
+    const [reports] = await db.promise().query(`
   SELECT
     r.report_id,
     r.description,
