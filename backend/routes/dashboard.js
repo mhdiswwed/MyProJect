@@ -1,4 +1,6 @@
-/* ראוטר ללוח בקרה שולף כל המידע שצריך להציג אותו בלוח בקרה */
+/*
+dashboard.js
+ ראוטר ללוח בקרה שולף כל המידע שצריך להציג אותו בלוח בקרה */
 
 const express = require("express");
 const router = express.Router();
