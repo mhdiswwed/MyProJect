@@ -1,7 +1,7 @@
-/**
+/**========================================
  * TrailNavigation.jsx
  * ניווט שטח בזמן אמת + דיווח בעיה
- */
+ ==========================================*/
 
 import { FaArrowRight } from "react-icons/fa";
 import styles from "./trailNavigation.module.css";

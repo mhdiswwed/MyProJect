@@ -1,4 +1,7 @@
+//==================================
+// WelcomeAnimation.js
 // אנימציית פתיחה קצרה אחרי התחברות
+//==================================
 import { useEffect } from "react";
 import Lottie from "lottie-react";
 import animation from "../../assets/animations/welcome-animation.json";

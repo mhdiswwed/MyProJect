@@ -1,18 +1,13 @@
-/**
- * TrailCard.jsx
- * --------------------------------------------------
- * כרטיס תצוגה למסלול בודד
- *
- * תפקיד:
- * - להציג תמונה ונתוני מסלול
- * - לאפשר מעבר לדף פרטי מסלול
- *   באמצעות React Router
- */
+/**=============================================================
+TrailCard
+קומפוננטת כרטיס למסלול, מציגה תמונה ופרטים בסיסיים ומאפשרת מעבר לעמוד פרטי המסלול
+ ===============================================================*/
 
 import styles from "./trailCard.module.css";
 import { FaRoute, FaMountain, FaRulerHorizontal } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import API_BASE from "../../config/api";
+
 export default function TrailCard({ trail }) {
   const navigate = useNavigate();
 

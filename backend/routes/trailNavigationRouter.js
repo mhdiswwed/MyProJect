@@ -223,7 +223,9 @@ async function checkUserInsideTrail(lat, lng, trail_id) {
   }
 }
 //==================================================================================================
-
+//=======================================
+//פונקציה לשליחת מייל  דחוף למערכת ברגע שסוג הדיווח הוא סכנה
+//=======================================
 async function sendDangerReportEmail({
   description,
   imagePath,
@@ -245,7 +247,7 @@ await transporter.sendMail({
   attachments: [
     {
       filename: "report.jpg",
-      path: path.join(__dirname, "..", imagePath), // 🔥 חשוב מאוד
+      path: path.join(__dirname, "..", imagePath), 
       cid: "reportImage",
     },
   ],
