@@ -9,12 +9,8 @@
 
 const express = require("express");
 const router = express.Router();
-
 const nodemailer = require("nodemailer");
 
-/* ===============================
-   יצירת חיבור למייל (כמו auth)
-=============================== */
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -23,27 +19,21 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/* ===============================
-   שליחת טופס צור קשר
-=============================== */
-router.post("/send", async (req, res) => {
-  const { fullName, email, phone, address, message } = req.body;
+// בודק אם שדות חובה קיימים
+function validateContactData(data) {
+  const { fullName, email, phone, message } = data;
+  return fullName && email && phone && message;
+}
 
-  /* בדיקות בסיסיות */
-  if (!fullName || !email || !phone || !message) {
-    return res.status(400).json({
-      message: "נא למלא את כל השדות החובה",
-    });
-  }
+// שולח מייל צור קשר עם העיצוב המקורי
+function sendContactEmail(data) {
+  const { fullName, email, phone, address, message } = data;
 
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
-
-      subject: "פנייה חדשה - TrailQuest",
-
-      html: `
+  return transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: process.env.EMAIL_USER,
+    subject: "פנייה חדשה - TrailQuest",
+    html: `
 <div dir="rtl" style="font-family:Arial,sans-serif; background:#f9fafb; padding:30px;">
   
   <div style="max-width:500px;margin:auto;background:white;border-radius:10px;padding:25px;
@@ -84,8 +74,21 @@ router.post("/send", async (req, res) => {
   </div>
 </div>
 `,
-    });
+  });
+}
 
+// שליחת טופס צור קשר
+router.post("/send", async (req, res) => {
+  const data = req.body;
+
+  if (!validateContactData(data)) {
+    return res.status(400).json({
+      message: "נא למלא את כל השדות החובה",
+    });
+  }
+
+  try {
+    await sendContactEmail(data);
     res.json({ message: "ההודעה נשלחה בהצלחה" });
   } catch (err) {
     console.error(err);

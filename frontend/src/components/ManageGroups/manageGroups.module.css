@@ -540,3 +540,11 @@ white-space: nowrap;
 
   cursor:pointer;
 }
+
+/*שליטה וירידת שורה לפי גודל המסך בנקטדת מפגש*/
+.meetingPoint {
+  max-width: 150px; /* אפשר לשנות לפי עיצוב */
+  white-space: normal; /* מאפשר ירידת שורה */
+  word-break: break-word; /* שובר מילים ארוכות */
+  line-height: 1.4;
+}

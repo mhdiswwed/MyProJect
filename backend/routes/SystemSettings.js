@@ -30,103 +30,108 @@ router.get("/", (req, res) => {
   );
 });
 
-//עדכון 'ההגדרות לפי סוג שנשלח לעדכון
-router.put("/:name", (req, res) => {
-  const { name } = req.params;
-  const { value } = req.body;
+// ממיר ערך למספר אם אפשר
+function parseValue(value) {
+  const num = Number(value);
+  return !isNaN(num) ? num : value;
+}
 
-  // ניסיון להמיר למספר
+// בודק אם ערך ריק או לא תקין
+function isInvalidBasicValue(name, value) {
   const num = Number(value);
 
-  // ערך סופי שישמר (מספר או טקסט)
-  let finalValue = value;
-
-  // אם זה מספר תקין → נשמור כמספר
-  if (!isNaN(num)) {
-    finalValue = num;
-  }
-
-  // אם זה לא מספר וגם לא שעות → שגיאה
-  if (
+  return (
     value === "" ||
     (isNaN(num) &&
       name !== "working_hours_start" &&
       name !== "working_hours_end")
-  ) {
+  );
+}
+
+// בודק הגבלות לפי סוג הגדרה
+function validateByName(name, num) {
+  if (name === "vat" && (num < 0 || num > 100)) {
+    return "מע״מ חייב להיות בין 0 ל-100";
+  }
+
+  if (name === "max_reports_per_route" && num < 0) {
+    return "כמות דיווחים לא יכולה להיות שלילית";
+  }
+
+  if (name === "report_interval_minutes" && num < 0) {
+    return "זמן לא יכול להיות שלילי";
+  }
+
+  if (name === "min_participants" && num < 0) {
+    return "מינימום משתתפים לא יכול להיות שלילי";
+  }
+
+  if (name === "max_participants" && num < 0) {
+    return "מקסימום משתתפים לא יכול להיות שלילי";
+  }
+
+  if (name === "guide_break_minutes" && num < 0) {
+    return "זמן הפסקה למדריך לא יכול להיות שלילי";
+  }
+
+  if (name === "worker_break_minutes" && num < 0) {
+    return "זמן הפסקה לעובד לא יכול להיות שלילי";
+  }
+
+  return null;
+}
+
+// בודק פורמט שעה
+function isValidTimeFormat(name, value) {
+  if (name !== "working_hours_start" && name !== "working_hours_end") {
+    return true;
+  }
+
+  const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  return regex.test(value);
+}
+
+// מעדכן הגדרה במסד
+function updateSetting(name, value, callback) {
+  db.query(
+    "UPDATE system_settings SET setting_value=? WHERE setting_name=?",
+    [value, name],
+    callback
+  );
+}
+
+
+
+// עדכון הגדרה לפי שם
+router.put("/:name", (req, res) => {
+  const { name } = req.params;
+  const { value } = req.body;
+
+  const finalValue = parseValue(value);
+  const num = Number(value);
+
+  if (isInvalidBasicValue(name, value)) {
     return res.status(400).json({ message: "ערך לא תקין" });
   }
 
-  // מע״מ
-  if (name === "vat" && (num < 0 || num > 100)) {
+  const error = validateByName(name, num);
+  if (error) {
+    return res.status(400).json({ message: error });
+  }
+
+  if (!isValidTimeFormat(name, value)) {
     return res.status(400).json({
-      message: "מע״מ חייב להיות בין 0 ל-100",
+      message: "פורמט שעה לא תקין (HH:MM)",
     });
   }
 
-  // כמות דיווחים
-  if (name === "max_reports_per_route" && num < 0) {
-    return res.status(400).json({
-      message: "כמות דיווחים לא יכולה להיות שלילית",
-    });
-  }
-
-  // זמן בין דיווחים
-  if (name === "report_interval_minutes" && num < 0) {
-    return res.status(400).json({
-      message: "זמן לא יכול להיות שלילי",
-    });
-  }
-
-  // מינימום משתתפים
-  if (name === "min_participants" && num < 0) {
-    return res.status(400).json({
-      message: "מינימום משתתפים לא יכול להיות שלילי",
-    });
-  }
-
-  // מקסימום משתתפים
-  if (name === "max_participants" && num < 0) {
-    return res.status(400).json({
-      message: "מקסימום משתתפים לא יכול להיות שלילי",
-    });
-  }
-
-  // הפסקת מדריך
-  if (name === "guide_break_minutes" && num < 0) {
-    return res.status(400).json({
-      message: "זמן הפסקה למדריך לא יכול להיות שלילי",
-    });
-  }
-
-  // הפסקת עובד
-  if (name === "worker_break_minutes" && num < 0) {
-    return res.status(400).json({
-      message: "זמן הפסקה לעובד לא יכול להיות שלילי",
-    });
-  }
-
-  // בדיקת שעות
-  if (name === "working_hours_start" || name === "working_hours_end") {
-    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-    if (!regex.test(value)) {
-      return res.status(400).json({
-        message: "פורמט שעה לא תקין (HH:MM)",
-      });
+  updateSetting(name, finalValue, (err) => {
+    if (err) {
+      return res.status(500).json({ message: "שגיאה בעדכון" });
     }
-  }
 
-  db.query(
-    "UPDATE system_settings SET setting_value=? WHERE setting_name=?",
-    [finalValue, name],
-    (err) => {
-      if (err) {
-        return res.status(500).json({ message: "שגיאה בעדכון" });
-      }
-
-      res.json({ message: "עודכן בהצלחה" });
-    },
-  );
+    res.json({ message: "עודכן בהצלחה" });
+  });
 });
 
 module.exports = router;

@@ -281,118 +281,76 @@ function checkGuideAvailability(
   });
 }
 
+
 /**
  * ------------------------------------------------
- * פונקציה ליצירת חשבונית PDF בעברית
- * באמצעות HTML → PDF (Puppeteer)
- *
- * היתרון:
- * - עברית עובדת מושלם
- * - אין בעיות RTL
- * - ניתן לעצב עם CSS
+ * פונקציה שמבצעת את כל החישובים של החשבונית
  * ------------------------------------------------
  */
-async function createInvoicePDF(data, VAT_RATE) {
-  /* יצירת שם קובץ לחשבונית */
-  const fileName = `invoice_${data.group_id}.pdf`;
+function calculateInvoice(data, VAT_RATE) {
 
-  /* נתיב שמירת הקובץ בתיקיית החשבוניות */
-  const filePath = path.join(invoicesDir, fileName);
-
-  /**
-   * חישובי מחירים
-   * סכום משתתפים
-   */
+  // חישוב סכום משתתפים
   const participantsTotal = data.number_of_participants * data.price_per_person;
 
-  /**
-   * סכום כלי רכב
-   */
+  // חישוב סכום כלי רכב
   const vehiclesTotal = data.number_of_vehicles * data.price_per_vehicle;
 
-  /**
-   * סכום כולל לפני מע״מ
-   */
+  // סכום לפני מע״מ
   const totalBeforeVat = participantsTotal + vehiclesTotal;
 
-  /**
-   * חישוב מע״מ
-   */
+  // חישוב מע״מ
   const vatAmount = totalBeforeVat * VAT_RATE;
 
-  /**
-   * סכום כולל לאחר מע״מ
-   */
+  // סכום סופי
   const totalWithVat = totalBeforeVat + vatAmount;
 
-  /**
-   * תבנית HTML של החשבונית
-   * dir="rtl" גורם לעברית להופיע נכון
-   */
-  const html = `
+  // החזרת כל הערכים כאובייקט
+  return {
+    participantsTotal,
+    vehiclesTotal,
+    totalBeforeVat,
+    vatAmount,
+    totalWithVat
+  };
+}
+
+/**
+ * ------------------------------------------------
+ * פונקציה שמחזירה HTML
+ * ------------------------------------------------
+ */
+function generateInvoiceHTML(data, calc) {
+
+  return `
   <html dir="rtl">
   <head>
-
-  <!-- הגדרת קידוד עברית -->
   <meta charset="UTF-8">
 
   <style>
-
-  /* עיצוב כללי של הדף */
-  body{
-    font-family: Arial;
-    direction: rtl;
-    padding:40px;
-  }
-
-  /* כותרת החשבונית */
-  h1{
-    text-align:center;
-  }
-
-  /* עיצוב הטבלה */
-  table{
-    width:100%;
-    border-collapse: collapse;
-    margin-top:20px;
-  }
-
-  /* עיצוב תאים */
-  th,td{
-    border:1px solid #ccc;
-    padding:10px;
-    text-align:center;
-  }
-
-  /* עיצוב שורות סכום */
-  .total{
-    font-weight:bold;
-    background:#f5f5f5;
-  }
-
+  body{ font-family: Arial; direction: rtl; padding:40px; }
+  h1{ text-align:center; }
+  table{ width:100%; border-collapse: collapse; margin-top:20px; }
+  th,td{ border:1px solid #ccc; padding:10px; text-align:center; }
+  .total{ font-weight:bold; background:#f5f5f5; }
   </style>
+
   </head>
 
   <body>
 
   <h1>חשבונית</h1>
-
   <h3>Trail Quest</h3>
 
-  <!-- פרטי הקבוצה -->
   <p>מספר קבוצה: ${data.group_id}</p>
   <p>מסלול: ${data.trail_name}</p>
   <p>תאריך: ${new Date(data.trip_date).toLocaleDateString("he-IL")}</p>
   <p>שעה: ${data.trip_time}</p>
 
-  <!-- פרטי המדריך -->
   <h3>פרטי מדריך</h3>
-
   <p>שם: ${data.guide_name}</p>
   <p>טלפון: ${data.guide_phone}</p>
   <p>אימייל: ${data.guide_email}</p>
 
-  <!-- טבלת מחירים -->
   <table>
 
   <tr>
@@ -402,101 +360,81 @@ async function createInvoicePDF(data, VAT_RATE) {
   <th>סה"כ</th>
   </tr>
 
-  <!-- שורת משתתפים -->
   <tr>
   <td>משתתפים</td>
   <td>${data.number_of_participants}</td>
   <td>₪${data.price_per_person}</td>
-  <td>₪${participantsTotal.toFixed(2)}</td>
+  <td>₪${calc.participantsTotal.toFixed(2)}</td>
   </tr>
 
-  <!-- שורת כלי רכב -->
   <tr>
   <td>כלי רכב</td>
   <td>${data.number_of_vehicles}</td>
   <td>₪${data.price_per_vehicle}</td>
-  <td>₪${vehiclesTotal.toFixed(2)}</td>
+  <td>₪${calc.vehiclesTotal.toFixed(2)}</td>
   </tr>
 
-  <!-- סכום לפני מע״מ -->
   <tr class="total">
   <td colspan="3">סה"כ לפני מע״מ</td>
-  <td>₪${totalBeforeVat.toFixed(2)}</td>
+  <td>₪${calc.totalBeforeVat.toFixed(2)}</td>
   </tr>
 
-  <!-- סכום מע״מ -->
   <tr class="total">
   <td colspan="3">מע״מ</td>
-  <td>₪${vatAmount.toFixed(2)}</td>
+  <td>₪${calc.vatAmount.toFixed(2)}</td>
   </tr>
 
-  <!-- סכום סופי -->
   <tr class="total">
   <td colspan="3">סה"כ לתשלום</td>
-  <td>₪${totalWithVat.toFixed(2)}</td>
+  <td>₪${calc.totalWithVat.toFixed(2)}</td>
   </tr>
 
   </table>
 
-  <!-- ------------------------------------------------ -->
-<!-- פרטי החברה -->
-<!-- מוצגים בתחתית החשבונית -->
-<!-- ------------------------------------------------ -->
+  <hr style="margin-top:40px">
 
-<hr style="margin-top:40px">
-
-<h3>פרטי החברה</h3>
-
-<p>
-<strong>שם החברה:</strong> Trail Quest
-</p>
-
-<p>
-<strong>טלפון:</strong> ${data.manager_phone}
-</p>
-
-<p>
-<strong>אימייל:</strong> ${data.manager_email}
-</p>
-
-<p style="margin-top:20px;font-size:12px;color:#555">
-תודה שבחרתם לטייל איתנו!
-</p>
+  <h3>פרטי החברה</h3>
+  <p><strong>שם החברה:</strong> Trail Quest</p>
+  <p><strong>טלפון:</strong> ${data.manager_phone}</p>
+  <p><strong>אימייל:</strong> ${data.manager_email}</p>
 
   </body>
   </html>
   `;
+}
 
-  /**
-   * פתיחת דפדפן וירטואלי באמצעות Puppeteer
-   */
+/**
+ * ------------------------------------------------
+ * פונקציה שיוצרת PDF
+ * ------------------------------------------------
+ */
+async function createInvoicePDF(data, VAT_RATE) {
+  // שם קובץ
+  const fileName = `invoice_${data.group_id}.pdf`;
+  // נתיב
+  const filePath = path.join(invoicesDir, fileName);
+  // חישובים
+  const calc = calculateInvoice(data, VAT_RATE);
+  // HTML
+  const html = generateInvoiceHTML(data, calc);
+  // Puppeteer
+  // פתיחת דפדפן Chrome ברקע
   const browser = await puppeteer.launch();
-
+  // יצירת דף חדש
   const page = await browser.newPage();
-
-  /**
-   * טעינת ה-HTML לתוך הדף
-   */
+  // הכנסת ה-HTML לדף
   await page.setContent(html);
-
-  /**
-   * יצירת קובץ PDF
-   */
+  // יצירת קובץ PDF מהדף
   await page.pdf({
-    path: filePath,
-    format: "A4",
+    path: filePath, // איפה לשמור את הקובץ
+    format: "A4", // גודל הדף
   });
-
-  /**
-   * סגירת הדפדפן
-   */
+  // סגירת הדפדפן
   await browser.close();
 
-  /**
-   * החזרת שם הקובץ שנוצר
-   */
   return fileName;
 }
+
 
 /**
  * ------------------------------------------------
@@ -665,421 +603,355 @@ router.get("/available-guides", (req, res) => {
 });
 
 /**
- * ------------------------------------------------
- * PUT
- * אישור בקשה + יצירת קבוצה + יצירת חשבונית
- * ------------------------------------------------
- *
- * מהפרונט חייבים להישלח:
- * - trip_date
- * - trip_time
- * - meeting_point
- * - guide_id
- * - change_reason (רק אם שונה תאריך / שעה / מדריך)
+ * =========================================
+ * בדיקת שדות חובה
+ * מקבל: body
+ * מחזיר: מערך שגיאות
+ * =========================================
  */
-router.put("/approve/:requestId", (req, res) => {
-  const requestId = req.params.requestId;
+function validateInput(body) {
+  const errors = [];
 
-  const {
-    trip_date,
-    trip_time,
-    meeting_point,
-    guide_id,
-    change_reason,
-    guide_change_reason,
-  } = req.body;
+  if (!body.trip_date) errors.push("חסר תאריך");
+  if (!body.trip_time) errors.push("חסרה שעה");
+  if (!body.meeting_point?.trim()) errors.push("חסרה נקודת מפגש");
+  if (!body.guide_id) errors.push("חסר מדריך");
 
-  if (!trip_date || !trip_time || !meeting_point || !guide_id) {
-    return res.status(400).json({
-      message: "חובה לשלוח תאריך, שעה, נקודת מפגש ומדריך",
-    });
-  }
+  return errors;
+}
 
-  /**
-   * שליפת הבקשה המקורית
-   */
-  const requestSql = `
-    SELECT
-      tr.request_id,
-      tr.user_id,
-      tr.trail_id,
-      tr.guide_id,
-      tr.trip_date,
-      tr.trip_time,
-      tr.number_of_participants,
-      tr.number_of_vehicles,
-      tr.status,
 
-      t.trail_name,
-      t.price_per_person,
-      t.price_per_vehicle,
-      t.duration_minutes
+/**
+ * =========================================
+ * שליפת בקשה מהDB
+ * מקבל: requestId
+ * מחזיר: בקשה
+ * =========================================
+ */
+function getRequest(requestId, res, cb) {
+  const sql = `
+    SELECT tr.*, t.trail_name, t.price_per_person,
+           t.price_per_vehicle, t.duration_minutes
     FROM trip_requests tr
-    JOIN trails t
-      ON tr.trail_id = t.trail_id
-    WHERE tr.request_id = ?
-    LIMIT 1
+    JOIN trails t ON tr.trail_id = t.trail_id
+    WHERE tr.request_id = ? LIMIT 1
   `;
 
-  db.query(requestSql, [requestId], (err, requestRows) => {
-    if (err) {
-      console.error("שגיאה בשליפת הבקשה:", err);
-      return res.status(500).json({ message: "שגיאה בשליפת הבקשה" });
-    }
+  db.query(sql, [requestId], (err, rows) => {
+    if (err) return res.status(500).json({ message: "שגיאה בשליפה" });
+    if (!rows.length) return res.status(404).json({ message: "הבקשה לא נמצאה" });
 
-    if (!requestRows.length) {
-      return res.status(404).json({ message: "הבקשה לא נמצאה" });
-    }
+    cb(rows[0]);
+  });
+}
 
-    const request = requestRows[0];
-    // בדיקת תאריך ושעה
-    // בדיקת תאריך ושעה
+
+/**
+ * =========================================
+ * בדיקת שינוי תאריך/שעה/מדריך
+ * מקבל: request, body
+ * מחזיר: flags
+ * מחזיר: מידע על מה השתנה + האם יש שגיאות
+ * =========================================
+ */
+function checkChanges(request, body) {
+  const errors = [];
+
+  const oldDate = new Date(request.trip_date).toLocaleDateString("sv-SE");
+  const oldTime = String(request.trip_time).slice(0, 5);
+  const newTime = String(body.trip_time).slice(0, 5);
+
+  const dateChanged = oldDate !== body.trip_date || oldTime !== newTime;
+  const guideChanged = Number(request.guide_id) !== Number(body.guide_id);
+
+  if (dateChanged && !body.change_reason?.trim()) {
+    errors.push("חובה סיבה לשינוי תאריך/שעה");
+  }
+
+  if (guideChanged && !body.guide_change_reason?.trim()) {
+    errors.push("חובה סיבה להחלפת מדריך");
+  }
+
+  return { errors, dateChanged, guideChanged };
+}
+
+
+/**
+ * =========================================
+ * בדיקת זמינות מדריך
+ * =========================================
+ */
+function checkGuide(request, body, res, cb) {
+  checkGuideAvailability(
+    body.guide_id,
+    body.trip_date,
+    body.trip_time,
+    request.duration_minutes,
+    null,
+    (err, ok) => {
+      if (err) return res.status(500).json({ message: "שגיאה במדריך" });
+      if (!ok) return res.status(409).json({ message: "המדריך תפוס" });
+      cb();
+    }
+  );
+}
+
+
+/**
+ * =========================================
+ * עדכון סטטוס בקשה
+ * =========================================
+ */
+function updateRequest(id, res, cb) {
+  db.query(
+    "UPDATE trip_requests SET status='מאושר' WHERE request_id=?",
+    [id],
+    (err) => {
+      if (err) return rollback(res, "שגיאה בעדכון בקשה");
+      cb();
+    }
+  );
+}
+
+
+/**
+ * =========================================
+ * יצירת קבוצה
+ * =========================================
+ */
+function createGroup(request, body, flags, res, cb) {
+  const sql = `
+    INSERT INTO groups
+    (request_id, trail_id, guide_id, trip_date, trip_time, meeting_point, status, change_reason, guide_change_reason)
+    VALUES (?, ?, ?, ?, ?, ?, 'פעיל', ?, ?)
+  `;
+
+  db.query(sql, [
+    request.request_id,
+    request.trail_id,
+    body.guide_id,
+    body.trip_date,
+    body.trip_time,
+    body.meeting_point.trim(),
+    flags.dateChanged ? body.change_reason.trim() : null,
+    flags.guideChanged ? body.guide_change_reason.trim() : null
+  ], (err, result) => {
+
+    if (err) return rollback(res, "שגיאה ביצירת קבוצה");
+
+    cb(result.insertId);
+  });
+}
+
+
+/**
+ * =========================================
+ * יצירת הדרכה
+ * =========================================
+ */
+function createGuidance(groupId, res, cb) {
+  db.query(
+    "INSERT INTO guidances (group_id) VALUES (?)",
+    [groupId],
+    (err) => {
+      if (err) return rollback(res, "שגיאה ביצירת הדרכה");
+      cb();
+    }
+  );
+}
+
+
+/**
+ * =========================================
+ * יצירת חשבונית PDF
+// מקבלת בקשה, נתוני טופס, מזהה קבוצה ותגובה; שולפת מדריך ומנהל, מחשבת סכומים ויוצרת חשבונית  ושומרת אותה; לא מחזירה ערך
+ * =========================================
+ */
+function buildInvoice(request, body, groupId, res) {
+  db.query(
+    `SELECT full_name, phone, email FROM users WHERE user_id=? LIMIT 1`,
+    [body.guide_id],
+    (err, guideRows) => {
+      if (err) return rollback(res, "שגיאה מדריך");
+
+      const guide = guideRows[0] || {};
+
+      db.query(
+        `SELECT full_name, phone, email FROM users WHERE role='מנהל' LIMIT 1`,
+        (err, managerRows) => {
+          if (err) return rollback(res, "שגיאה מנהל");
+
+          const manager = managerRows[0] || {};
+
+          getVatRate(async (err, VAT) => {
+            if (err) return rollback(res, "שגיאה מע״מ");
+
+            try {
+         
+              const participants = Number(request.number_of_participants || 0);
+              const vehicles = Number(request.number_of_vehicles || 0);
+              const pricePerPerson = Number(request.price_per_person || 0);
+              const pricePerVehicle = Number(request.price_per_vehicle || 0);
+
+              const participantsTotal = participants * pricePerPerson;
+              const vehiclesTotal = vehicles * pricePerVehicle;
+              const totalBeforeVat = participantsTotal + vehiclesTotal;
+              const vatAmount = totalBeforeVat * VAT;
+              const totalWithVat = totalBeforeVat + vatAmount;
+
+            
+              const file = await createInvoicePDF(
+                {
+                  group_id: groupId,
+
+                  trail_name: request.trail_name,
+
+                  trip_date: body.trip_date,
+                  trip_time: body.trip_time,
+                  meeting_point: body.meeting_point,
+
+                  guide_name: guide.full_name,
+                  guide_phone: guide.phone,
+                  guide_email: guide.email,
+
+            
+                  number_of_participants: participants,
+                  number_of_vehicles: vehicles,
+                  price_per_person: pricePerPerson,
+                  price_per_vehicle: pricePerVehicle,
+
+                  manager_name: manager.full_name,
+                  manager_phone: manager.phone,
+                  manager_email: manager.email,
+                },
+                VAT,
+              );
+
+              saveInvoice(groupId, file, res);
+            } catch (error) {
+              console.error(error);
+              rollback(res, "שגיאה ביצירת PDF");
+            }
+          });
+        },
+      );
+    },
+  );
+}
+
+/**
+ * =========================================
+ * שמירת חשבונית
+ * =========================================
+ */
+function saveInvoice(groupId, file, res) {
+  db.query(
+    "UPDATE groups SET invoice_file=? WHERE group_id=?",
+    [file, groupId],
+    (err) => {
+
+      if (err) return rollback(res, "שגיאה בשמירת חשבונית");
+
+      db.commit(() => {
+        res.json({
+          message: "הבקשה אושרה בהצלחה",
+          group_id: groupId,
+          invoice_file: file
+        });
+      });
+    }
+  );
+}
+
+
+/**
+ * =========================================
+ * ביטול טרנזקציה במקרה שגיאה
+ * =========================================
+ */
+function rollback(res, msg) {
+  db.rollback(() => res.status(500).json({ message: msg }));
+}
+
+
+/**
+ * =========================================
+ * תהליך אישור מלא
+ * =========================================
+ */
+function processApproval(request, body, flags, res) {
+
+  db.beginTransaction((err) => {
+    if (err) return res.status(500).json({ message: "שגיאה בטרנזקציה" });
+
+    updateRequest(request.request_id, res, () => {
+
+      createGroup(request, body, flags, res, (groupId) => {
+
+        createGuidance(groupId, res, () => {
+
+          buildInvoice(request, body, groupId, res);
+
+        });
+
+      });
+
+    });
+
+  });
+}
+
+
+/**
+ * =========================================
+ * הראוטר הראשי
+ * * PUT
+ * אישור בקשה + יצירת קבוצה + יצירת חשבונית
+ * =========================================
+ */
+router.put("/approve/:requestId", (req, res) => {
+
+  const errors = validateInput(req.body);
+  
+     if (errors.length > 0) {
+       return res.status(400).json({ errors });
+     }
+
+  getRequest(req.params.requestId, res, (request) => {
+
     validateTripDateTime(
-      trip_date,
-      trip_time,
+      req.body.trip_date,
+      req.body.trip_time,
       request.duration_minutes,
       (error) => {
+
         if (error) {
-          return res.status(400).json({ message: error });
+          return res.status(400).json({ errors: [error] });
         }
 
-        /**
-         * מותר לאשר רק בקשה שממתינה
-         */
         if (request.status !== "ממתין") {
           return res.status(400).json({
-            message: "ניתן לאשר רק בקשה במצב ממתין",
+            errors: ["ניתן לאשר רק בקשה במצב ממתין"]
           });
         }
 
-        /**
-         * בדיקה אם המנהל שינה משהו
-         */
+        const change = checkChanges(request, req.body);
 
-        const originalDate = new Date(request.trip_date).toLocaleDateString(
-          "sv-SE",
-        );
-        const newDate = trip_date;
-
-        const originalTime = String(request.trip_time).slice(0, 5);
-        const newTime = String(trip_time).slice(0, 5);
-
-        const originalGuideId = Number(request.guide_id || 0);
-        const newGuideId = Number(guide_id);
-
-        const dateOrTimeChanged =
-          originalDate !== newDate || originalTime !== newTime;
-
-        const guideChanged = originalGuideId !== newGuideId;
-
-        // בדיקה לתאריך/שעה
-        if (dateOrTimeChanged && (!change_reason || !change_reason.trim())) {
-          return res.status(400).json({
-            message: "חובה לכתוב סיבה לשינוי תאריך או שעה",
-          });
+        if (change.errors.length > 0) {
+          return res.status(400).json({ errors: change.errors });
         }
 
-        // בדיקה למדריך
-        if (
-          guideChanged &&
-          (!guide_change_reason || !guide_change_reason.trim())
-        ) {
-          return res.status(400).json({
-            message: "חובה לכתוב סיבה להחלפת מדריך",
-          });
-        }
+        checkGuide(request, req.body, res, () => {
+          processApproval(request, req.body, change, res);
+        });
 
-        /**
-         * בדיקת זמינות מדריך
-         */
-        checkGuideAvailability(
-          newGuideId,
-          trip_date,
-          trip_time,
-          request.duration_minutes,
-          null,
-          (err, isAvailable) => {
-            if (err) {
-              console.error("שגיאה בבדיקת זמינות מדריך:", err);
-              return res
-                .status(500)
-                .json({ message: "שגיאה בבדיקת זמינות מדריך" });
-            }
-
-            if (!isAvailable) {
-              return res.status(409).json({
-                message: "המדריך כבר משובץ לטיול אחר בזמן זה",
-              });
-            }
-
-            /**
-             * מתחילים טרנזקציה
-             */
-            db.beginTransaction((err) => {
-              if (err) {
-                console.error("שגיאה בפתיחת טרנזקציה:", err);
-                return res
-                  .status(500)
-                  .json({ message: "שגיאה בפתיחת טרנזקציה" });
-              }
-
-              /**
-               * עדכון סטטוס הבקשה ל"מאושר"
-               */
-              const updateRequestSql = `
-            UPDATE trip_requests
-            SET
-              status = 'מאושר'
-            WHERE request_id = ?
-          `;
-
-              db.query(updateRequestSql, [requestId], (err) => {
-                if (err) {
-                  return db.rollback(() => {
-                    console.error("שגיאה בעדכון הבקשה:", err);
-                    res.status(500).json({ message: "שגיאה בעדכון הבקשה" });
-                  });
-                }
-
-                /**
-                 * יצירת קבוצה
-                 */
-                const insertGroupSql = `
-            INSERT INTO groups
-            (
-              request_id,
-              trail_id,
-              guide_id,
-              trip_date,
-              trip_time,
-              meeting_point,
-              status,
-              change_reason,
-              guide_change_reason
-            )
-            VALUES (?, ?, ?, ?, ?, ?, 'פעיל', ?, ?)
-          `;
-
-                db.query(
-                  insertGroupSql,
-                  [
-                    request.request_id,
-                    request.trail_id,
-                    newGuideId,
-                    trip_date,
-                    trip_time,
-                    meeting_point.trim(),
-                    dateOrTimeChanged ? change_reason.trim() : null,
-                    guideChanged ? guide_change_reason.trim() : null,
-                  ],
-                  (err, groupResult) => {
-                    if (err) {
-                      return db.rollback(() => {
-                        console.error("שגיאה ביצירת קבוצה:", err);
-                        res.status(500).json({ message: "שגיאה ביצירת קבוצה" });
-                      });
-                    }
-
-                    const groupId = groupResult.insertId;
-
-                    /**
-                     * יצירת הדרכה (guidance) אוטומטית
-                     */
-                    const insertGuidanceSql = `
-                INSERT INTO guidances (group_id)
-                VALUES (?)
-              `;
-
-                    db.query(insertGuidanceSql, [groupId], (err) => {
-                      if (err) {
-                        return db.rollback(() => {
-                          console.error("שגיאה ביצירת הדרכה:", err);
-                          res
-                            .status(500)
-                            .json({ message: "שגיאה ביצירת הדרכה" });
-                        });
-                      }
-
-                      /**
-                       * שליפת פרטי מדריך
-                       */
-                      const guideSql = `
-                  SELECT full_name, phone, email
-                  FROM users
-                  WHERE user_id = ?
-                  LIMIT 1
-                `;
-
-                      db.query(guideSql, [newGuideId], (err, guideRows) => {
-                        if (err) {
-                          return db.rollback(() => {
-                            console.error("שגיאה בשליפת מדריך:", err);
-                            res
-                              .status(500)
-                              .json({ message: "שגיאה בשליפת מדריך" });
-                          });
-                        }
-
-                        const guide = guideRows[0] || {};
-
-                        /**
-                         * שליפת פרטי מנהל לצורך החשבונית
-                         */
-                        const managerSql = `
-                    SELECT full_name, phone, email
-                    FROM users
-                    WHERE role = 'מנהל'
-                    LIMIT 1
-                  `;
-
-                        db.query(managerSql, (err, managerRows) => {
-                          if (err) {
-                            return db.rollback(() => {
-                              console.error("שגיאה בשליפת מנהל:", err);
-                              res
-                                .status(500)
-                                .json({ message: "שגיאה בשליפת מנהל" });
-                            });
-                          }
-
-                          const manager = managerRows[0] || {};
-
-                          /**
-                           * שליפת מע״מ
-                           */
-                          getVatRate((err, VAT_RATE) => {
-                            if (err) {
-                              return db.rollback(() => {
-                                console.error("שגיאה בשליפת מע״מ:", err);
-                                res
-                                  .status(500)
-                                  .json({ message: "שגיאה בשליפת מע״מ" });
-                              });
-                            }
-
-                            /**
-                             * חישובי מחיר
-                             */
-                            const participantsPrice =
-                              Number(request.number_of_participants || 0) *
-                              Number(request.price_per_person || 0);
-
-                            const vehiclesPrice =
-                              Number(request.number_of_vehicles || 0) *
-                              Number(request.price_per_vehicle || 0);
-
-                            const totalBeforeVat =
-                              participantsPrice + vehiclesPrice;
-                            const vatAmount = totalBeforeVat * VAT_RATE;
-                            const totalWithVat = totalBeforeVat + vatAmount;
-
-                            /**
-                             * יצירת חשבונית PDF
-                             */
-
-                            (async () => {
-                              try {
-                                const invoiceFile = await createInvoicePDF(
-                                  {
-                                    manager_name: manager.full_name,
-                                    manager_phone: manager.phone,
-                                    manager_email: manager.email,
-
-                                    group_id: groupId,
-
-                                    trail_name: request.trail_name,
-                                    trip_date,
-                                    trip_time,
-                                    meeting_point: meeting_point.trim(),
-
-                                    guide_name: guide.full_name,
-                                    guide_phone: guide.phone,
-                                    guide_email: guide.email,
-
-                                    number_of_participants:
-                                      request.number_of_participants,
-                                    number_of_vehicles:
-                                      request.number_of_vehicles,
-
-                                    price_per_person: Number(
-                                      request.price_per_person || 0,
-                                    ),
-                                    price_per_vehicle: Number(
-                                      request.price_per_vehicle || 0,
-                                    ),
-
-                                    total_before_vat: totalBeforeVat,
-                                    vat_amount: vatAmount,
-                                    total_with_vat: totalWithVat,
-                                  },
-                                  VAT_RATE,
-                                );
-
-                                const updateGroupInvoiceSql = `
-                              UPDATE groups
-                              SET invoice_file = ?
-                              WHERE group_id = ?
-                            `;
-
-                                db.query(
-                                  updateGroupInvoiceSql,
-                                  [invoiceFile, groupId],
-                                  (err) => {
-                                    if (err) {
-                                      return db.rollback(() => {
-                                        console.error(
-                                          "שגיאה בשמירת שם חשבונית:",
-                                          err,
-                                        );
-                                        res.status(500).json({
-                                          message: "שגיאה בשמירת החשבונית",
-                                        });
-                                      });
-                                    }
-
-                                    db.commit((err) => {
-                                      if (err) {
-                                        return db.rollback(() => {
-                                          console.error("שגיאה ב-commit:", err);
-                                          res.status(500).json({
-                                            message: "שגיאה בשמירת הנתונים",
-                                          });
-                                        });
-                                      }
-
-                                      res.json({
-                                        message:
-                                          "הבקשה אושרה, נוצרה קבוצה ונוצרה חשבונית בהצלחה",
-                                        group_id: groupId,
-                                        invoice_file: invoiceFile,
-                                      });
-                                    });
-                                  },
-                                );
-                              } catch (error) {
-                                console.error("שגיאה ביצירת החשבונית:", error);
-
-                                db.rollback(() => {
-                                  res.status(500).json({
-                                    message: "שגיאה ביצירת חשבונית",
-                                  });
-                                });
-                              }
-                            })();
-                          });
-                        });
-                      });
-                    });
-                  },
-                );
-              });
-            });
-          },
-        );
-      },
+      }
     );
+
   });
+
 });
+
 /**
  * ------------------------------------------------
  * PUT
@@ -1118,76 +990,78 @@ router.put("/reject/:requestId", (req, res) => {
   });
 });
 
-/**
- * ------------------------------------------------
- * PUT
- * אישור ביטול בקשה
- * ------------------------------------------------
- *
- * משנה:
- * - את הבקשה ל"מבוטל"
- * - את הקבוצה ל"מבוטל"
- * את ההדרכה ל בוטל
- */
-router.put("/approveCancel/:requestId", (req, res) => {
-  const requestId = req.params.requestId;
 
+/**------------------------------------------------------------
+ * מקבלת requestId, מעדכנת בקשה ל"מבוטל"
+ -----------------------------------------------------------------*/
+function updateRequestStatus(requestId, callback) {
+  const updateRequestSql = `
+    UPDATE trip_requests
+    SET status = 'מבוטל', cancel_requested = 0
+    WHERE request_id = ?
+  `;
+
+  db.query(updateRequestSql, [requestId], callback);
+}
+
+/**------------------------------------------------------------
+ * מקבלת requestId, מעדכנת קבוצה ל"בוטל"
+ ------------------------------------------------------------*/
+function updateGroupStatus(requestId, callback) {
+  const updateGroupSql = `
+    UPDATE groups
+    SET status = 'בוטל'
+    WHERE request_id = ?
+  `;
+
+  db.query(updateGroupSql, [requestId], callback);
+}
+
+/**----------------------------------------------------
+ * מקבלת requestId, מעדכנת הדרכות ל"בוטל"
+ -----------------------------------------------------------*/
+function updateGuidanceStatus(requestId, callback) {
+  const updateGuidanceSql = `
+    UPDATE guidances
+    SET status = 'בוטל'
+    WHERE group_id IN (
+      SELECT group_id FROM groups WHERE request_id = ?
+    )
+  `;
+
+  db.query(updateGuidanceSql, [requestId], callback);
+}
+
+/**----------------------------------------------------------
+ * מנהלת את כל תהליך הביטול
+ ------------------------------------------------------------*/
+function handleApproveCancel(requestId, req, res) {
   db.beginTransaction((err) => {
     if (err) {
-      console.error("שגיאה בפתיחת טרנזקציה:", err);
       return res.status(500).json({ message: "שגיאה בפתיחת טרנזקציה" });
     }
 
-    const updateRequestSql = `
-      UPDATE trip_requests
-      SET
-        status = 'מבוטל',
-        cancel_requested = 0
-      WHERE request_id = ?
-    `;
-
-    db.query(updateRequestSql, [requestId], (err) => {
+    updateRequestStatus(requestId, (err) => {
       if (err) {
         return db.rollback(() => {
-          console.error("שגיאה באישור ביטול בקשה:", err);
-          res.status(500).json({ message: "שגיאה באישור ביטול הבקשה" });
+          res.status(500).json({ message: "שגיאה באישור הביטול" });
         });
       }
 
-      const updateGroupSql = `
-        UPDATE groups
-        SET status = 'בוטל'
-        WHERE request_id = ?
-      `;
-
-      db.query(updateGroupSql, [requestId], (err) => {
+      updateGroupStatus(requestId, (err) => {
         if (err) {
           return db.rollback(() => {
-            console.error("שגיאה בעדכון סטטוס קבוצה:", err);
-            res.status(500).json({ message: "שגיאה בעדכון הקבוצה" });
+            res.status(500).json({ message: "שגיאה בעדכון קבוצה" });
           });
         }
 
-        /**
-         * עדכון הדרכה ל"בוטל"
-         */
-        const updateGuidanceSql = `
-  UPDATE guidances
-  SET status = 'בוטל'
-  WHERE group_id IN (
-    SELECT group_id FROM groups WHERE request_id = ?
-  )
-`;
-
-        db.query(updateGuidanceSql, [requestId], (err) => {
+        updateGuidanceStatus(requestId, (err) => {
           if (err) {
             return db.rollback(() => {
-              console.error("שגיאה בעדכון הדרכה:", err);
               res.status(500).json({ message: "שגיאה בעדכון הדרכה" });
             });
           }
 
-          // ✅ עכשיו כן עושים commit
           db.commit((err) => {
             if (err) {
               return db.rollback(() => {
@@ -1203,7 +1077,125 @@ router.put("/approveCancel/:requestId", (req, res) => {
       });
     });
   });
+}
+
+
+/**
+ * ------------------------------------------------
+ * PUT
+ * אישור ביטול בקשה
+ * ------------------------------------------------
+ *
+ * משנה:
+ * - את הבקשה ל"מבוטל"
+ * - את הקבוצה ל"מבוטל"
+ * את ההדרכה ל בוטל
+ */
+router.put("/approveCancel/:requestId", (req, res) => {
+  const requestId = req.params.requestId;
+  handleApproveCancel(requestId, req, res);
 });
+
+
+/**
+ * מקבלת מזהה בקשה, מחזירה בקשה 
+ */
+function fetchRequestById(requestId, cb) {
+  const sql = `
+    SELECT tr.*, t.*
+    FROM trip_requests tr
+    JOIN trails t ON tr.trail_id = t.trail_id
+    WHERE tr.request_id = ? LIMIT 1
+  `;
+  db.query(sql, [requestId], (e, r) => cb(e, r?.[0]));
+}
+
+/**
+ * מקבלת requestId, בודקת אם יש קבוצה
+ */
+function checkGroup(requestId, cb) {
+  db.query(
+    `SELECT group_id FROM groups WHERE request_id=? LIMIT 1`,
+    [requestId],
+    (e, r) => cb(e, r?.length)
+  );
+}
+
+/**
+ * מעדכן בקשה + קבוצה למצב פעיל
+ */
+function restoreGroup(requestId, reason, res) {
+  db.query(
+    `UPDATE trip_requests SET status='מאושר', cancel_requested=0, cancel_reject_reason=? WHERE request_id=?`,
+    [reason, requestId],
+    (e) => {
+      if (e) return res.status(500).json({ message: "שגיאה בבקשה" });
+
+      db.query(
+        `UPDATE groups SET status='פעיל' WHERE request_id=?`,
+        [requestId],
+        (e) => {
+          if (e) return res.status(500).json({ message: "שגיאה בקבוצה" });
+          res.json({ message: "הקבוצה חזרה לפעיל" });
+        }
+      );
+    }
+  );
+}
+
+/**----------------------------------------------------------------------------
+ * בדיקות חובה לפני יצירת קבוצה
+ * מקבלת: body, res
+ * בודקת: שיש תאריך, שעה, נקודת מפגש ומדריך
+ * מחזירה: אמת אם תקין, אחרת שולחת שגיאה מתאחמה ומחזירה שקר
+ --------------------------------------------------------------------------*/
+function validateInputs(body, res) {
+  const { trip_date, trip_time, meeting_point, guide_id } = body;
+
+  const errors = [];
+
+  if (!trip_date) errors.push("חסר תאריך");
+  if (!trip_time) errors.push("חסרה שעה");
+  if (!meeting_point) errors.push("חסרה נקודת מפגש");
+  if (!guide_id) errors.push("חסר מדריך");
+
+  if (errors.length) {
+    return res.status(400).json({ errors });
+  }
+
+  return true;
+}
+
+/**------------------------------------
+ * יוצר קבוצה חדשה
+ ----------------------------------------*/
+function insertGroup(request, body, cb) {
+  const sql = `
+    INSERT INTO groups
+    (request_id, trail_id, guide_id, trip_date, trip_time, meeting_point, status)
+    VALUES (?, ?, ?, ?, ?, ?, 'פעיל')
+  `;
+
+  db.query(
+    sql,
+    [
+      request.request_id,
+      request.trail_id,
+      body.guide_id,
+      body.trip_date,
+      body.trip_time,
+      body.meeting_point.trim(),
+    ],
+    (e, r) => cb(e, r?.insertId),
+  );
+}
+
+/**---------------------------------------
+ * יוצר הדרכה
+-------------------------------------------- */
+function insertGuidanceToDB(groupId, cb) {
+  db.query(`INSERT INTO guidances (group_id) VALUES (?)`, [groupId], cb);
+}
 
 /**
  * ------------------------------------------------
@@ -1220,464 +1212,61 @@ router.put("/approveCancel/:requestId", (req, res) => {
  *    → מחזירים את הקבוצה לסטטוס פעיל
  */
 router.put("/rejectCancel/:requestId", (req, res) => {
-  const requestId = req.params.requestId;
+  const id = req.params.requestId;
+  const { reason } = req.body;
 
-  const {
-    reason,
-    trip_date,
-    trip_time,
-    meeting_point,
-    guide_id,
-    change_reason,
-    guide_change_reason,
-  } = req.body;
-
-  if (!reason || !reason.trim()) {
-    return res.status(400).json({
-      message: "חובה לכתוב סיבה לדחיית הביטול",
-    });
+  // בדיקת חובה לסיבה
+  if (!reason?.trim()) {
+    return res.status(400).json({ message: "חובה סיבה" });
   }
 
-  const requestSql = `
-    SELECT tr.*, t.*
-    FROM trip_requests tr
-    JOIN trails t ON tr.trail_id = t.trail_id
-    WHERE tr.request_id = ?
-    LIMIT 1
-  `;
-
-  db.query(requestSql, [requestId], (err, rows) => {
-    if (err || !rows.length) {
-      return res.status(500).json({
-        message: "שגיאה בשליפת הבקשה",
-      });
+  // שליפת הבקשה מהDB
+  fetchRequestById(id, (err, request) => {
+    if (err || !request) {
+      return res.status(500).json({ message: "שגיאה בבקשה" });
     }
 
-    const request = rows[0];
+    // בדיקה אם כבר קיימת קבוצה
+    checkGroup(id, (err, hasGroup) => {
+      if (err) return res.status(500).json({ message: "שגיאה קבוצה" });
 
-    db.query(
-      `SELECT group_id FROM groups WHERE request_id=? LIMIT 1`,
-      [requestId],
-      (err, groups) => {
-        if (err) {
-          return res.status(500).json({
-            message: "שגיאה בבדיקת קבוצה",
-          });
-        }
+      // מצב 1: יש קבוצה → מחזירים לפעיל
+      if (hasGroup) return restoreGroup(id, reason.trim(), res);
 
-        // =========================
-        // מצב 1 — יש קבוצה
-        // =========================
-        if (groups.length) {
-          db.query(
-            `UPDATE trip_requests
-             SET status='מאושר',
-                 cancel_requested=0,
-                 cancel_reject_reason=?
-             WHERE request_id=?`,
-            [reason.trim(), requestId],
-            (err) => {
-              if (err) {
-                return res.status(500).json({ message: "שגיאה בעדכון הבקשה" });
-              }
+      // מצב 2: אין קבוצה → חייבים נתונים ליצירה
+      if (!validateInputs(req.body, res)) return;
 
-              db.query(
-                `UPDATE groups SET status='פעיל' WHERE request_id=?`,
-                [requestId],
-                (err) => {
-                  if (err) {
-                    return res
-                      .status(500)
-                      .json({ message: "שגיאה בעדכון הקבוצה" });
-                  }
+      // התחלת טרנזקציה ליצירה בטוחה
+      db.beginTransaction((err) => {
+        if (err) return res.status(500).json({ message: "שגיאה בגישה למסד הנתונים" });
 
-                  return res.json({
-                    message: "בקשת הביטול נדחתה והקבוצה חזרה לפעיל",
-                  });
-                },
-              );
-            },
-          );
+        // עדכון הבקשה חזרה למאושר
+        db.query(
+          `UPDATE trip_requests SET status='מאושר', cancel_requested=0, cancel_reject_reason=? WHERE request_id=?`,
+          [reason.trim(), id],
+          (err) => {
+            if (err) return db.rollback(() => res.status(500).json({}));
 
-          return; // ✅ חשוב
-        }
+            // יצירת קבוצה חדשה
+            insertGroup(request, req.body, (err, groupId) => {
+              if (err) return db.rollback(() => res.status(500).json({}));
 
-        // =========================
-        // מצב 2 — אין קבוצה
-        // =========================
+              // יצירת הדרכה לקבוצה
+              insertGuidanceToDB(groupId, (err) => {
+                if (err) return db.rollback(() => res.status(500).json({}));
 
-        if (!trip_date || !trip_time || !meeting_point || !guide_id) {
-          return res.status(400).json({
-            message: "חובה לשלוח תאריך, שעה, נקודת מפגש ומדריך",
-          });
-        }
-
-        // בדיקת תאריך ושעה
-        // בדיקת תאריך ושעה
-        validateTripDateTime(
-          trip_date,
-          trip_time,
-          request.duration_minutes,
-          (error) => {
-            if (error) {
-              return res.status(400).json({ message: error });
-            }
-
-            // ===== בדיקות שינוי (העתקה מ-approve)
-            const originalDate = new Date(request.trip_date).toLocaleDateString(
-              "sv-SE",
-            );
-            const newDate = trip_date;
-
-            const originalTime = String(request.trip_time).slice(0, 5);
-            const newTime = String(trip_time).slice(0, 5);
-
-            const originalGuideId = Number(request.guide_id || 0);
-            const newGuideId = Number(guide_id);
-
-            const dateOrTimeChanged =
-              originalDate !== newDate || originalTime !== newTime;
-
-            const guideChanged = originalGuideId !== newGuideId;
-
-            if (
-              dateOrTimeChanged &&
-              (!change_reason || !change_reason.trim())
-            ) {
-              return res.status(400).json({
-                message: "חובה סיבה לשינוי תאריך/שעה",
+                //  יצירת חשבונית 
+                buildInvoice(request, req.body, groupId, res);
               });
-            }
-
-            if (
-              guideChanged &&
-              (!guide_change_reason || !guide_change_reason.trim())
-            ) {
-              return res.status(400).json({
-                message: "חובה סיבה להחלפת מדריך",
-              });
-            }
-
-            // ===== בדיקת זמינות מדריך
-            checkGuideAvailability(
-              newGuideId,
-              trip_date,
-              trip_time,
-              request.duration_minutes,
-              null,
-              (err, isAvailable) => {
-                if (err) {
-                  return res.status(500).json({
-                    message: "שגיאה בבדיקת זמינות מדריך",
-                  });
-                }
-
-                if (!isAvailable) {
-                  return res.status(409).json({
-                    message: "המדריך תפוס בזמן הזה",
-                  });
-                }
-
-                db.beginTransaction((err) => {
-                  if (err) {
-                    return res.status(500).json({
-                      message: "שגיאה בטרנזקציה",
-                    });
-                  }
-
-                  db.query(
-                    `UPDATE trip_requests
-                 SET status='מאושר',
-                     cancel_requested=0,
-                     cancel_reject_reason=?
-                 WHERE request_id=?`,
-                    [reason.trim(), requestId],
-                    (err) => {
-                      if (err) {
-                        return db.rollback(() =>
-                          res
-                            .status(500)
-                            .json({ message: "שגיאה בעדכון הבקשה" }),
-                        );
-                      }
-
-                      db.query(
-                        `INSERT INTO groups
-                     (request_id, trail_id, guide_id, trip_date, trip_time, meeting_point, status, change_reason, guide_change_reason)
-                     VALUES (?, ?, ?, ?, ?, ?, 'פעיל', ?, ?)`,
-                        [
-                          request.request_id,
-                          request.trail_id,
-                          newGuideId,
-                          trip_date,
-                          trip_time,
-                          meeting_point.trim(),
-                          dateOrTimeChanged ? change_reason.trim() : null,
-                          guideChanged ? guide_change_reason.trim() : null,
-                        ],
-                        (err, result) => {
-                          if (err) {
-                            return db.rollback(() =>
-                              res
-                                .status(500)
-                                .json({ message: "שגיאה ביצירת קבוצה" }),
-                            );
-                          }
-
-                          const groupId = result.insertId;
-
-                          /**
-                           * יצירת הדרכה (guidance)
-                           */
-                          const insertGuidanceSql = `
-  INSERT INTO guidances (group_id)
-  VALUES (?)
-`;
-
-                          db.query(insertGuidanceSql, [groupId], (err) => {
-                            if (err) {
-                              return db.rollback(() =>
-                                res
-                                  .status(500)
-                                  .json({ message: "שגיאה ביצירת הדרכה" }),
-                              );
-                            }
-
-                            // ===== שליפת מדריך
-                            db.query(
-                              `SELECT full_name, phone, email FROM users WHERE user_id=? LIMIT 1`,
-                              [newGuideId],
-                              (err, guideRows) => {
-                                const guide = guideRows[0] || {};
-
-                                // ===== שליפת מנהל
-                                db.query(
-                                  `SELECT full_name, phone, email FROM users WHERE role='מנהל' LIMIT 1`,
-                                  (err, managerRows) => {
-                                    const manager = managerRows[0] || {};
-                                    //שליפת המע''מ
-                                    getVatRate(async (err, VAT_RATE) => {
-                                      if (err) {
-                                        return db.rollback(() =>
-                                          res
-                                            .status(500)
-                                            .json({ message: "שגיאה במע״מ" }),
-                                        );
-                                      }
-
-                                      /**
-                                       * חישובי מחיר
-                                       */
-                                      const participantsPrice =
-                                        Number(
-                                          request.number_of_participants || 0,
-                                        ) *
-                                        Number(request.price_per_person || 0);
-
-                                      const vehiclesPrice =
-                                        Number(
-                                          request.number_of_vehicles || 0,
-                                        ) *
-                                        Number(request.price_per_vehicle || 0);
-
-                                      const totalBeforeVat =
-                                        participantsPrice + vehiclesPrice;
-                                      const vatAmount =
-                                        totalBeforeVat * VAT_RATE;
-                                      const totalWithVat =
-                                        totalBeforeVat + vatAmount;
-
-                                      try {
-                                        const invoiceFile =
-                                          await createInvoicePDF(
-                                            {
-                                              manager_name: manager.full_name,
-                                              manager_phone: manager.phone,
-                                              manager_email: manager.email,
-
-                                              group_id: groupId,
-
-                                              trail_name: request.trail_name,
-                                              trip_date,
-                                              trip_time,
-                                              meeting_point:
-                                                meeting_point.trim(),
-
-                                              guide_name: guide.full_name,
-                                              guide_phone: guide.phone,
-                                              guide_email: guide.email,
-
-                                              number_of_participants:
-                                                request.number_of_participants,
-                                              number_of_vehicles:
-                                                request.number_of_vehicles,
-
-                                              price_per_person: Number(
-                                                request.price_per_person || 0,
-                                              ),
-                                              price_per_vehicle: Number(
-                                                request.price_per_vehicle || 0,
-                                              ),
-
-                                              total_before_vat: totalBeforeVat,
-                                              vat_amount: vatAmount,
-                                              total_with_vat: totalWithVat,
-                                            },
-                                            VAT_RATE,
-                                          );
-
-                                        db.query(
-                                          `UPDATE groups SET invoice_file=? WHERE group_id=?`,
-                                          [invoiceFile, groupId],
-                                          (err) => {
-                                            if (err) {
-                                              return db.rollback(() =>
-                                                res.status(500).json({
-                                                  message:
-                                                    "שגיאה בשמירת חשבונית",
-                                                }),
-                                              );
-                                            }
-
-                                            db.commit((err) => {
-                                              if (err) {
-                                                return db.rollback(() =>
-                                                  res.status(500).json({
-                                                    message: "שגיאה בשמירה",
-                                                  }),
-                                                );
-                                              }
-
-                                              res.json({
-                                                message:
-                                                  "בקשת הביטול נדחתה, נוצרה קבוצה עם הנתונים החדשים",
-                                              });
-                                            });
-                                          },
-                                        );
-                                      } catch (error) {
-                                        db.rollback(() =>
-                                          res.status(500).json({
-                                            message: "שגיאה ביצירת חשבונית",
-                                          }),
-                                        );
-                                      }
-                                    });
-                                  },
-                                );
-                              },
-                            );
-                          });
-                        },
-                      );
-                    },
-                  );
-                });
-              },
-            );
+            });
           },
         );
-      },
-    );
+      });
+    });
   });
 });
-/**
- * ------------------------------------------------
- * PUT
- * שינוי מדריך לקבוצה
- * ------------------------------------------------
- *
- * חייבים לשלוח:
- * - guide_id
- * - reason
- */
-router.put("/changeGuide/:groupId", (req, res) => {
-  const groupId = req.params.groupId;
-  const { guide_id, reason } = req.body;
 
-  if (!guide_id) {
-    return res.status(400).json({
-      message: "חובה לבחור מדריך חדש",
-    });
-  }
 
-  if (!reason || !reason.trim()) {
-    return res.status(400).json({
-      message: "חובה לכתוב סיבה לשינוי מדריך",
-    });
-  }
 
-  /**
-   * שליפת פרטי הקבוצה
-   */
-  const groupSql = `
-    SELECT
-      g.group_id,
-      g.trip_date,
-      g.trip_time,
-      g.trail_id,
-      t.duration_minutes
-    FROM groups g
-    JOIN trails t
-      ON g.trail_id = t.trail_id
-    WHERE g.group_id = ?
-    LIMIT 1
-  `;
-
-  db.query(groupSql, [groupId], (err, groupRows) => {
-    if (err) {
-      console.error("שגיאה בשליפת קבוצה:", err);
-      return res.status(500).json({ message: "שגיאה בשליפת הקבוצה" });
-    }
-
-    if (!groupRows.length) {
-      return res.status(404).json({ message: "הקבוצה לא נמצאה" });
-    }
-
-    const group = groupRows[0];
-
-    /**
-     * בדיקת זמינות מדריך חדש
-     */
-    checkGuideAvailability(
-      Number(guide_id),
-      group.trip_date,
-      group.trip_time,
-      group.duration_minutes,
-      Number(groupId),
-      (err, isAvailable) => {
-        if (err) {
-          console.error("שגיאה בבדיקת זמינות מדריך:", err);
-          return res.status(500).json({ message: "שגיאה בבדיקת זמינות מדריך" });
-        }
-
-        if (!isAvailable) {
-          return res.status(409).json({
-            message: "המדריך החדש כבר משובץ לטיול אחר בזמן זה",
-          });
-        }
-
-        const sql = `
-          UPDATE groups
-          SET
-            guide_id = ?,
-            guide_change_reason = ?
-          WHERE group_id = ?
-        `;
-
-        db.query(sql, [guide_id, reason.trim(), groupId], (err) => {
-          if (err) {
-            console.error("שגיאה בשינוי מדריך:", err);
-            return res.status(500).json({ message: "שגיאה בשינוי מדריך" });
-          }
-
-          res.json({
-            message: "המדריך שונה בהצלחה",
-          });
-        });
-      },
-    );
-  });
-});
 
 module.exports = router;

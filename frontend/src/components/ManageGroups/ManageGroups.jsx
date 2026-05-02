@@ -560,7 +560,7 @@ export default function ManageGroups() {
                     </div>
                   </td>
 
-                  <td>{g.meeting_point}</td>
+                  <td className={styles.meetingPoint}>{g.meeting_point}</td>
 
                   <td>{g.status}</td>
 
@@ -569,7 +569,7 @@ export default function ManageGroups() {
                   ========================================= */}
                   <td>
                     <FaEye
-                    className={styles.viewing}
+                      className={styles.viewing}
                       title="צפייה בהודעות" // טולטיפ כשעוברים עם העכבר
                       onClick={() => openMessages(g)} // פתיחת ההודעות של הקבוצה
                     />

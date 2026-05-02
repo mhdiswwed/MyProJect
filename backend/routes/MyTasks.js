@@ -126,6 +126,60 @@ router.post("/start/:taskId", (req, res) => {
   });
 });
 
+
+// ======================
+// 1. סיום ביצוע משימה
+// ======================
+function endExecution(taskId, user_id, callback) {
+  const sql = `
+    UPDATE task_executions
+    SET end_time = NOW()
+    WHERE task_id = ? AND user_id = ? AND end_time IS NULL
+  `;
+
+  db.query(sql, [taskId, user_id], callback);
+}
+
+// ======================
+// 2. עדכון סטטוס משימה
+// ======================
+function updateTaskStatus(taskId, callback) {
+  const sql = `
+    UPDATE tasks 
+    SET status='בוצעה' 
+    WHERE task_id=?
+  `;
+
+  db.query(sql, [taskId], callback);
+}
+
+// ======================
+// 3. שליפת report_id
+// ======================
+function getReportId(taskId, callback) {
+  const sql = `SELECT report_id FROM tasks WHERE task_id = ?`;
+
+  db.query(sql, [taskId], (err, results) => {
+    if (err) return callback(err);
+
+    const reportId = results[0]?.report_id;
+    callback(null, reportId);
+  });
+}
+
+// ======================
+// 4. עדכון דוח
+// ======================
+function updateReport(reportId, callback) {
+  const sql = `
+    UPDATE reports 
+    SET status='טופל' 
+    WHERE report_id = ?
+  `;
+
+  db.query(sql, [reportId], callback);
+}
+
 /**
  * =========================================
  * PUT
@@ -133,58 +187,31 @@ router.post("/start/:taskId", (req, res) => {
  *  רק שומר סטטוס המשימה קבוציעה ושומר זמן סיום משימה בדיווח על ביצוע משימה ובודק אם המשימה בוצעה מתוך דווח קיים אם כן מדדכן סטטוס הדיווח לטופל
  * =========================================
  */
+
 router.put("/end/:taskId", (req, res) => {
   const { taskId } = req.params;
   const { user_id } = req.body;
 
-  // 1. סיום ביצוע משימה
-  const endExecutionSql = `
-    UPDATE task_executions
-    SET end_time = NOW()
-    WHERE task_id = ? AND user_id = ? AND end_time IS NULL
-  `;
-
-  db.query(endExecutionSql, [taskId, user_id], (err) => {
+  endExecution(taskId, user_id, (err) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "שגיאה בסיום" });
     }
 
-    // 2. עדכון סטטוס משימה
-    const updateTaskSql = `
-      UPDATE tasks 
-      SET status='בוצעה' 
-      WHERE task_id=?
-    `;
-
-    db.query(updateTaskSql, [taskId], (err) => {
+    updateTaskStatus(taskId, (err) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ message: "שגיאה בעדכון משימה" });
       }
 
-      // 3. בדיקה אם יש report_id
-      const getReportSql = `
-        SELECT report_id FROM tasks WHERE task_id = ?
-      `;
-
-      db.query(getReportSql, [taskId], (err, results) => {
+      getReportId(taskId, (err, reportId) => {
         if (err) {
           console.error(err);
           return res.status(500).json({ message: "שגיאה בבדיקת דוח" });
         }
 
-        const reportId = results[0]?.report_id;
-
-        // 4. אם המשימה נוצרה מדוח → עדכון דוח
         if (reportId) {
-          const updateReportSql = `
-            UPDATE reports 
-            SET status='טופל' 
-            WHERE report_id = ?
-          `;
-
-          db.query(updateReportSql, [reportId], (err) => {
+          updateReport(reportId, (err) => {
             if (err) {
               console.error(err);
               return res.status(500).json({ message: "שגיאה בעדכון דוח" });
@@ -193,13 +220,13 @@ router.put("/end/:taskId", (req, res) => {
             return res.json({ message: "המשימה והדוח עודכנו" });
           });
         } else {
-          // אין דוח
           return res.json({ message: "המשימה הסתיימה" });
         }
       });
     });
   });
 });
+
 
 
 module.exports = router;

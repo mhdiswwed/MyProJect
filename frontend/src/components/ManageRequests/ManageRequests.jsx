@@ -434,7 +434,7 @@ export default function ManageRequests() {
       if (!res.ok) {
         setMsg({
           type: "error",
-          text: data.message || "שגיאה באישור הבקשה",
+          text: data.errors?.[0] || data.message || "שגיאה באישור הבקשה",
         });
         return;
       }
@@ -674,13 +674,21 @@ export default function ManageRequests() {
     const somethingChanged = dateOrTimeChanged || guideChanged;
 
     /* אם נעשה שינוי חייבים סיבה */
-    if (somethingChanged && !approveData.change_reason.trim()) {
-      setMsg({
-        type: "error",
-        text: "חובה לכתוב סיבה לשינוי שביצעת",
-      });
-      return;
-    }
+ if (dateOrTimeChanged && !approveData.change_reason.trim()) {
+   setMsg({
+     type: "error",
+     text: "חובה סיבה לשינוי תאריך/שעה",
+   });
+   return;
+ }
+
+ if (guideChanged && !guideChangeReason.trim()) {
+   setMsg({
+     type: "error",
+     text: "חובה סיבה להחלפת מדריך",
+   });
+   return;
+ }
 
     // בדיקה שחובה למלא נקודת מפגש
     /* רק אם אין קבוצה */

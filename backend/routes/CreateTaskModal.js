@@ -1,4 +1,3 @@
-
 // ===================================
 //CreateTaskModal
 // רוותיר : חלון פופה ליצירת משימה
@@ -18,316 +17,217 @@ const path = require("path");
 
 const uploadPath = path.join(__dirname, "../uploads/tasks");
 
-// אם התיקייה לא קיימת  ליצור
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
-//מגדירים שם לתמונה
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadPath);
-  },
+  destination: (req, file, cb) => cb(null, uploadPath),
   filename: (req, file, cb) => {
     const ext = file.originalname.split(".").pop();
     const name = Date.now() + "-" + Math.floor(Math.random() * 1000);
     cb(null, `-${name}.${ext}`);
   },
 });
-//משתמשים בשם
+
 const upload = multer({ storage });
 
-
-//============================================
-// פונקציה שמחזירה את זמן ההפסקה לעובד מה־DB
-//============================================
+// מחזיר זמן הפסקה לעובד
 function getWorkerBreakMinutes(callback) {
   db.query(
     "SELECT setting_value FROM system_settings WHERE setting_name='worker_break_minutes'",
     (err, result) => {
-      if (err || result.length === 0) {
-        return callback(30); // ברירת מחדל אם יש בעיה
-      }
-
+      if (err || result.length === 0) return callback(30);
       callback(Number(result[0].setting_value));
-    }
+    },
   );
 }
 
-// =========================================
-// GET
-// שליפת עובדים פנויים בלבד לפי זמן
-// =========================================
-router.get("/workers", (req, res) => {
-  const { start_time, due_time } = req.query;
-
-  if (!start_time || !due_time) {
-    return res.status(400).json({
-      message: "חייב לשלוח זמן התחלה וסיום",
-    });
-  }
-
-  // שימוש בפונקציה
-  getWorkerBreakMinutes((breakMinutes) => {
-    const sql = `
+// שולף עובדים פנויים לפי זמן
+function getAvailableWorkers(start_time, due_time, breakMinutes, callback) {
+  const sql = `
     SELECT u.user_id, u.full_name
     FROM users u
     WHERE u.role = 'עובד'
     AND u.active = 1
-
     AND NOT EXISTS (
       SELECT 1
       FROM task_workers tw
       JOIN tasks t ON t.task_id = tw.task_id
       WHERE tw.user_id = u.user_id
-
       AND (
-        -- חפיפה רגילה
         (t.start_time <= ? AND t.due_time >= ?)
-
         OR
-
-       -- מרווח לפי הגדרת הפסקה לעובד
         (
           t.due_time > DATE_SUB(?,INTERVAL ? MINUTE)
           AND t.start_time < DATE_ADD(?, INTERVAL ? MINUTE)
         )
       )
     )
-
     ORDER BY u.full_name ASC
   `;
 
-    db.query(
-      sql,
-      [start_time, due_time, start_time, breakMinutes, due_time, breakMinutes],
-      (err, results) => {
-        if (err) {
-          console.error("שגיאה בשליפת עובדים:", err);
-          return res.status(500).json({
-            message: "שגיאה בשליפת עובדים",
-          });
-        }
+  db.query(
+    sql,
+    [start_time, due_time, start_time, breakMinutes, due_time, breakMinutes],
+    callback,
+  );
+}
 
-        res.json(Array.isArray(results) ? results : []);
-      },
-    );
+// GET עובדים פנויים
+router.get("/workers", (req, res) => {
+  const { start_time, due_time } = req.query;
+
+  if (!start_time || !due_time) {
+    return res.status(400).json({ message: "חייב לשלוח זמן התחלה וסיום" });
+  }
+
+  getWorkerBreakMinutes((breakMinutes) => {
+    getAvailableWorkers(start_time, due_time, breakMinutes, (err, results) => {
+      if (err) {
+        console.error("שגיאה בשליפת עובדים:", err);
+        return res.status(500).json({ message: "שגיאה בשליפת עובדים" });
+      }
+
+      res.json(Array.isArray(results) ? results : []);
+    });
   });
 });
 
-/**
- * =========================================
- * POST
- * יצירת משימה חדשה + שיוך עובדים + עדכון דיווח
- * =========================================
- */
+// מחזיר נתיב תמונה
+function resolveImage(req) {
+  if (req.file) return `uploads/tasks/${req.file.filename}`;
+  if (req.body.image) return req.body.image;
+  return null;
+}
+
+// בודק נתוני משימה
+function validateTask(data, image, workersParsed) {
+  if (
+    !data.task_type ||
+    !data.description ||
+    !data.start_time ||
+    !data.due_time
+  )
+    return "חסרים נתונים";
+  if (data.report_id && !image) return "חסרה תמונה";
+  if (data.latitude === undefined || data.longitude === undefined)
+    return "חסר מיקום";
+  if (!Array.isArray(workersParsed) || workersParsed.length === 0)
+    return "חייב עובדים";
+
+  for (const w of workersParsed) {
+    if (!w.user_id || !w.role) return "חסר תפקיד";
+  }
+
+  return null;
+}
+
+// מכניס משימה
+function insertTask(taskValues, callback) {
+  const sql = `
+    INSERT INTO tasks
+    (task_type, description, image, status, start_time, due_time, report_id, latitude, longitude, trail_id)
+    VALUES (?, ?, ?, 'פתוחה', ?, ?, ?, ?, ?, ?)
+  `;
+  db.query(sql, taskValues, callback);
+}
+
+// מכניס עובדים למשימה
+function insertTaskWorkers(values, callback) {
+  const sql = `
+    INSERT INTO task_workers
+    (task_id, user_id, role)
+    VALUES ?
+  `;
+  db.query(sql, [values], callback);
+}
+
+// מעדכן דיווח
+function updateReport(report_id, callback) {
+  const sql = `
+    UPDATE reports
+    SET status = 'בטיפול'
+    WHERE report_id = ?
+  `;
+  db.query(sql, [report_id], callback);
+}
+
+// מתחיל טרנזקציה
+function startTransaction(callback) {
+  db.beginTransaction(callback);
+}
+
+// מבצע rollback
+function rollback(res, message, err) {
+  db.rollback(() => {
+    console.error(err);
+    res.status(500).json({ message });
+  });
+}
+
+// מבצע commit
+function commit(res, message, taskId) {
+  db.commit((err) => {
+    if (err) {
+      return rollback(res, "שגיאה סופית ביצירת משימה", err);
+    }
+
+    res.status(201).json({
+      message,
+      task_id: taskId,
+    });
+  });
+}
+
+// יצירת משימה
 router.post("/tasks", upload.single("image"), (req, res) => {
-  // =========================
-  // קבלת נתונים מהלקוח
-  // =========================
-  const {
-    task_type,
-    description,
-    start_time,
-    due_time,
-    report_id,
-    latitude,
-    longitude,
-    workers,
-    trail_id,
-  } = req.body;
-let image = null;
+  const data = req.body;
+  const image = resolveImage(req);
+  const workersParsed = JSON.parse(data.workers);
 
-// אם העלו קובץ (manual)
-if (req.file) {
-  image = `uploads/tasks/${req.file.filename}`;
-}
-// אם זה report → יש תמונה קיימת
-else if (req.body.image) {
-  image = req.body.image;
-}
+  const error = validateTask(data, image, workersParsed);
+  if (error) return res.status(400).json({ message: error });
 
-  // =========================
-  // בדיקות בסיסיות
-  // =========================
-  if (!task_type || !description || !start_time || !due_time) {
-    return res.status(400).json({
-      message: "חסרים נתוני חובה במשימה",
-    });
-  }
-
-  if (report_id && !image) {
-    return res.status(400).json({
-      message: "חסרה תמונה",
-    });
-  }
-
-  if (latitude === undefined || longitude === undefined) {
-    return res.status(400).json({
-      message: "חסר מיקום למשימה",
-    });
-  }
-
-  const workersParsed = JSON.parse(workers);
-
-  if (!Array.isArray(workersParsed) || workersParsed.length === 0) {
-    return res.status(400).json({
-      message: "חייב לבחור לפחות עובד אחד",
-    });
-  }
-
-  // =========================
-  // בדיקה שלכל עובד יש user_id ותפקיד
-  // =========================
-  for (const worker of workersParsed) {
-    if (!worker.user_id || !worker.role) {
-      return res.status(400).json({
-        message: "חייב לבחור תפקיד לכל עובד",
-      });
-    }
-  }
-
-  // =========================
-  // פתיחת טרנזקציה
-  // =========================
-  db.beginTransaction((transactionErr) => {
-    if (transactionErr) {
-      console.error("שגיאה בפתיחת transaction:", transactionErr);
-      return res.status(500).json({
-        message: "שגיאה ביצירת משימה",
-      });
-    }
-
-    // =========================
-    // הכנסת המשימה לטבלת tasks
-    // =========================
-    const insertTaskSql = `
-      INSERT INTO tasks
-      (
-        task_type,
-        description,
-        image,
-        status,
-        start_time,
-        due_time,
-        report_id,
-        latitude,
-        longitude,
-        trail_id
-      )
-      VALUES (?, ?, ?, 'פתוחה', ?, ?, ?, ?, ?,?)
-    `;
+  startTransaction((err) => {
+    if (err) return res.status(500).json({ message: "שגיאה ביצירת משימה" });
 
     const taskValues = [
-      task_type,
-      description,
+      data.task_type,
+      data.description,
       image,
-      start_time,
-      due_time,
-      report_id || null,
-      latitude,
-      longitude,
-      trail_id|| null,
+      data.start_time,
+      data.due_time,
+      data.report_id || null,
+      data.latitude,
+      data.longitude,
+      data.trail_id || null,
     ];
 
-    db.query(insertTaskSql, taskValues, (taskErr, taskResult) => {
-      if (taskErr) {
-        return db.rollback(() => {
-          console.error("שגיאה בהכנסת משימה:", taskErr);
-          res.status(500).json({
-            message: "שגיאה ביצירת משימה",
-          });
-        });
-      }
+    insertTask(taskValues, (taskErr, taskResult) => {
+      if (taskErr) return rollback(res, "שגיאה ביצירת משימה", taskErr);
 
-      // =========================
-      // מזהה המשימה החדשה
-      // =========================
       const taskId = taskResult.insertId;
 
-      // =========================
-      // בניית ערכים ל-task_workers
-      // כל עובד עם התפקיד שלו
-      // =========================
-      const taskWorkersValues = workersParsed.map((worker) => [
+      const workersValues = workersParsed.map((w) => [
         taskId,
-        worker.user_id,
-        worker.role,
+        w.user_id,
+        w.role,
       ]);
 
-      const insertWorkersSql = `
-        INSERT INTO task_workers
-        (task_id, user_id, role)
-        VALUES ?
-      `;
+      insertTaskWorkers(workersValues, (workersErr) => {
+        if (workersErr) return rollback(res, "שגיאה בשיוך עובדים", workersErr);
 
-      db.query(insertWorkersSql, [taskWorkersValues], (workersErr) => {
-        if (workersErr) {
-          return db.rollback(() => {
-            console.error("שגיאה בהכנסת עובדים למשימה:", workersErr);
-            res.status(500).json({
-              message: "שגיאה בשיוך עובדים למשימה",
-            });
-          });
-        }
-
-        // =========================
-        // אם יש report_id - מעדכנים את הדיווח ל"בטיפול"
-        // =========================
-        if (report_id) {
-          const updateReportSql = `
-            UPDATE reports
-            SET status = 'בטיפול'
-            WHERE report_id = ?
-          `;
-
-          db.query(updateReportSql, [report_id], (reportErr) => {
+        if (data.report_id) {
+          updateReport(data.report_id, (reportErr) => {
             if (reportErr) {
-              return db.rollback(() => {
-                console.error("שגיאה בעדכון סטטוס דיווח:", reportErr);
-                res.status(500).json({
-                  message: "המשימה נוצרה אך עדכון הדיווח נכשל",
-                });
-              });
+              return rollback(res, "עדכון דיווח נכשל", reportErr);
             }
 
-            // =========================
-            // סיום transaction בהצלחה
-            // =========================
-            db.commit((commitErr) => {
-              if (commitErr) {
-                return db.rollback(() => {
-                  console.error("שגיאה ב-commit:", commitErr);
-                  res.status(500).json({
-                    message: "שגיאה סופית ביצירת משימה",
-                  });
-                });
-              }
-
-              res.status(201).json({
-                message: "המשימה נוצרה בהצלחה והדיווח הועבר לטיפול",
-                task_id: taskId,
-              });
-            });
+            commit(res, "המשימה נוצרה והדיווח עודכן", taskId);
           });
         } else {
-          // =========================
-          // אם אין דיווח קשור - רק commit
-          // =========================
-          db.commit((commitErr) => {
-            if (commitErr) {
-              return db.rollback(() => {
-                console.error("שגיאה ב-commit:", commitErr);
-                res.status(500).json({
-                  message: "שגיאה סופית ביצירת משימה",
-                });
-              });
-            }
-
-            res.status(201).json({
-              message: "המשימה נוצרה בהצלחה",
-              task_id: taskId,
-            });
-          });
+          commit(res, "המשימה נוצרה", taskId);
         }
       });
     });

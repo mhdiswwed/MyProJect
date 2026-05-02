@@ -17,7 +17,7 @@ const multer = require("multer");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/guidances/"); // 👈 תיקייה חדשה
+    cb(null, "uploads/guidances/");
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
@@ -59,7 +59,7 @@ router.get("/:guideId", (req, res) => {
     tr.number_of_participants,
     tr.number_of_vehicles,
 
-    -- 👇 פרטי נציג קבוצה (חדש)
+    --  פרטי נציג קבוצה (חדש)
     u.full_name AS user_name,
     u.phone AS user_phone,
     u.email AS user_email,
@@ -77,7 +77,7 @@ router.get("/:guideId", (req, res) => {
   JOIN trip_requests tr ON g.request_id = tr.request_id
   JOIN guidances gu ON g.group_id = gu.group_id
 
-  -- 👇 זה הכי חשוב!
+
   JOIN users u ON tr.user_id = u.user_id
 
   WHERE g.guide_id = ?
@@ -174,7 +174,7 @@ router.put("/end/:groupId", (req, res) => {
  */
 router.post(
   "/report",
-  upload.single("image"), // 👈🔥 זה מה שחסר לך
+  upload.single("image"), 
   async (req, res) => {
     try {
       const { group_id, notes } = req.body;

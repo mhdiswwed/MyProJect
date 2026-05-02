@@ -51,31 +51,70 @@ function getVatRate(callback) {
 }
 
 
-
-
-
 /**
  * ------------------------------------------------
  * GET
- * שליפת הבקשות של משתמש
+ * שליפת פרטי קבוצה לפי request_id
  * ------------------------------------------------
  */
 
-router.get("/:userId", (req, res) => {
-  const userId = req.params.userId;
+router.get("/byRequest/:requestId", (req, res) => {
 
-  /**
-   * שליפת המע״מ לפני חישוב המחירים
-   */
-  getVatRate((err, VAT_RATE) => {
+  const requestId = req.params.requestId;
+
+  const sql = `
+
+  SELECT
+
+  g.group_id,
+  g.trip_date,
+  g.trip_time,
+  g.meeting_point,
+  g.status,
+  g.invoice_file,
+
+  u.full_name AS guide_name,
+  u.phone AS guide_phone,
+  u.email AS guide_email
+
+  FROM groups g
+
+  JOIN users u
+  ON g.guide_id = u.user_id
+
+  WHERE g.request_id = ?
+
+  LIMIT 1
+  `;
+
+  db.query(sql, [requestId], (err, results) => {
+
     if (err) {
-      console.error(err);
-      return res.status(500).json({
-        message: "שגיאה בשליפת המע״מ מהמערכת",
-      });
+      console.error("שגיאה בשליפת קבוצה:", err);
+      return res.status(500).json({ message: "שגיאה בשרת" });
     }
 
-    const sql = `
+    if (!results.length) {
+      return res.json(null);
+    }
+
+    /**
+     * מחזירים את הקבוצה בלבד
+     * החשבונית כבר נוצרה כאשר המנהל אישר את הבקשה
+     */
+
+    res.json(results[0]);
+
+  });
+
+});
+
+
+// ======================
+// שליפת בקשות מה־DB
+// ======================
+function getUserRequests(userId, callback) {
+ const sql = `
 SELECT
 
 tr.request_id,
@@ -169,120 +208,110 @@ ORDER BY
 
   /* בתוך כל קבוצה – מיון לפי זמן */
   CONCAT(tr.trip_date, ' ', tr.trip_time) ASC`;
-    
 
-    db.query(sql, [userId], (err, results) => {
+  db.query(sql, [userId], callback);
+}
+
+// ======================
+// חישוב מחירים לבקשה אחת
+// ======================
+function calculatePrices(r, VAT_RATE) {
+  const pricePerPerson = Number(r.price_per_person || 0);
+  const pricePerVehicle = Number(r.price_per_vehicle || 0);
+
+  const participants = Number(r.number_of_participants || 0);
+  const vehicles = Number(r.number_of_vehicles || 0);
+
+  const participantsPrice = participants * pricePerPerson;
+  const vehiclesPrice = vehicles * pricePerVehicle;
+
+  const totalBeforeVat = participantsPrice + vehiclesPrice;
+  const vatAmount = totalBeforeVat * VAT_RATE;
+  const totalWithVat = totalBeforeVat + vatAmount;
+
+  return {
+    pricePerPerson,
+    pricePerVehicle,
+    participants,
+    vehicles,
+    totalBeforeVat,
+    vatAmount,
+    totalWithVat,
+    pricePerPersonWithVat: Number((pricePerPerson * (1 + VAT_RATE)).toFixed(2)),
+    pricePerVehicleWithVat: Number((pricePerVehicle * (1 + VAT_RATE)).toFixed(2)),
+  };
+}
+
+// ======================
+// בניית אובייקט תשובה
+// ======================
+function buildResponse(r, prices) {
+  return {
+    request_id: r.request_id,
+    trail_name: r.trail_name,
+
+    trip_date: r.trip_date,
+    trip_time: r.trip_time,
+
+    changed_trip_date: r.changed_trip_date,
+    changed_trip_time: r.changed_trip_time,
+    changed_guide_name: r.changed_guide_name,
+
+    change_reason: r.change_reason,
+    guide_change_reason: r.guide_change_reason,
+
+    number_of_participants: prices.participants,
+    number_of_vehicles: prices.vehicles,
+
+    guide_name: r.guide_name,
+    guide_phone: r.guide_phone,
+    guide_email: r.guide_email,
+
+    price_per_person: prices.pricePerPerson,
+    price_per_vehicle: prices.pricePerVehicle,
+
+    price_per_person_with_vat: prices.pricePerPersonWithVat,
+    price_per_vehicle_with_vat: prices.pricePerVehicleWithVat,
+
+    total_before_vat: prices.totalBeforeVat,
+    vat_amount: prices.vatAmount,
+    total_with_vat: prices.totalWithVat,
+
+    status: r.status,
+
+    cancel_reason: r.cancel_reason,
+    cancel_requested: r.cancel_requested,
+    group_cancel_reason: r.group_cancel_reason,
+
+    guidance_status: r.guidance_status,
+
+    reject_reason: r.reject_reason,
+    cancel_reject_reason: r.cancel_reject_reason,
+    cancel_admin_response: r.cancel_admin_response,
+  };
+}
+/**
+ * ------------------------------------------------
+ * GET
+ * שליפת הבקשות של משתמש
+ * ------------------------------------------------
+ */
+router.get("/:userId", (req, res) => {
+  const userId = req.params.userId;
+
+  getVatRate((err, VAT_RATE) => {
+    if (err) {
+      return res.status(500).json({ message: "שגיאה בשליפת מע״מ" });
+    }
+
+    getUserRequests(userId, (err, results) => {
       if (err) {
-        console.error(err);
         return res.status(500).json(err);
       }
 
-      /**
-       * ------------------------------------------------
-       * חישוב מחירים לכל בקשה
-       * ------------------------------------------------
-       */
-
       const data = results.map((r) => {
-        /**
-         * מחירים בסיסיים למסלול
-         */
-        const pricePerPerson = Number(r.price_per_person || 0);
-        const pricePerVehicle = Number(r.price_per_vehicle || 0);
-
-                /**
-         * מחירים ליחיד כולל מע״מ
-         */
-    const pricePerPersonWithVat = Number(
-      (pricePerPerson * (1 + VAT_RATE)).toFixed(2),
-    );
-
-    const pricePerVehicleWithVat = Number(
-      (pricePerVehicle * (1 + VAT_RATE)).toFixed(2),
-    );
-
-
-        /**
-         * נתוני הבקשה
-         */
-        const participants = Number(r.number_of_participants || 0);
-        const vehicles = Number(r.number_of_vehicles || 0);
-
-        /**
-         * חישוב מחיר משתתפים
-         */
-        const participantsPrice = participants * pricePerPerson;
-
-        /**
-         * חישוב מחיר כלי רכב
-         */
-        const vehiclesPrice = vehicles * pricePerVehicle;
-
-        /**
-         * סכום כולל לפני מע״מ
-         */
-        const totalBeforeVat = participantsPrice + vehiclesPrice;
-
-        /**
-         * סכום המע״מ
-         */
-        const vatAmount = totalBeforeVat * VAT_RATE;
-
-        /**
-         * סכום כולל אחרי מע״מ
-         */
-        const totalWithVat = totalBeforeVat + vatAmount;
-
-      return {
-        request_id: r.request_id,
-
-        trail_name: r.trail_name,
-
-        trip_date: r.trip_date,
-        trip_time: r.trip_time,
-
-        /* נתונים לאחר שינוי */
-        changed_trip_date: r.changed_trip_date,
-        changed_trip_time: r.changed_trip_time,
-        changed_guide_name: r.changed_guide_name,
-
-        /* הודעות שינוי */
-        change_reason: r.change_reason,
-        guide_change_reason: r.guide_change_reason,
-
-        number_of_participants: participants,
-        number_of_vehicles: vehicles,
-
-        guide_name: r.guide_name,
-        guide_phone: r.guide_phone,
-        guide_email: r.guide_email,
-
-        price_per_person: pricePerPerson,
-        price_per_vehicle: pricePerVehicle,
-
-        price_per_person_with_vat: pricePerPersonWithVat,
-        price_per_vehicle_with_vat: pricePerVehicleWithVat,
-
-        total_before_vat: totalBeforeVat,
-        vat_amount: vatAmount,
-        total_with_vat: totalWithVat,
-
-        status: r.status,
-
-        cancel_reason: r.cancel_reason,
-        cancel_requested: r.cancel_requested,
-
-        group_cancel_reason: r.group_cancel_reason,
-
-        /**
-         * סטטוס ההדרכה (בתהליך / הסתיים)
-         */
-        guidance_status: r.guidance_status,
-
-        reject_reason: r.reject_reason,
-        cancel_reject_reason: r.cancel_reject_reason,
-        cancel_admin_response: r.cancel_admin_response,
-      };
+        const prices = calculatePrices(r, VAT_RATE);
+        return buildResponse(r, prices);
       });
 
       res.json(data);
@@ -294,66 +323,43 @@ ORDER BY
 
 
 
-/**
- * ------------------------------------------------
- * GET
- * שליפת פרטי קבוצה לפי request_id
- * ------------------------------------------------
- */
 
-router.get("/byRequest/:requestId", (req, res) => {
 
-  const requestId = req.params.requestId;
 
-  const sql = `
-
-  SELECT
-
-  g.group_id,
-  g.trip_date,
-  g.trip_time,
-  g.meeting_point,
-  g.status,
-  g.invoice_file,
-
-  u.full_name AS guide_name,
-  u.phone AS guide_phone,
-  u.email AS guide_email
-
-  FROM groups g
-
-  JOIN users u
-  ON g.guide_id = u.user_id
-
-  WHERE g.request_id = ?
-
-  LIMIT 1
-  `;
-
-  db.query(sql, [requestId], (err, results) => {
-
-    if (err) {
-      console.error("שגיאה בשליפת קבוצה:", err);
-      return res.status(500).json(err);
-    }
-
-    if (!results.length) {
-      return res.json(null);
-    }
-
-    /**
-     * מחזירים את הקבוצה בלבד
-     * החשבונית כבר נוצרה כאשר המנהל אישר את הבקשה
-     */
-
-    res.json(results[0]);
-
+// ======================
+// שליפת סטטוס בקשה
+// ======================
+function getRequestStatus(requestId, callback) {
+  const sql = `SELECT status FROM trip_requests WHERE request_id = ? LIMIT 1`;
+  db.query(sql, [requestId], (err, rows) => {
+    if (err || !rows.length) return callback(err || new Error());
+    callback(null, rows[0].status);
   });
+}
 
-});
+// ======================
+// עדכון בקשה לביטול
+// ======================
+function updateRequestCancel(requestId, reason, callback) {
+  const sql = `
+    UPDATE trip_requests
+    SET status='מבקש ביטול', cancel_reason=?, cancel_requested=1
+    WHERE request_id=?
+  `;
+  db.query(sql, [reason, requestId], callback);
+}
 
-
-
+// ======================
+// עדכון קבוצה (אם מאושר)
+// ======================
+function updateGroupCancel(requestId, callback) {
+  const sql = `
+    UPDATE groups
+    SET status='מבקש ביטול'
+    WHERE request_id=?
+  `;
+  db.query(sql, [requestId], callback);
+}
 
 
 /**
@@ -365,73 +371,34 @@ router.get("/byRequest/:requestId", (req, res) => {
  * משנה את הסטטוס ל:
  * "מבקש ביטול"
  */
-
 router.put("/cancelRequest/:requestId", (req, res) => {
-  const requestId = req.params.requestId;
-  const reason = req.body.reason;
+  const { requestId } = req.params;
+  const { reason } = req.body;
 
-  /* שליפת סטטוס הבקשה */
-  const checkSql = `
-  SELECT status
-  FROM trip_requests
-  WHERE request_id = ?
-  LIMIT 1
-  `;
-
-  db.query(checkSql, [requestId], (err, rows) => {
-    if (err || !rows.length) {
+  getRequestStatus(requestId, (err, status) => {
+    if (err) {
       return res.status(500).json({ message: "שגיאה בבדיקת הבקשה" });
     }
 
-    const status = rows[0].status;
-
-    /* עדכון הבקשה */
-    const updateRequestSql = `
-    UPDATE trip_requests
-    SET
-    status = 'מבקש ביטול',
-    cancel_reason = ?,
-    cancel_requested = 1
-    WHERE request_id = ?
-    `;
-
-    db.query(updateRequestSql, [reason, requestId], (err) => {
+    updateRequestCancel(requestId, reason, (err) => {
       if (err) {
-        return res.status(500).json(err);
+        return res.status(500).json({ message: "שגיאה בעדכון" });
       }
 
-      /**
-       * אם הבקשה כבר מאושרת
-       * יש קבוצה ולכן צריך לעדכן אותה
-       */
       if (status === "מאושר") {
-        const updateGroupSql = `
-        UPDATE groups
-        SET status = 'מבקש ביטול'
-        WHERE request_id = ?
-        `;
-
-        db.query(updateGroupSql, [requestId], (err) => {
+        updateGroupCancel(requestId, (err) => {
           if (err) {
-            return res.status(500).json(err);
+            return res.status(500).json({ message: "שגיאה בעדכון קבוצה" });
           }
 
-          res.json({
-            message: "בקשת הביטול נשלחה למנהל",
-          });
+          return res.json({ message: "בקשת הביטול נשלחה למנהל" });
         });
       } else {
-
-      /**
-       * אם הבקשה עדיין ממתינה
-       * אין קבוצה ולכן לא מעדכנים groups
-       */
-        res.json({
-          message: "בקשת הביטול נשלחה למנהל",
-        });
+        return res.json({ message: "בקשת הביטול נשלחה למנהל" });
       }
     });
   });
 });
+
 
 module.exports = router;

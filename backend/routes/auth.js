@@ -11,199 +11,109 @@
 
 const express = require("express");
 const router = express.Router();
-//routes/user.js
 const dbSingleton = require("../dbSingleton");
-
-// Execute a query to the database
 const db = dbSingleton.getConnection();
-//השוואת הצפנת צצמאות
 const bcrypt = require("bcrypt");
-// ספרייה ליצירת טוקן אקראי לאימות אימייל
 const crypto = require("crypto");
-// ספרייה לשליחת מיילים
 const nodemailer = require("nodemailer");
 
-// יצירת חיבור לחשבון Gmail
-/**
- * יצירת חיבור ל-Gmail באמצעות משתני סביבה
- * כך שהסיסמה לא תהיה חשופה בקוד
- */
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // נלקח מקובץ .env
-    pass: process.env.EMAIL_PASS, // נלקח מקובץ .env
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
-/**
- * התחברות משתמש למערכת
- *
- * מקבל שם משתמש וסיסמה מה־Frontend
- * בודק התאמה באמצעות bcrypt
- */
+
+// מחפש משתמש לפי שם משתמש
+function findUserByUsername(username, callback) {
+  db.query("SELECT * FROM users WHERE username = ?", [username], callback);
+}
+
+// בודק סיסמה מול hash
+function comparePassword(password, hash, callback) {
+  bcrypt.compare(password, hash, callback);
+}
+
+// יוצר אובייקט משתמש בטוח ל-session
+function buildSafeUser(user) {
+  return {
+    user_id: user.user_id,
+    username: user.username,
+    full_name: user.full_name,
+    role: user.role,
+  };
+}
+
+// התחברות משתמש
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
 
-  // חיפוש משתמש לפי שם משתמש בלבד
-  const sql = "SELECT * FROM users WHERE username = ?";
+  findUserByUsername(username, (err, results) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
 
-  db.query(sql, [username], (err, results) => {
-    // שגיאת שרת
-    if (err) {
-      return res.status(500).json({ message: "שגיאת שרת" });
-    }
-
-    // אם המשתמש לא קיים
     if (results.length === 0) {
       return res.status(401).json({ message: "שם משתמש או סיסמה שגויים" });
     }
 
-    // בדיקה אם המשתמש עדיין לא אימת את האימייל
     if (!results[0].is_verified) {
-      return res.status(403).json({
-        message: "יש לאמת את האימייל לפני התחברות",
-      });
+      return res
+        .status(403)
+        .json({ message: "יש לאמת את האימייל לפני התחברות" });
     }
 
-    // שליפת הסיסמה המוצפנת מהמסד
-    const hashedPassword = results[0].password;
+    comparePassword(password, results[0].password, (err, isMatch) => {
+      if (err) return res.status(500).json({ message: "שגיאת שרת" });
 
-    // השוואת הסיסמה שהוזנה ל־hash
-    bcrypt.compare(password, hashedPassword, (err, isMatch) => {
-      // שגיאה בזמן ההשוואה
-      if (err) {
-        return res.status(500).json({ message: "שגיאת שרת" });
-      }
-
-      // אם הסיסמה לא תואמת
       if (!isMatch) {
         return res.status(401).json({ message: "שם משתמש או סיסמה שגויים" });
       }
 
-      // שמירת המשתמש ב־session
-      const safeUser = {
-        user_id: results[0].user_id,
-        username: results[0].username,
-        full_name: results[0].full_name,
-        role: results[0].role,
-      };
-
+      const safeUser = buildSafeUser(results[0]);
       req.session.user = safeUser;
 
-      // console.log("Logged in user:", req.session.user);//הדפסה בקונסול פרטי המשתמש המחובר
-      // התחברות הצליחה
-      res.json({
-        message: "התחברות הצליחה",
-        user: safeUser,
-      });
+      res.json({ message: "התחברות הצליחה", user: safeUser });
     });
   });
 });
 
-
-
-/**
- * הרשמת משתמש חדש למערכת
- *
- * תהליך:
- * 1. בדיקה האם שם משתמש או אימייל כבר קיימים
- * 2. אם קיימים – החזרת הודעת שגיאה מתאימה (400)
- * 3. אם לא קיימים – הצפנת סיסמה
- * 4. יצירת טוקן לאימות אימייל
- * 5. הכנסת המשתמש למסד הנתונים
- * 6. שליחת מייל אימות
- */
-router.post("/register", (req, res) => {
-  // שליפת הנתונים מה־Frontend
-  const { username, password, fullName, phone, email } = req.body;
-
-  /**
-   * בדיקה האם כבר קיים משתמש עם:
-   * - אותו שם משתמש
-   * - או אותו אימייל
-   *
-   * שני השדות חייבים להיות ייחודיים במערכת
-   */
-  const checkSql = `
+// בודק אם משתמש קיים לפי שם משתמש או אמייל
+function checkUserExists(username, email, callback) {
+  const sql = `
     SELECT username, email
     FROM users
     WHERE username = ? OR email = ?
   `;
+  db.query(sql, [username, email], callback);
+}
 
-  db.query(checkSql, [username, email], (err, results) => {
-    // שגיאת שרת בגישה למסד
-    if (err) {
-      return res.status(500).json({ message: "שגיאת שרת" });
-    }
+// מצפין סיסמה
+function hashPassword(password, callback) {
+  bcrypt.hash(password, 10, callback);
+}
 
-    /**
-     * אם נמצא משתמש קיים
-     * נבדוק האם הבעיה בשם המשתמש או באימייל
-     */
-    if (results.length > 0) {
-      if (results[0].username === username) {
-        return res.status(400).json({ message: "שם המשתמש כבר קיים" });
-      }
+// יוצר טוקן אימות
+function generateToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
 
-      if (results[0].email === email) {
-        return res.status(400).json({ message: "האימייל כבר רשום במערכת" });
-      }
-    }
+// מכניס משתמש למסד
+function insertUser(data, callback) {
+  const sql = `
+    INSERT INTO users
+    (username, password, full_name, phone, email, is_verified, verification_token)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+  db.query(sql, data, callback);
+}
 
-    /**
-     * אם לא נמצא משתמש קיים
-     * נמשיך לתהליך יצירת המשתמש
-     */
-
-    // מספר סבבי הצפנה (סטנדרט מקובל)
-    const saltRounds = 10;
-
-    // הצפנת הסיסמה לפני שמירה במסד
-    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-      if (err) {
-        return res.status(500).json({ message: "שגיאה בהצפנת הסיסמה" });
-      }
-
-      // יצירת טוקן אקראי לאימות אימייל
-      const verificationToken = crypto.randomBytes(32).toString("hex");
-
-      /**
-       * שאילתת הכנסת משתמש חדש למסד הנתונים
-       * המשתמש יישמר כלא מאומת עד שילחץ על קישור האימות
-       */
-      const insertSql = `
-        INSERT INTO users
-        (username, password, full_name, phone, email, is_verified, verification_token)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      db.query(
-        insertSql,
-        [
-          username,
-          hashedPassword,
-          fullName,
-          phone,
-          email,
-          false, // עדיין לא אומת
-          verificationToken,
-        ],
-        (err) => {
-          if (err) {
-            return res.status(500).json({ message: "שגיאת שרת" });
-          }
-
-          // יצירת קישור אימות
-          const verifyLink = `http://localhost:3001/api/auth/verify-email?token=${verificationToken}`;
-
-          /**
-           * שליחת מייל אימות למשתמש
-           */
-          transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "אימות אימייל - TrailQuest",
-            html: `
+// שולח מייל אימות עם העיצוב המקורי
+function sendVerificationEmail(email, verifyLink) {
+  transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "אימות אימייל - TrailQuest",
+    html: `
 <div dir="rtl" style="background:#0f172a;padding:40px 0;font-family:Arial,sans-serif;text-align:right;">
   <div style="max-width:500px;margin:auto;background:#111827;border-radius:12px;padding:30px;text-align:center;color:white;box-shadow:0 0 25px rgba(0,0,0,0.6);">
     
@@ -234,142 +144,128 @@ router.post("/register", (req, res) => {
   </div>
 </div>
 `,
-          });
+  });
+}
 
-          // החזרת תגובת הצלחה
-          res.status(201).json({
-            message: "ההרשמה בוצעה בהצלחה! יש לאמת את האימייל לפני התחברות.",
-          });
+// הרשמת משתמש
+router.post("/register", (req, res) => {
+  const { username, password, fullName, phone, email } = req.body;
+
+  checkUserExists(username, email, (err, results) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+    if (results.length > 0) {
+      if (results[0].username === username) {
+        return res.status(400).json({ message: "שם המשתמש כבר קיים" });
+      }
+      if (results[0].email === email) {
+        return res.status(400).json({ message: "האימייל כבר רשום" });
+      }
+    }
+
+    hashPassword(password, (err, hashedPassword) => {
+      if (err) return res.status(500).json({ message: "שגיאה בהצפנה" });
+
+      const token = generateToken();
+
+      insertUser(
+        [username, hashedPassword, fullName, phone, email, false, token],
+        (err) => {
+          if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+          const link = `http://localhost:3001/api/auth/verify-email?token=${token}`;
+          sendVerificationEmail(email, link);
+
+          res.status(201).json({ message: "נרשמת בהצלחה, בדוק אימייל" });
         },
       );
     });
   });
 });
 
-/**
- * ראוט לאימות אימייל
- * המשתמש ייכנס לכתובת עם token
- * המערכת תעדכן אותו כמאומת
- */
+// מאמת משתמש לפי token
+function findUserByToken(token, callback) {
+  db.query(
+    "SELECT * FROM users WHERE verification_token = ?",
+    [token],
+    callback,
+  );
+}
+
+// מעדכן משתמש כמאומת
+function verifyUser(token, callback) {
+  const sql = `
+    UPDATE users 
+    SET is_verified = true, verification_token = NULL
+    WHERE verification_token = ?
+  `;
+  db.query(sql, [token], callback);
+}
+
+// אימות אימייל
 router.get("/verify-email", (req, res) => {
-  // שליפת הטוקן מהכתובת
   const { token } = req.query;
 
-  // חיפוש משתמש לפי הטוקן
-  const sql = "SELECT * FROM users WHERE verification_token = ?";
-
-  db.query(sql, [token], (err, results) => {
+  findUserByToken(token, (err, results) => {
     if (err) return res.status(500).send("שגיאת שרת");
 
-    // אם לא נמצא משתמש עם הטוקן הזה
     if (results.length === 0) {
       return res.status(400).send("טוקן לא תקין");
     }
 
-    // עדכון המשתמש כמאומת
-    const updateSql = `
-      UPDATE users 
-      SET is_verified = true, verification_token = NULL
-      WHERE verification_token = ?
-    `;
-
-    db.query(updateSql, [token], (err) => {
+    verifyUser(token, (err) => {
       if (err) return res.status(500).send("שגיאת שרת");
 
-      res.send("האימייל אומת בהצלחה! ניתן להתחבר כעת.");
+      res.send("האימייל אומת בהצלחה");
     });
   });
 });
 
-/**
- * התנתקות משתמש
- * מוחק את ה־session
- */
+// התנתקות משתמש
 router.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ message: "התנתקות בוצעה בהצלחה" });
   });
 });
 
-/**
- * בדיקה מי המשתמש המחובר (session)
- * ה־Frontend משתמש בזה כדי לדעת אם המשתמש מחובר
- */
+// מחזיר את המשתמש המחובר
 router.get("/me", (req, res) => {
-  if (req.session.user) {
-    res.json({ user: req.session.user });
-  } else {
-    res.json({ user: null });
-  }
+  res.json({ user: req.session.user || null });
 });
 
-/**
- * בקשת איפוס סיסמה
- *
- * המשתמש מזין אימייל.
- * אם האימייל קיים במערכת:
- * 1. נוצר טוקן אקראי
- * 2. נשמר בדאטאבייס יחד עם זמן תפוגה (15 דקות)
- * 3. נשלח מייל עם קישור לאיפוס סיסמה
- *
- * אם האימייל לא קיים – מחזירים הודעה כללית (מטעמי אבטחה)
- */
-router.post("/forgot-password", (req, res) => {
-  const { email } = req.body;
+// מחפש משתמש לפי אימייל
+function findUserByEmail(email, callback) {
+  db.query("SELECT * FROM users WHERE email = ?", [email], callback);
+}
 
-  // חיפוש משתמש לפי אימייל
-  const sql = "SELECT * FROM users WHERE email = ?";
+// שומר טוקן איפוס
+function saveResetToken(token, expires, email, callback) {
+  const sql = `
+    UPDATE users 
+    SET reset_token = ?, reset_token_expires = ?
+    WHERE email = ?
+  `;
+  db.query(sql, [token, expires, email], callback);
+}
 
-  db.query(sql, [email], (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: "שגיאת שרת" });
-    }
-
-    // לא חושפים אם המשתמש קיים או לא (אבטחה)
-    if (results.length === 0) {
-      return res.json({ message: "אם האימייל קיים, נשלח קישור לאיפוס." });
-    }
-
-    // יצירת טוקן אקראי לאיפוס סיסמה
-    const resetToken = crypto.randomBytes(32).toString("hex");
-
-    // קביעת זמן תפוגה – 15 דקות מהזמן הנוכחי
-    const expires = new Date(Date.now() + 1000 * 60 * 15);
-
-    // עדכון המשתמש בטוקן ובתפוגה
-    const updateSql = `
-      UPDATE users 
-      SET reset_token = ?, reset_token_expires = ?
-      WHERE email = ?
-    `;
-
-    db.query(updateSql, [resetToken, expires, email], async (err) => {
-      if (err) {
-        return res.status(500).json({ message: "שגיאת שרת" });
-      }
-
-      // יצירת קישור לאיפוס סיסמה (עמוד ב-React)
-      const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
-
-      // שליחת מייל למשתמש
-      await transporter.sendMail({
-        to: email,
-        subject: "איפוס סיסמה - TrailQuest",
-        html: `
+// שולח מייל איפוס סיסמה 
+function sendResetEmail(email, resetLink, username) {
+  transporter.sendMail({
+    to: email,
+    subject: "איפוס סיסמה - TrailQuest",
+    html: `
 <div dir="rtl" style="background:#0f172a;padding:40px 0;font-family:Arial,sans-serif;text-align:right;">
   <div style="max-width:500px;margin:auto;background:#111827;border-radius:16px;
               padding:30px;text-align:center;
               box-shadow:0 20px 40px rgba(0,0,0,.6);
               border:1px solid rgba(255,255,255,.18);">
 
-    <!-- כותרת -->
     <h1 style="color:#facc15;margin-bottom:15px;">
       איפוס סיסמה
     </h1>
 
-    <!-- פנייה אישית -->
     <p style="color:#e5e7eb;font-size:15px;margin-bottom:20px;">
-      היי ${results[0].username},
+      היי ${username},
     </p>
 
     <p style="color:#cbd5e1;font-size:14px;margin-bottom:25px;">
@@ -377,7 +273,6 @@ router.post("/forgot-password", (req, res) => {
       לחץ על הכפתור למטה כדי להגדיר סיסמה חדשה:
     </p>
 
-    <!-- כפתור -->
     <a href="${resetLink}"
        style="display:inline-block;
               padding:14px 28px;
@@ -401,98 +296,82 @@ router.post("/forgot-password", (req, res) => {
   </div>
 </div>
 `,
-      });
+  });
+}
 
-      res.json({ message: "אם האימייל קיים, נשלח קישור לאיפוס." });
+// בקשת איפוס סיסמה
+router.post("/forgot-password", (req, res) => {
+  const { email } = req.body;
+
+  findUserByEmail(email, (err, results) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+    if (results.length === 0) {
+      return res.json({ message: "אם קיים, נשלח מייל" });
+    }
+
+    const token = generateToken();
+    const expires = new Date(Date.now() + 1000 * 60 * 15);
+
+    saveResetToken(token, expires, email, (err) => {
+      if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+      const link = `http://localhost:3000/reset-password/${token}`;
+      sendResetEmail(email, link, results[0].username);
+
+      res.json({ message: "אם קיים, נשלח מייל" });
     });
   });
 });
 
-/**
- * איפוס סיסמה בפועל
- *
- * מקבל:
- * - token (מהקישור במייל)
- * - newPassword (הסיסמה החדשה)
- *
- * בודק:
- * - האם הטוקן קיים
- * - האם לא פג תוקף
- *
- * אם תקין:
- * - מצפין את הסיסמה החדשה
- * - מעדכן בדאטאבייס
- * - מוחק את הטוקן
- */
-router.post("/reset-password", (req, res) => {
-  const { token, newPassword } = req.body;
-
-  // בדיקה שהטוקן קיים ולא פג תוקף
+// בודק token לאיפוס
+function findResetToken(token, callback) {
   const sql = `
     SELECT * FROM users 
     WHERE reset_token = ? 
     AND reset_token_expires > NOW()
   `;
+  db.query(sql, [token], callback);
+}
 
-  db.query(sql, [token], async (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: "שגיאת שרת" });
-    }
+// מעדכן סיסמה
+function updatePassword(hash, token, callback) {
+  const sql = `
+    UPDATE users
+    SET password = ?, reset_token = NULL, reset_token_expires = NULL
+    WHERE reset_token = ?
+  `;
+  db.query(sql, [hash, token], callback);
+}
+
+// איפוס סיסמה
+router.post("/reset-password", (req, res) => {
+  const { token, newPassword } = req.body;
+
+  findResetToken(token, async (err, results) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
 
     if (results.length === 0) {
-      return res.status(400).json({ message: "קישור לא תקין או פג תוקף" });
-    }
-
-    /**
-     * בדיקת תקינות סיסמה חדשה
-     * דרישה:
-     * - 3 עד 8 תווים
-     * - לפחות אות אחת
-     * - לפחות ספרה אחת
-     * - ללא רווחים
-     */
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{3,8}$/;
-
-    if (!passwordRegex.test(newPassword)) {
-      return res.status(400).json({
-        message: "סיסמה חייבת להיות 3–8 תווים, עם לפחות אות אחת וספרה אחת.",
-      });
+      return res.status(400).json({ message: "קישור לא תקין" });
     }
 
     const user = results[0];
-    // השוואת הסיסמה החדשה לסיסמה הישנה
-    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    const isSame = await bcrypt.compare(newPassword, user.password);
 
-    if (isSamePassword) {
-      return res.status(400).json({
-        message: "הסיסמה החדשה חייבת להיות שונה מהסיסמה הקודמת.",
-      });
+    if (isSame) {
+      return res.status(400).json({ message: "סיסמה חייבת להיות שונה" });
     }
-    // הצפנת הסיסמה החדשה
-    bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
-      if (err) {
-        return res.status(500).json({ message: "שגיאה בהצפנה" });
-      }
 
-      // עדכון הסיסמה ומחיקת הטוקן
-      const updateSql = `
-        UPDATE users
-        SET password = ?, reset_token = NULL, reset_token_expires = NULL
-        WHERE reset_token = ?
-      `;
+    hashPassword(newPassword, (err, hash) => {
+      if (err) return res.status(500).json({ message: "שגיאה בהצפנה" });
 
-      db.query(updateSql, [hashedPassword, token], (err) => {
-        if (err) {
-          return res.status(500).json({ message: "שגיאת שרת" });
-        }
+      updatePassword(hash, token, (err) => {
+        if (err) return res.status(500).json({ message: "שגיאת שרת" });
 
-        res.json({ message: "הסיסמה עודכנה בהצלחה" });
+        res.json({ message: "הסיסמה עודכנה" });
       });
     });
   });
 });
 
-/*
- * ייצוא הנתיבים לשימוש בקובץ server.js
- */
 module.exports = router;

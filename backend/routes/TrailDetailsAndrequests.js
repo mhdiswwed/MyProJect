@@ -11,7 +11,7 @@ const dbSingleton = require("../dbSingleton");
 const db = dbSingleton.getConnection();
 
 //=============================
-// פונקציה לשליפת שעות פעילות
+//  פונקציה לשליפת שעות פעילות מטבלץ הגדרות המערכת
 //==============================
 function getWorkingHours(callback) {
   const sql = `
@@ -84,154 +84,145 @@ function getParticipantsLimits(callback) {
 //=============================
 // חשוב: אקספרס קורא רותיר מלמעלה למטה,
 // לכן רותיר ספציפיים חייבים להיות לפני דינמיים
+//=============================
 
-// ===============================
+// בודק נתונים
+function isValidGuideRequest(data) {
+  return data.trip_date && data.trip_time && data.trail_id;
+}
+
+// ממיר שעה לדקות
+function toMinutes(timeStr) {
+  const [h, m] = timeStr.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// מחזיר משך זמן המסלול
+function getTrailDuration(trail_id, callback) {
+  const sql = `SELECT duration_minutes FROM trails WHERE trail_id = ?`;
+  db.query(sql, [trail_id], callback);
+}
+
+// מחשב זמני התחלה וסיום
+function calculateTripTimes(trip_date, trip_time, duration) {
+  const start = new Date(`${trip_date}T${trip_time}`);
+  const end = new Date(start.getTime() + duration * 60000);
+  return { start, end };
+}
+
+// בודק אם בתוך שעות עבודה
+function isWithinWorkingHours(start, end, hours) {
+  const [startH, startM] = hours.start.split(":").map(Number);
+  const [endH, endM] = hours.end.split(":").map(Number);
+
+  const workStart = startH * 60 + startM;
+  const workEnd = endH * 60 + endM;
+
+  const startMin = start.getHours() * 60 + start.getMinutes();
+  const endMin = end.getHours() * 60 + end.getMinutes();
+
+  return !(startMin < workStart || endMin > workEnd);
+}
+
+// בודק חפיפות
+function isGuideFree(trips, trip_time, duration, breakMinutes) {
+  const newStartMin = toMinutes(trip_time);
+  const newEndMin = newStartMin + duration;
+
+  for (let trip of trips) {
+    const existingStartMin = toMinutes(trip.trip_time);
+    const existingEndMin = existingStartMin + trip.duration_minutes;
+
+    const buffer = breakMinutes;
+
+    const isBefore = newEndMin <= existingStartMin - buffer;
+    const isAfter = newStartMin >= existingEndMin + buffer;
+
+    if (!(isBefore || isAfter)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// מחזיר מדריכים פנויים
+function loadGuides(trip_date, trip_time, duration, breakMinutes, res) {
+  const guidesSql = `
+    SELECT user_id, full_name
+    FROM users
+    WHERE role = 'מדריך'
+  `;
+
+  db.query(guidesSql, (err, guides) => {
+    if (err) return res.status(500).json({ message: "שגיאת שרת" });
+
+    const availableGuides = [];
+    let checked = 0;
+
+    guides.forEach((guide) => {
+      const sql = `
+        SELECT trip_time, duration_minutes FROM (
+          SELECT g.trip_time, t.duration_minutes
+          FROM groups g
+          JOIN trails t ON g.trail_id = t.trail_id
+          WHERE g.guide_id = ?
+          AND g.trip_date = ?
+          AND g.status = 'פעיל'
+
+          UNION ALL
+
+          SELECT r.trip_time, t.duration_minutes
+          FROM trip_requests r
+          JOIN trails t ON r.trail_id = t.trail_id
+          WHERE r.guide_id = ?
+          AND r.trip_date = ?
+          AND r.status IN ('ממתין','מאושר','מבקש ביטול')
+        ) AS all_trips
+      `;
+
+      db.query(sql, [guide.user_id, trip_date, guide.user_id, trip_date], (err, trips) => {
+        if (!err) {
+          const ok = isGuideFree(trips, trip_time, duration, breakMinutes);
+          if (ok) availableGuides.push(guide);
+        }
+
+        checked++;
+
+        if (checked === guides.length) {
+          res.json(availableGuides);
+        }
+      });
+    });
+  });
+}
+
+
 // החזרת מדריכים פנויים לפי תאריך ושעה
-// ===============================
 router.get("/available-guides", (req, res) => {
-  const { trip_date, trip_time, trail_id } = req.query;
+  const data = req.query;
 
-  if (!trip_date || !trip_time || !trail_id) {
+  if (!isValidGuideRequest(data)) {
     return res.status(400).json({ message: "חסר מידע" });
   }
 
-  // ⏱ שליפת שעות פעילות + הפסקה
   getWorkingHours((err, hours) => {
     if (err) return res.status(500).json({ message: "שגיאה" });
 
     getGuideBreak((breakMinutes) => {
-      // ===============================
-      // שליפת משך המסלול
-      // ===============================
-      const durationSql = `SELECT duration_minutes FROM trails WHERE trail_id = ?`;
-
-      db.query(durationSql, [trail_id], (err, durationResult) => {
-        if (err || durationResult.length === 0) {
+      getTrailDuration(data.trail_id, (err, result) => {
+        if (err || result.length === 0) {
           return res.status(500).json({ message: "שגיאה במסלול" });
         }
 
-        // משך המסלול בדקות
-        const duration = durationResult[0].duration_minutes;
+        const duration = result[0].duration_minutes;
+        const { start, end } = calculateTripTimes(data.trip_date, data.trip_time, duration);
 
-        // זמן התחלה
-        const newStart = new Date(`${trip_date}T${trip_time}`);
-
-        // זמן סיום
-        const newEnd = new Date(newStart.getTime() + duration * 60000);
-
-        // פירוק שעות עבודה
-        const [startH, startM] = hours.start.split(":").map(Number);
-        const [endH, endM] = hours.end.split(":").map(Number);
-
-        const workStart = startH * 60 + startM;
-        const workEnd = endH * 60 + endM;
-
-        const startMinutes = newStart.getHours() * 60 + newStart.getMinutes();
-        const endMinutes = newEnd.getHours() * 60 + newEnd.getMinutes();
-
-        // אם מחוץ לשעות → אין מדריכים בכלל
-        if (startMinutes < workStart || endMinutes > workEnd) {
+        if (!isWithinWorkingHours(start, end, hours)) {
           return res.json([]);
         }
 
-        // הפסקה דינמית
-        const buffer = breakMinutes * 60000;
-
-        // ===============================
-        // שליפת כל המדריכים
-        // ===============================
-        const guidesSql = `
-      SELECT user_id, full_name
-      FROM users
-      WHERE role = 'מדריך'
-    `;
-
-        db.query(guidesSql, (err, guides) => {
-          if (err) {
-            return res.status(500).json({ message: "שגיאת שרת" });
-          }
-
-          // ===============================
-          // בדיקת זמינות לכל מדריך
-          // ===============================
-          const availableGuides = [];
-
-          let checked = 0;
-
-          guides.forEach((guide) => {
-            const checkSql = `
-  SELECT trip_time, duration_minutes FROM (
-    
-    -- קבוצות פעילות
-    SELECT g.trip_time, t.duration_minutes
-    FROM groups g
-    JOIN trails t ON g.trail_id = t.trail_id
-    WHERE g.guide_id = ?
-    AND g.trip_date = ?
-    AND g.status = 'פעיל'
-
-    UNION ALL
-
-    -- בקשות מאושרות/ממתינות
-    SELECT r.trip_time, t.duration_minutes
-    FROM trip_requests r
-    JOIN trails t ON r.trail_id = t.trail_id
-    WHERE r.guide_id = ?
-    AND r.trip_date = ?
-    AND r.status IN ('ממתין','מאושר','מבקש ביטול')
-
-  ) AS all_trips
-`;
-
-            db.query(
-              checkSql,
-              [guide.user_id, trip_date, guide.user_id, trip_date],
-              (err, trips) => {
-                if (err) return;
-
-                let isAvailable = true;
-
-                // פונקציה שממירה שעה לדקות
-                function toMinutes(timeStr) {
-                  const [h, m] = timeStr.split(":").map(Number);
-                  return h * 60 + m;
-                }
-
-                const newStartMin = toMinutes(trip_time);
-                const newEndMin = newStartMin + duration;
-
-                for (let trip of trips) {
-                  const existingStartMin = toMinutes(trip.trip_time);
-                  const existingEndMin =
-                    existingStartMin + trip.duration_minutes;
-
-                  const bufferMin = breakMinutes;
-
-                  const isBefore = newEndMin <= existingStartMin - bufferMin;
-
-                  const isAfter = newStartMin >= existingEndMin + bufferMin;
-
-                  // אם לא לפני ולא אחרי → יש חפיפה
-                  if (!(isBefore || isAfter)) {
-                    isAvailable = false;
-                    break;
-                  }
-                }
-
-                if (isAvailable) {
-                  availableGuides.push(guide);
-                }
-
-                checked++;
-
-                // כשסיימנו לבדוק את כולם
-                if (checked === guides.length) {
-                  res.json(availableGuides);
-                }
-              },
-            );
-          });
-        });
+        loadGuides(data.trip_date, data.trip_time, duration, breakMinutes, res);
       });
     });
   });
@@ -335,119 +326,112 @@ router.get("/:id", (req, res) => {
   });
 });
 
-// ==============================
-// יצירת בקשת הצטרפות
-// ==============================
-router.post("/request", (req, res) => {
-  const {
-    trip_date,
-    trip_time,
-    number_of_participants,
-    number_of_vehicles,
-    trail_id,
-    user_id,
-    guide_id,
-  } = req.body;
+
+// בודק נתונים בסיסיים לבקשה
+function validateRequest(data) {
   const errors = [];
 
-  // 1) התחברות
-  if (!user_id) {
-    errors.push("צריך להתחבר");
-  }
+  if (!data.user_id) errors.push("צריך להתחבר");
+  if (!data.trip_date) errors.push("חובה לבחור תאריך");
+  if (!data.trip_time) errors.push("חובה לבחור שעה");
+  if (!data.guide_id) errors.push("חובה לבחור מדריך");
+  if (!data.trail_id) errors.push("חסר מזהה מסלול");
 
-  // 2) תאריך
-  if (!trip_date || trip_date === "") {
-    errors.push("חובה לבחור תאריך");
-  }
-
-  // 3) שעה
-  if (!trip_time || trip_time === "") {
-    errors.push("חובה לבחור שעה");
-  }
-
-  // 4) מדריך
-  if (!guide_id) {
-    errors.push("חובה לבחור מדריך");
-  }
-
-  // 5) מסלול
-  if (!trail_id) {
-    errors.push("חסר מזהה מסלול");
-  }
-
-  // 6) מספר כלי רכב
   if (
-    number_of_vehicles === undefined ||
-    number_of_vehicles === null ||
-    Number(number_of_vehicles) < 0
+    data.number_of_vehicles === undefined ||
+    data.number_of_vehicles === null ||
+    Number(data.number_of_vehicles) < 0
   ) {
     errors.push("מספר כלי רכב חייב להיות 0 או מספר חיובי");
   }
-  // ===============================
-  // שימוש בפונקציה קדי לבדוק מספר משתתפים מינמום ומקסימום לפי הגדרת המנהל שהגדיר בהגדרות המערכת (7)
-  // ===============================
+
+  return errors;
+}
+
+// בודק טווח משתתפים לפי הגדרות
+function validateParticipants(count, limits) {
+  const { min, max } = limits;
+
+  if (Number(count) < min || Number(count) > max) {
+    return `מספר משתתפים חייב להיות בין ${min} ל-${max}`;
+  }
+
+  return null;
+}
+
+// בודק שההזמנה לפחות 24 שעות מראש
+function isValidTime(trip_date, trip_time) {
+  const now = new Date();
+  const tripDateTime = new Date(`${trip_date}T${trip_time}`);
+  const diffHours = (tripDateTime - now) / (1000 * 60 * 60);
+
+  return diffHours >= 24;
+}
+
+// שומר בקשה במסד
+function insertRequest(data, callback) {
+  const sql = `
+    INSERT INTO trip_requests
+    (trip_date, trip_time, number_of_participants, number_of_vehicles, trail_id, user_id, guide_id, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'ממתין')
+  `;
+
+  db.query(
+    sql,
+    [
+      data.trip_date,
+      data.trip_time,
+      Number(data.number_of_participants),
+      Number(data.number_of_vehicles) || 0,
+      data.trail_id,
+      data.user_id,
+      data.guide_id,
+    ],
+    callback
+  );
+}
+
+
+// יצירת בקשת הצטרפות
+router.post("/request", (req, res) => {
+  const data = req.body;
+
+  const errors = validateRequest(data);
+
   getParticipantsLimits((err, limits) => {
     if (err) {
       return res.status(500).json({ message: "שגיאת שרת" });
     }
 
-    const { min, max } = limits;
+    const participantsError = validateParticipants(
+      data.number_of_participants,
+      limits
+    );
 
-    // 🔥 הבדיקה
-    if (
-      Number(number_of_participants) < min ||
-      Number(number_of_participants) > max
-    ) {
-      errors.push(`מספר משתתפים חייב להיות בין ${min} ל-${max}`);
+    if (participantsError) {
+      errors.push(participantsError);
     }
 
-    // אם יש שגיאות – מחזירים הודעה אחת (string)
     if (errors.length > 0) {
       return res.status(400).json({
         message: errors.join(" וגם "),
       });
     }
 
-    // ===============================
-    // בדיקת זמן מינימלי להזמנה (לפחות 12 שעות מראש)
-    // ===============================
-    // זמן נוכחי
-    const now = new Date();
-    // זמן הטיול שהמשתמש בחר
-    const tripDateTime = new Date(`${trip_date}T${trip_time}`);
-    // חישוב הפרש שעות
-    const diffHours = (tripDateTime - now) / (1000 * 60 * 60);
-    // אם פחות מ־24 שעות → חוסמים
-    if (diffHours < 24) {
+    if (!isValidTime(data.trip_date, data.trip_time)) {
       return res.status(400).json({
         message: "יש להזמין טיול לפחות 24 שעות מראש ⏳",
       });
     }
-    const sql = `
-    INSERT INTO trip_requests
-    (trip_date, trip_time, number_of_participants, number_of_vehicles, trail_id, user_id, guide_id, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'ממתין')
-  `;
 
-    db.query(
-      sql,
-      [
-        trip_date,
-        trip_time,
-        Number(number_of_participants),
-        Number(number_of_vehicles) || 0,
-        trail_id,
-        user_id,
-        guide_id,
-      ],
-      (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ message: "שגיאת שרת" });
-        }
-        res.json({ message: "הבקשה נשלחה בהצלחה" });
-      },
-    );
+    insertRequest(data, (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "שגיאת שרת" });
+      }
+
+      res.json({ message: "הבקשה נשלחה בהצלחה" });
+    });
   });
 });
 

@@ -86,456 +86,173 @@ g.guide_change_reason
 });
 
 
-/**
- * ------------------------------------------------
- * PUT
- * אישור ביטול בקשה
- * ------------------------------------------------
- *
- * משנה:
- * - את הבקשה ל"מבוטל"
- * - את הקבוצה ל"מבוטל"
- * את ההדרכה ל בוטל
- */
+/**==============================================
+ * פונקציה ראשית
+ * מקבלת: req, res
+ * עושה: מפעילה את כל שלבי הביטול (בקשה, קבוצה, הדרכה)
+ * מחזירה: תשובה ללקוח
+ =================================================*/
 router.put("/approveCancel/:requestId", (req, res) => {
   const requestId = req.params.requestId;
 
-  db.beginTransaction((err) => {
-    if (err) {
-      console.error("שגיאה בפתיחת טרנזקציה:", err);
-      return res.status(500).json({ message: "שגיאה בפתיחת טרנזקציה" });
-    }
-
-    const updateRequestSql = `
-      UPDATE trip_requests
-      SET
-        status = 'מבוטל',
-        cancel_requested = 0
-      WHERE request_id = ?
-    `;
-
-    db.query(updateRequestSql, [requestId], (err) => {
-      if (err) {
-        return db.rollback(() => {
-          console.error("שגיאה באישור ביטול בקשה:", err);
-          res.status(500).json({ message: "שגיאה באישור ביטול הבקשה" });
-        });
-      }
-
-      const updateGroupSql = `
-        UPDATE groups
-        SET status = 'בוטל'
-        WHERE request_id = ?
-      `;
-
-      db.query(updateGroupSql, [requestId], (err) => {
-        if (err) {
-          return db.rollback(() => {
-            console.error("שגיאה בעדכון סטטוס קבוצה:", err);
-            res.status(500).json({ message: "שגיאה בעדכון הקבוצה" });
-          });
-        }
-
-        /**
-         * עדכון הדרכה ל"בוטל"
-         */
-        const updateGuidanceSql = `
-  UPDATE guidances
-  SET status = 'בוטל'
-  WHERE group_id IN (
-    SELECT group_id FROM groups WHERE request_id = ?
-  )
-`;
-
-        db.query(updateGuidanceSql, [requestId], (err) => {
-          if (err) {
-            return db.rollback(() => {
-              console.error("שגיאה בעדכון הדרכה:", err);
-              res.status(500).json({ message: "שגיאה בעדכון הדרכה" });
-            });
-          }
-
-          // ✅ עכשיו כן עושים commit
-          db.commit((err) => {
-            if (err) {
-              return db.rollback(() => {
-                res.status(500).json({ message: "שגיאה בשמירת הנתונים" });
-              });
-            }
-
-            res.json({
-              message: "בקשת הביטול אושרה והקבוצה בוטלה בהצלחה",
-            });
-          });
+  startTransaction(res, () => {
+    updateRequest(requestId, res, () => {
+      updateGroup(requestId, res, () => {
+        updateGuidance(requestId, res, () => {
+          commit(res);
         });
       });
     });
   });
 });
 
+/**---------------------------------------
+ * מקבלת: res, callback
+ * )עושה: פותחת טרנזקציה
+ * * מתחיל את הפעולה מול מסד הנתונים
+----------------------------------------------- */
+function startTransaction(res, callback) {
+  db.beginTransaction((err) => {
+    if (err) return error(res, "שגיאה במסד הנתונים", err);
+    callback();
+  });
+}
+
+/**--------------------------------------------
+ * מקבלת: requestId, res, callback
+ * עושה: מעדכנת בקשה ל"מבוטל"
+-----------------------------------------------*/
+function updateRequest(requestId, res, callback) {
+  const sql = `
+    UPDATE trip_requests
+    SET status='מבוטל', cancel_requested=0
+    WHERE request_id=?
+  `;
+
+  db.query(sql, [requestId], (err) => {
+    if (err) return error(res, "שגיאה בבקשה", err);
+    callback();
+  });
+}
+
+/**------------------------------------------
+ * מקבלת: requestId, res, callback
+ * עושה: מעדכנת קבוצה ל"בוטל"
+ ---------------------------------------------*/
+function updateGroup(requestId, res, callback) {
+  const sql = `
+    UPDATE groups
+    SET status='בוטל'
+    WHERE request_id=?
+  `;
+
+  db.query(sql, [requestId], (err) => {
+    if (err) return error(res, "שגיאה בקבוצה", err);
+    callback();
+  });
+}
+
+/**----------------------------------------------
+ * מקבלת: requestId, res, callback
+ * עושה: מעדכנת הדרכות ל"בוטל"
+ ------------------------------------------------*/
+function updateGuidance(requestId, res, callback) {
+  const sql = `
+    UPDATE guidances
+    SET status='בוטל'
+    WHERE group_id IN (
+      SELECT group_id FROM groups WHERE request_id=?
+    )
+  `;
+
+  db.query(sql, [requestId], (err) => {
+    if (err) return error(res, "שגיאה בהדרכה", err);
+    callback();
+  });
+}
+
+/**-------------------------------
+ * מקבלת: res
+ * עושה: שומרת שינויים
+ -------------------------------*/
+function commit(res) {
+  db.commit((err) => {
+    if (err) return error(res, "שגיאה בשמירה", err);
+    res.json({ message: "הביטול אושר" });
+  });
+}
+
+/**------------------------------------------
+ * מקבלת: res, הודעה, שגיאה
+ * עושה: מבטלת טרנזקציה ומחזירה שגיאה
+ ------------------------------------------------*/
+function error(res, message, err) {
+  db.rollback(() => {
+    console.error(message, err);
+    res.status(500).json({ message });
+  });
+}
+
 /**
- * ------------------------------------------------
+ * ============================
  * PUT
  * דחיית ביטול בקשה
- * ------------------------------------------------
+ *============================
  *
- * מצבים אפשריים:
- *
- * 1️⃣ אם הבקשה הייתה ממתינה ואין קבוצה
- *    → יוצרים קבוצה + יוצרים חשבונית
- *
- * 2️⃣ אם כבר קיימת קבוצה
- *    → מחזירים את הקבוצה לסטטוס פעיל
+ * מחזיר את הבקשה והקבוצה למצב פעיל
  */
 router.put("/rejectCancel/:requestId", (req, res) => {
   const requestId = req.params.requestId;
-
-  const {
-    reason,
-    trip_date,
-    trip_time,
-    meeting_point,
-    guide_id,
-    change_reason,
-    guide_change_reason,
-  } = req.body;
+  const { reason } = req.body;//סיבה לדחייה
 
   if (!reason || !reason.trim()) {
-    return res.status(400).json({
-      message: "חובה לכתוב סיבה לדחיית הביטול",
-    });
+    return res.status(400).json({ message: "חובה סיבה" });
   }
 
-  const requestSql = `
-    SELECT tr.*, t.*
-    FROM trip_requests tr
-    JOIN trails t ON tr.trail_id = t.trail_id
-    WHERE tr.request_id = ?
-    LIMIT 1
-  `;
-
-  db.query(requestSql, [requestId], (err, rows) => {
-    if (err || !rows.length) {
-      return res.status(500).json({
-        message: "שגיאה בשליפת הבקשה",
-      });
-    }
-
-    const request = rows[0];
-
-    db.query(
-      `SELECT group_id FROM groups WHERE request_id=? LIMIT 1`,
-      [requestId],
-      (err, groups) => {
-        if (err) {
-          return res.status(500).json({
-            message: "שגיאה בבדיקת קבוצה",
-          });
-        }
-
-        // =========================
-        // מצב 1 — יש קבוצה
-        // =========================
-        if (groups.length) {
-          db.query(
-            `UPDATE trip_requests
-             SET status='מאושר',
-                 cancel_requested=0,
-                 cancel_reject_reason=?
-             WHERE request_id=?`,
-            [reason.trim(), requestId],
-            (err) => {
-              if (err) {
-                return res.status(500).json({ message: "שגיאה בעדכון הבקשה" });
-              }
-
-              db.query(
-                `UPDATE groups SET status='פעיל' WHERE request_id=?`,
-                [requestId],
-                (err) => {
-                  if (err) {
-                    return res
-                      .status(500)
-                      .json({ message: "שגיאה בעדכון הקבוצה" });
-                  }
-
-                  return res.json({
-                    message: "בקשת הביטול נדחתה והקבוצה חזרה לפעיל",
-                  });
-                },
-              );
-            },
-          );
-
-          return; // ✅ חשוב
-        }
-
-        // =========================
-        // מצב 2 — אין קבוצה
-        // =========================
-
-        if (!trip_date || !trip_time || !meeting_point || !guide_id) {
-          return res.status(400).json({
-            message: "חובה לשלוח תאריך, שעה, נקודת מפגש ומדריך",
-          });
-        }
-
-        // בדיקת תאריך ושעה
-        const error = validateTripDateTime(
-          trip_date,
-          trip_time,
-          request.duration_minutes,
-        );
-
-        if (error) {
-          return res.status(400).json({ message: error });
-        }
-
-        // ===== בדיקות שינוי (העתקה מ-approve)
-        const originalDate = new Date(request.trip_date).toLocaleDateString(
-          "sv-SE",
-        );
-        const newDate = trip_date;
-
-        const originalTime = String(request.trip_time).slice(0, 5);
-        const newTime = String(trip_time).slice(0, 5);
-
-        const originalGuideId = Number(request.guide_id || 0);
-        const newGuideId = Number(guide_id);
-
-        const dateOrTimeChanged =
-          originalDate !== newDate || originalTime !== newTime;
-
-        const guideChanged = originalGuideId !== newGuideId;
-
-        if (dateOrTimeChanged && (!change_reason || !change_reason.trim())) {
-          return res.status(400).json({
-            message: "חובה סיבה לשינוי תאריך/שעה",
-          });
-        }
-
-        if (
-          guideChanged &&
-          (!guide_change_reason || !guide_change_reason.trim())
-        ) {
-          return res.status(400).json({
-            message: "חובה סיבה להחלפת מדריך",
-          });
-        }
-
-        // ===== בדיקת זמינות מדריך
-        checkGuideAvailability(
-          newGuideId,
-          trip_date,
-          trip_time,
-          request.duration_minutes,
-          null,
-          (err, isAvailable) => {
-            if (err) {
-              return res.status(500).json({
-                message: "שגיאה בבדיקת זמינות מדריך",
-              });
-            }
-
-            if (!isAvailable) {
-              return res.status(409).json({
-                message: "המדריך תפוס בזמן הזה",
-              });
-            }
-
-            db.beginTransaction((err) => {
-              if (err) {
-                return res.status(500).json({
-                  message: "שגיאה בטרנזקציה",
-                });
-              }
-
-              db.query(
-                `UPDATE trip_requests
-                 SET status='מאושר',
-                     cancel_requested=0,
-                     cancel_reject_reason=?
-                 WHERE request_id=?`,
-                [reason.trim(), requestId],
-                (err) => {
-                  if (err) {
-                    return db.rollback(() =>
-                      res.status(500).json({ message: "שגיאה בעדכון הבקשה" }),
-                    );
-                  }
-
-                  db.query(
-                    `INSERT INTO groups
-                     (request_id, trail_id, guide_id, trip_date, trip_time, meeting_point, status, change_reason, guide_change_reason)
-                     VALUES (?, ?, ?, ?, ?, ?, 'פעיל', ?, ?)`,
-                    [
-                      request.request_id,
-                      request.trail_id,
-                      newGuideId,
-                      trip_date,
-                      trip_time,
-                      meeting_point.trim(),
-                      dateOrTimeChanged ? change_reason.trim() : null,
-                      guideChanged ? guide_change_reason.trim() : null,
-                    ],
-                    (err, result) => {
-                      if (err) {
-                        return db.rollback(() =>
-                          res
-                            .status(500)
-                            .json({ message: "שגיאה ביצירת קבוצה" }),
-                        );
-                      }
-
-                      const groupId = result.insertId;
-
-                      /**
-                       * יצירת הדרכה (guidance)
-                       */
-                      const insertGuidanceSql = `
-                      INSERT INTO guidances (group_id)
-                      VALUES (?)
-                    `;
-
-                      db.query(insertGuidanceSql, [groupId], (err) => {
-                        if (err) {
-                          return db.rollback(() =>
-                            res
-                              .status(500)
-                              .json({ message: "שגיאה ביצירת הדרכה" }),
-                          );
-                        }
-
-                        // ===== שליפת מדריך
-                        db.query(
-                          `SELECT full_name, phone, email FROM users WHERE user_id=? LIMIT 1`,
-                          [newGuideId],
-                          (err, guideRows) => {
-                            const guide = guideRows[0] || {};
-
-                            // ===== שליפת מנהל
-                            db.query(
-                              `SELECT full_name, phone, email FROM users WHERE role='מנהל' LIMIT 1`,
-                              (err, managerRows) => {
-                                const manager = managerRows[0] || {};
-                                //שליפת המע''מ
-                                getVatRate(async (err, VAT_RATE) => {
-                                  if (err) {
-                                    return db.rollback(() =>
-                                      res
-                                        .status(500)
-                                        .json({ message: "שגיאה במע״מ" }),
-                                    );
-                                  }
-
-                                  /**
-                                   * חישובי מחיר
-                                   */
-                                  const participantsPrice =
-                                    Number(
-                                      request.number_of_participants || 0,
-                                    ) * Number(request.price_per_person || 0);
-
-                                  const vehiclesPrice =
-                                    Number(request.number_of_vehicles || 0) *
-                                    Number(request.price_per_vehicle || 0);
-
-                                  const totalBeforeVat =
-                                    participantsPrice + vehiclesPrice;
-                                  const vatAmount = totalBeforeVat * VAT_RATE;
-                                  const totalWithVat =
-                                    totalBeforeVat + vatAmount;
-
-                                  try {
-                                    const invoiceFile = await createInvoicePDF(
-                                      {
-                                        manager_name: manager.full_name,
-                                        manager_phone: manager.phone,
-                                        manager_email: manager.email,
-
-                                        group_id: groupId,
-
-                                        trail_name: request.trail_name,
-                                        trip_date,
-                                        trip_time,
-                                        meeting_point: meeting_point.trim(),
-
-                                        guide_name: guide.full_name,
-                                        guide_phone: guide.phone,
-                                        guide_email: guide.email,
-
-                                        number_of_participants:
-                                          request.number_of_participants,
-                                        number_of_vehicles:
-                                          request.number_of_vehicles,
-
-                                        price_per_person: Number(
-                                          request.price_per_person || 0,
-                                        ),
-                                        price_per_vehicle: Number(
-                                          request.price_per_vehicle || 0,
-                                        ),
-
-                                        total_before_vat: totalBeforeVat,
-                                        vat_amount: vatAmount,
-                                        total_with_vat: totalWithVat,
-                                      },
-                                      VAT_RATE,
-                                    );
-
-                                    db.query(
-                                      `UPDATE groups SET invoice_file=? WHERE group_id=?`,
-                                      [invoiceFile, groupId],
-                                      (err) => {
-                                        if (err) {
-                                          return db.rollback(() =>
-                                            res.status(500).json({
-                                              message: "שגיאה בשמירת חשבונית",
-                                            }),
-                                          );
-                                        }
-
-                                        db.commit((err) => {
-                                          if (err) {
-                                            return db.rollback(() =>
-                                              res.status(500).json({
-                                                message: "שגיאה בשמירה",
-                                              }),
-                                            );
-                                          }
-
-                                          res.json({
-                                            message:
-                                              "בקשת הביטול נדחתה, נוצרה קבוצה עם הנתונים החדשים",
-                                          });
-                                        });
-                                      },
-                                    );
-                                  } catch (error) {
-                                    db.rollback(() =>
-                                      res.status(500).json({
-                                        message: "שגיאה ביצירת חשבונית",
-                                      }),
-                                    );
-                                  }
-                                });
-                              },
-                            );
-                          },
-                        );
-                      });
-                    },
-                  );
-                },
-              );
-            });
-          },
-        );
-      },
-    );
-  });
+  restoreGroup(requestId, reason, res);
 });
 
+/**---------------------------------------------
+ * מקבלת: requestId, reason, res
+ * עושה: מחזירה בקשה וקבוצה למצב פעיל
+ * מחזירה: תשובה ללקוח
+ -------------------------------------------------*/
+function restoreGroup(requestId, reason, res) {
+  db.query(
+    `UPDATE trip_requests 
+     SET status='מאושר', cancel_requested=0, cancel_reject_reason=? 
+     WHERE request_id=?`,
+    [reason.trim(), requestId],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ message: "שגיאה במסד הנתונים" });
+      }
+
+      updateGroupStatus(requestId, res);
+    }
+  );
+}
+
+/**-----------------------------------------------
+ * מקבלת: requestId, res
+ * עושה: מעדכנת קבוצה למצב פעיל
+ * מחזירה: תשובה ללקוח
+ -------------------------------------------------*/
+function updateGroupStatus(requestId, res) {
+  db.query(
+    `UPDATE groups SET status='פעיל' WHERE request_id=?`,
+    [requestId],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ message: "שגיאה במסד הנתונים" });
+      }
+
+      res.json({
+        message: "בקשת הביטול נדחתה והקבוצה חזרה לפעיל",
+      });
+    }
+  );
+}
 
 //==========================
 // ביטול קבוצה (הדרכה)

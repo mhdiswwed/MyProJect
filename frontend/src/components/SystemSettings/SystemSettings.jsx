@@ -58,42 +58,80 @@ export default function SystemSettings() {
     setMsg({ type: "", text: "" });
 
     // טיפול בשעות פעילות
-    if (currentKey === "working_hours") {
-      try {
-        await fetch(`${API_BASE}/api/SystemSettings/working_hours_start`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ value: startHour }),
-        });
+   if (currentKey === "working_hours") {
 
-        await fetch(`${API_BASE}/api/SystemSettings/working_hours_end`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ value: endHour }),
-        });
-
-        setSettings((prev) => ({
-          ...prev,
-          working_hours_start: startHour,
-          working_hours_end: endHour,
-        }));
-
-        setMsg({ type: "success", text: "עודכן בהצלחה" });
-
-        setTimeout(() => {
-          setShowModal(false);
-          setMsg({ type: "", text: "" });
-        }, 1200);
-      } catch {
-        setMsg({ type: "error", text: "שגיאת שרת" });
-      }
-
+    if (startHour >= endHour) {
+      setMsg({
+        type: "error",
+        text: "שעת התחלה חייבת להיות לפני שעת סיום",
+      });
       return;
     }
+     try {
+       const resStart = await fetch(
+         `${API_BASE}/api/SystemSettings/working_hours_start`,
+         {
+           method: "PUT",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({ value: startHour }),
+         },
+       );
+
+       const dataStart = await resStart.json();
+
+       if (!resStart.ok) {
+         setMsg({ type: "error", text: dataStart.message });
+         return;
+       }
+
+       const resEnd = await fetch(
+         `${API_BASE}/api/SystemSettings/working_hours_end`,
+         {
+           method: "PUT",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({ value: endHour }),
+         },
+       );
+
+       const dataEnd = await resEnd.json();
+
+       if (!resEnd.ok) {
+         setMsg({ type: "error", text: dataEnd.message });
+         return;
+       }
+
+       setSettings((prev) => ({
+         ...prev,
+         working_hours_start: startHour,
+         working_hours_end: endHour,
+       }));
+
+       setMsg({ type: "success", text: "עודכן בהצלחה" });
+
+       setTimeout(() => {
+         setShowModal(false);
+         setMsg({ type: "", text: "" });
+       }, 1200);
+     } catch {
+       setMsg({ type: "error", text: "שגיאת שרת" });
+     }
+
+     return;
+   }
+
+
 
     if (currentKey === "participants") {
       const min = Number(minValue);
       const max = Number(maxValue);
+
+  if (min > max) {
+    setMsg({
+      type: "error",
+      text: "מינימום לא יכול להיות גדול ממקסימום",
+    });
+    return;
+  }
 
       if (isNaN(min) || isNaN(max)) {
         setMsg({ type: "error", text: "ערכים לא תקינים" });
