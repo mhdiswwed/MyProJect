@@ -51,194 +51,165 @@ export default function SystemSettings() {
   }, []);
 
   //=====================
-  //פונקצית שמירה לכל ההגדרות
-  //====================
+  // פונקציה ראשית – מחליטה איזה סוג הגדרה לשמור
+  //=====================
   async function saveSetting() {
-    // איפוס הודעה
     setMsg({ type: "", text: "" });
 
-    // טיפול בשעות פעילות
-   if (currentKey === "working_hours") {
+    try {
+      if (currentKey === "working_hours") {
+        await handleWorkingHours();
+        return;
+      }
 
-    if (startHour >= endHour) {
-      setMsg({
-        type: "error",
-        text: "שעת התחלה חייבת להיות לפני שעת סיום",
-      });
-      return;
+      if (currentKey === "participants") {
+        await handleParticipants();
+        return;
+      }
+
+      // כל שאר ההגדרות
+      await handleGeneralSetting();
+    } catch {
+      setMsg({ type: "error", text: "שגיאת שרת" });
     }
-     try {
-       const resStart = await fetch(
-         `${API_BASE}/api/SystemSettings/working_hours_start`,
-         {
-           method: "PUT",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ value: startHour }),
-         },
-       );
-
-       const dataStart = await resStart.json();
-
-       if (!resStart.ok) {
-         setMsg({ type: "error", text: dataStart.message });
-         return;
-       }
-
-       const resEnd = await fetch(
-         `${API_BASE}/api/SystemSettings/working_hours_end`,
-         {
-           method: "PUT",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ value: endHour }),
-         },
-       );
-
-       const dataEnd = await resEnd.json();
-
-       if (!resEnd.ok) {
-         setMsg({ type: "error", text: dataEnd.message });
-         return;
-       }
-
-       setSettings((prev) => ({
-         ...prev,
-         working_hours_start: startHour,
-         working_hours_end: endHour,
-       }));
-
-       setMsg({ type: "success", text: "עודכן בהצלחה" });
-
-       setTimeout(() => {
-         setShowModal(false);
-         setMsg({ type: "", text: "" });
-       }, 1200);
-     } catch {
-       setMsg({ type: "error", text: "שגיאת שרת" });
-     }
-
-     return;
-   }
-
-
-
-    if (currentKey === "participants") {
-      const min = Number(minValue);
-      const max = Number(maxValue);
-
-  if (min > max) {
-    setMsg({
-      type: "error",
-      text: "מינימום לא יכול להיות גדול ממקסימום",
-    });
-    return;
   }
 
-      if (isNaN(min) || isNaN(max)) {
-        setMsg({ type: "error", text: "ערכים לא תקינים" });
-        return;
-      }
-
-      if (min < 0 || max < 0) {
-        setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
-        return;
-      }
-
-      try {
-        // עדכון מינימום
-        await fetch(`${API_BASE}/api/SystemSettings/min_participants`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ value: min }),
-        });
-
-        // עדכון מקסימום
-        await fetch(`${API_BASE}/api/SystemSettings/max_participants`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ value: max }),
-        });
-
-        setSettings((prev) => ({
-          ...prev,
-          min_participants: min,
-          max_participants: max,
-        }));
-
-        setMsg({ type: "success", text: "עודכן בהצלחה" });
-
-        setTimeout(() => {
-          setShowModal(false);
-          setMsg({ type: "", text: "" });
-        }, 1200);
-      } catch {
-        setMsg({ type: "error", text: "שגיאת שרת" });
-      }
-
+  //=====================
+  // מטפלת בשעות פעילות:
+  // - בדיקת תקינות שעות
+  // - שליחה לשרת
+  // - עדכון המסך
+  //=====================
+  async function handleWorkingHours() {
+    if (startHour >= endHour) {
+      setMsg({ type: "error", text: "שעת התחלה חייבת להיות לפני שעת סיום" });
       return;
     }
 
-    // המרת הערך למספר
+    await fetch(`${API_BASE}/api/SystemSettings/working_hours_start`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: startHour }),
+    });
+
+    await fetch(`${API_BASE}/api/SystemSettings/working_hours_end`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: endHour }),
+    });
+
+    setSettings((prev) => ({
+      ...prev,
+      working_hours_start: startHour,
+      working_hours_end: endHour,
+    }));
+
+    success();
+  }
+
+  //=====================
+  // מטפלת בכמות משתתפים:
+  // - בדיקות תקינות (מספרים, טווח)
+  // - שליחה לשרת
+  // - עדכון המסך
+  //=====================
+  async function handleParticipants() {
+    const min = Number(minValue);
+    const max = Number(maxValue);
+
+    if (isNaN(min) || isNaN(max)) {
+      setMsg({ type: "error", text: "ערכים לא תקינים" });
+      return;
+    }
+
+    if (min > max) {
+      setMsg({ type: "error", text: "מינימום לא יכול להיות גדול ממקסימום" });
+      return;
+    }
+
+    if (min < 0 || max < 0) {
+      setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
+      return;
+    }
+
+    await fetch(`${API_BASE}/api/SystemSettings/min_participants`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: min }),
+    });
+
+    await fetch(`${API_BASE}/api/SystemSettings/max_participants`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: max }),
+    });
+
+    setSettings((prev) => ({
+      ...prev,
+      min_participants: min,
+      max_participants: max,
+    }));
+
+    success();
+  }
+
+  //=====================
+  // מטפלת בשאר ההגדרות:
+  // - המרה למספר
+  // - בדיקות לפי סוג
+  // - שליחה לשרת
+  //=====================
+  async function handleGeneralSetting() {
     const num = Number(inputValue);
 
-    // בדיקה אם זה לא מספר
     if (isNaN(num)) {
       setMsg({ type: "error", text: "ערך לא תקין" });
       return;
     }
 
-    // בדיקות לפי סוג ההגדרה
     if (currentKey === "vat" && (num < 0 || num > 100)) {
       setMsg({ type: "error", text: "מע״מ בין 0 ל-100" });
       return;
     }
 
-    // בדיקה לכמות דיווחים
-    if (currentKey === "max_reports_per_route" && num < 0) {
-      setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
-      return;
-    }
+  if (
+    (currentKey === "max_reports_per_route" ||
+      currentKey === "report_interval_minutes" ||
+      currentKey === "guide_break_minutes" ||
+      currentKey === "worker_break_minutes") &&
+    num < 0
+  ) {
+    setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
+    return;
+  }
 
-    // בדיקה לזמן בין דיווחים
-    if (currentKey === "report_interval_minutes" && num < 0) {
-      setMsg({ type: "error", text: "לא ניתן להכניס ערך שלילי" });
-      return;
-    }
+const res = await fetch(`${API_BASE}/api/SystemSettings/${currentKey}`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ value: num }),
+});
 
-    try {
-      // שליחת עדכון לשרת
-      const res = await fetch(`${API_BASE}/api/SystemSettings/${currentKey}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: num }),
-      });
+const data = await res.json();
 
-      // קריאת התשובה מהשרת
-      const data = await res.json();
+if (!res.ok) {
+  setMsg({ type: "error", text: data.message });
+  return;
+}
 
-      // אם הצליח
-      if (res.ok) {
-        // עדכון הנתונים במסך
-        setSettings((prev) => ({ ...prev, [currentKey]: num }));
+setSettings((prev) => ({
+  ...prev,
+  [currentKey]: num,
+}));
 
-        // הצגת הודעת הצלחה מהשרת או ברירת מחדל
-        setMsg({ type: "success", text: data.message || "עודכן בהצלחה" });
+success();
+  }
 
-        // סגירה אוטומטית אחרי 1.2 שניות
-        setTimeout(() => {
-          setShowModal(false);
-          setMsg({ type: "", text: "" });
-        }, 1200);
-      } else {
-        // הצגת הודעת השגיאה האמיתית שהשרת החזיר
-        setMsg({
-          type: "error",
-          text: data.message || "שגיאה בעדכון",
-        });
-      }
-    } catch {
-      // שגיאת תקשורת
-      setMsg({ type: "error", text: "שגיאת שרת" });
-    }
+  //=====================
+  // מציגה הודעת הצלחה וסוגרת את החלון
+  //=====================
+  function success() {
+    setMsg({ type: "success", text: "עודכן בהצלחה" });
+    setTimeout(() => setShowModal(false), 1200);
   }
 
   //===================================
@@ -258,7 +229,7 @@ export default function SystemSettings() {
 
       case "participants":
         return "עדכון משתתפים בטיול";
-        
+
       // הפסקה בין טיולים למדריך
       case "guide_break_minutes":
         return "עדכון הפסקה בין טיולים למדריך";

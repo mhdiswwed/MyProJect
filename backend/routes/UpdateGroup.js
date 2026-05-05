@@ -120,54 +120,6 @@ function timeToMinutes(timeStr) {
   return h * 60 + m;
 }
 
-// =========================
-// בדיקת זמינות מדריך
-// =========================
-function checkGuideAvailability(
-  guideId,
-  tripDate,
-  tripTime,
-  duration,
-  ignoreGroupId,
-  callback,
-) {
-  getGuideBreakMinutes((BUFFER) => {
-    const start = timeToMinutes(tripTime);
-    const end = start + Number(duration);
-
-    const sql = `
-      SELECT g.trip_time, t.duration_minutes
-      FROM groups g
-      JOIN trails t ON g.trail_id = t.trail_id
-      WHERE g.guide_id = ?
-        AND DATE(g.trip_date) = DATE(?)
-        AND g.status != 'בוטל'
-        AND g.group_id <> ?
-    `;
-
-    db.query(sql, [guideId, tripDate, ignoreGroupId], (err, rows) => {
-      if (err) return callback(err);
-
-      for (const row of rows) {
-        const existingStart = timeToMinutes(row.trip_time);
-        const existingEnd = existingStart + Number(row.duration_minutes || 0);
-
-        const existingEndWithBuffer = existingEnd + BUFFER;
-        const newEndWithBuffer = end + BUFFER;
-
-        const isBefore = newEndWithBuffer <= existingStart;
-        const isAfter = start >= existingEndWithBuffer;
-
-        if (!(isBefore || isAfter)) {
-          return callback(null, false);
-        }
-      }
-
-      callback(null, true);
-    });
-  });
-}
-
 // בודק נתונים
 function isValidRequest(date, time, group_id) {
   return date && time && group_id;
@@ -179,7 +131,7 @@ function getCleanDate(date) {
   return localDate.toLocaleDateString("en-CA");
 }
 
-// מחזיר משך מסלול
+// מחזיר משך זמן מסלול
 function getDuration(group_id, callback) {
   const sql = `
     SELECT t.duration_minutes
@@ -293,189 +245,209 @@ router.get("/available-guides", (req, res) => {
   });
 });
 
-// =========================
-// PUT החלפת מדריך בלבד
-// =========================
+
+
+/**
+ * --------------------------------------------------
+ * פונקציה להחלפת מדריך בקבוצה ועדכון חשבונית
+ *
+ * מקבלת:
+ * group_id - מזהה הקבוצה
+ * guide_id - מזהה המדריך החדש
+ * reason   - סיבת ההחלפה
+ *
+ * מבצעת:
+ * - עדכון המדריך בטבלת groups
+ * - מחיקת החשבונית הישנה
+ * - שליפת נתוני הקבוצה
+ * - חישוב מחירים ומע״מ
+ * - יצירת חשבונית PDF חדשה
+ * - שמירת שם הקובץ במסד הנתונים
+ *
+ * מחזירה:
+ * fileName - שם קובץ החשבונית שנוצרה
+ * --------------------------------------------------
+ */
+async function changeGuideAndUpdateInvoice(group_id, guide_id, reason) {
+  // עדכון המדריך והסיבה בטבלת groups
+  const updateSql = `
+    UPDATE groups
+    SET guide_id = ?, guide_change_reason = ?
+    WHERE group_id = ?
+  `;
+
+  await db.promise().query(updateSql, [guide_id, reason, group_id]);
+
+  // מחיקת שם קובץ החשבונית הישנה (כדי לייצר חדשה)
+  await db
+    .promise()
+    .query("UPDATE groups SET invoice_file = NULL WHERE group_id = ?", [
+      group_id,
+    ]);
+
+  // שליפת נתוני הקבוצה מהמסד
+  const [results] = await db.promise().query(getGroupSql, [group_id]);
+  const groupData = results[0];
+
+  // שליפת אחוז מע״מ (המרה ל-Promise)
+  const vatRate = await new Promise((resolve, reject) => {
+    getVatRate((err, rate) => {
+      if (err) reject(err);
+      else resolve(rate);
+    });
+  });
+
+  // יצירת חשבונית PDF חדשה
+const fileName = await createInvoicePDF(groupData, vatRate);
+
+  // שמירת שם קובץ החשבונית במסד
+  await db
+    .promise()
+    .query("UPDATE groups SET invoice_file = ? WHERE group_id = ?", [
+      fileName,
+      group_id,
+    ]);
+
+  // החזרת שם הקובץ
+  return fileName;
+}
+
+
+
+/**
+ * ----------------------------------------
+ * PUT החלפת מדריך בלבד
+ * ----------------------------------------
+ */
 router.put("/change-guide/:group_id", async (req, res) => {
+  // שליפת מזהה קבוצה מה־URL
   const { group_id } = req.params;
+  // שליפת נתונים מה־Body
   const { guide_id, reason } = req.body;
 
+  // בדיקת תקינות קלט
   if (!guide_id || !reason) {
     return res.status(400).json({
       message: "חובה לבחור מדריך ולכתוב סיבה",
     });
   }
 
-  const sql = `
-    UPDATE groups
-    SET guide_id = ?, guide_change_reason = ?
-    WHERE group_id = ?
-  `;
+  try {
+    // קריאה לפונקציית הלוגיקה
+    await changeGuideAndUpdateInvoice(group_id, guide_id, reason);
 
-  db.query(sql, [guide_id, reason, group_id], async (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "שגיאה בשרת" });
-    }
+    // החזרת תשובה תקינה
+    res.json({
+      message: "המדריך הוחלף + חשבונית עודכנה",
+    });
 
-    try {
-      // 🧨 מחיקת חשבונית ישנה
-      await db
-        .promise()
-        .query("UPDATE groups SET invoice_file = NULL WHERE group_id = ?", [
-          group_id,
-        ]);
+  } catch (error) {
 
-      // 🧠 שליפת נתונים
-      const [results] = await db.promise().query(getGroupSql, [group_id]);
-      const groupData = results[0];
+    // הדפסת השגיאה לשרת
+    console.error(error);
 
-      // 📊 שליפת מע״מ
-      getVatRate(async (err, vatRate) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ message: "שגיאה במע״מ" });
-        }
-
-        // ✅ עכשיו מחשבים
-        const participantsPrice =
-          Number(groupData.number_of_participants || 0) *
-          Number(groupData.price_per_person || 0);
-
-        const vehiclesPrice =
-          Number(groupData.number_of_vehicles || 0) *
-          Number(groupData.price_per_vehicle || 0);
-
-        const totalBeforeVat = participantsPrice + vehiclesPrice;
-        const vatAmount = totalBeforeVat * vatRate;
-        const totalWithVat = totalBeforeVat + vatAmount;
-
-        // יצירת חשבונית
-        const fileName = await createInvoicePDF(
-          {
-            ...groupData,
-            total_before_vat: totalBeforeVat,
-            vat_amount: vatAmount,
-            total_with_vat: totalWithVat,
-          },
-          vatRate,
-        );
-
-        await db
-          .promise()
-          .query("UPDATE groups SET invoice_file = ? WHERE group_id = ?", [
-            fileName,
-            group_id,
-          ]);
-
-        res.json({ message: "המדריך הוחלף + חשבונית עודכנה" });
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "שגיאה ביצירת חשבונית" });
-    }
-  });
+    // החזרת שגיאה ללקוח
+    res.status(500).json({
+      message: "שגיאה בשרת",
+    });
+  }
 });
 
+
 /**
- * ------------------------------------------------
- * פונקציה ליצירת חשבונית PDF בעברית
- * באמצעות HTML → PDF (Puppeteer)
- *
- * היתרון:
- * - עברית עובדת מושלם
- * - אין בעיות RTL
- * - ניתן לעצב עם CSS
- * ------------------------------------------------
+ * ----------------------------------------
+ * פונקציה שמבצעת את כל החישובים לחשבונית
+ * ----------------------------------------
  */
-async function createInvoicePDF(data, VAT_RATE) {
-  /* יצירת שם קובץ לחשבונית */
-  const fileName = `invoice_${data.group_id}.pdf`;
+function calculateInvoiceTotals(data, VAT_RATE) {
 
-  /* נתיב שמירת הקובץ בתיקיית החשבוניות */
-  const filePath = path.join(invoicesDir, fileName);
-
-  /**
-   * חישובי מחירים
-   * סכום משתתפים
-   */
+  // חישוב סכום משתתפים (כמות * מחיר לאדם)
   const participantsTotal =
     Number(data.number_of_participants || 0) *
     Number(data.price_per_person || 0);
 
-  /**
-   * סכום כלי רכב
-   */
+  // חישוב סכום כלי רכב (כמות * מחיר לרכב)
   const vehiclesTotal =
-    Number(data.number_of_vehicles || 0) * Number(data.price_per_vehicle || 0);
+    Number(data.number_of_vehicles || 0) *
+    Number(data.price_per_vehicle || 0);
 
-  /**
-   * סכום כולל לפני מע״מ
-   */
+  // חישוב סכום כולל לפני מע״מ
   const totalBeforeVat = participantsTotal + vehiclesTotal;
 
-  /**
-   * חישוב מע״מ
-   */
+  // חישוב סכום המע״מ לפי אחוז המע״מ
   const vatAmount = totalBeforeVat * VAT_RATE;
 
-  /**
-   * סכום כולל לאחר מע״מ
-   */
+  // חישוב סכום כולל לאחר הוספת מע״מ
   const totalWithVat = totalBeforeVat + vatAmount;
 
-  /**
-   * תבנית HTML של החשבונית
-   * dir="rtl" גורם לעברית להופיע נכון
-   */
-  const html = `
+  // החזרת כל הערכים המחושבים כאובייקט
+  return {
+    participantsTotal,
+    vehiclesTotal,
+    totalBeforeVat,
+    vatAmount,
+    totalWithVat,
+  };
+}
+
+/**
+ * ----------------------------------------
+ * פונקציה שיוצרת ומחזירה HTML לחשבונית
+ * ----------------------------------------
+ */
+function generateInvoiceHTML(data, totals) {
+
+  // החזרת מחרוזת HTML מלאה
+  return `
   <html dir="rtl">
   <head>
 
-  <!-- הגדרת קידוד עברית -->
+  <!-- קידוד עברית -->
   <meta charset="UTF-8">
 
   <style>
 
-  /* עיצוב כללי של הדף */
-  body{
-    font-family: Arial;
-    direction: rtl;
-    padding:40px;
-  }
+    /* עיצוב כללי של הדף */
+    body{
+      font-family: Arial;
+      direction: rtl;
+      padding:40px;
+    }
 
-  /* כותרת החשבונית */
-  h1{
-    text-align:center;
-  }
+    /* כותרת ראשית */
+    h1{
+      text-align:center;
+    }
 
-  /* עיצוב הטבלה */
-  table{
-    width:100%;
-    border-collapse: collapse;
-    margin-top:20px;
-  }
+    /* עיצוב הטבלה */
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top:20px;
+    }
 
-  /* עיצוב תאים */
-  th,td{
-    border:1px solid #ccc;
-    padding:10px;
-    text-align:center;
-  }
+    /* עיצוב תאים */
+    th,td{
+      border:1px solid #ccc;
+      padding:10px;
+      text-align:center;
+    }
 
-  /* עיצוב שורות סכום */
-  .total{
-    font-weight:bold;
-    background:#f5f5f5;
-  }
+    /* שורות סכום */
+    .total{
+      font-weight:bold;
+      background:#f5f5f5;
+    }
 
   </style>
   </head>
 
   <body>
 
+  <!-- כותרת החשבונית -->
   <h1>חשבונית</h1>
 
+  <!-- שם החברה -->
   <h3>Trail Quest</h3>
 
   <!-- פרטי הקבוצה -->
@@ -484,9 +456,8 @@ async function createInvoicePDF(data, VAT_RATE) {
   <p>תאריך: ${new Date(data.trip_date).toLocaleDateString("he-IL")}</p>
   <p>שעה: ${data.trip_time?.slice(0, 5)}</p>
 
-  <!-- פרטי המדריך -->
+  <!-- פרטי מדריך -->
   <h3>פרטי מדריך</h3>
-
   <p>שם: ${data.guide_name}</p>
   <p>טלפון: ${data.guide_phone}</p>
   <p>אימייל: ${data.guide_email}</p>
@@ -494,106 +465,108 @@ async function createInvoicePDF(data, VAT_RATE) {
   <!-- טבלת מחירים -->
   <table>
 
-  <tr>
-  <th>תיאור</th>
-  <th>כמות</th>
-  <th>מחיר</th>
-  <th>סה"כ</th>
-  </tr>
+    <!-- כותרות -->
+    <tr>
+      <th>תיאור</th>
+      <th>כמות</th>
+      <th>מחיר</th>
+      <th>סה"כ</th>
+    </tr>
 
-  <!-- שורת משתתפים -->
-  <tr>
-  <td>משתתפים</td>
-  <td>${data.number_of_participants}</td>
-  <td>₪${Number(data.price_per_person || 0)}</td>
-  <td>₪${participantsTotal.toFixed(2)}</td>
-  </tr>
+    <!-- משתתפים -->
+    <tr>
+      <td>משתתפים</td>
+      <td>${data.number_of_participants}</td>
+      <td>₪${Number(data.price_per_person || 0)}</td>
+      <td>₪${totals.participantsTotal.toFixed(2)}</td>
+    </tr>
 
-  <!-- שורת כלי רכב -->
-  <tr>
-  <td>כלי רכב</td>
-  <td>${data.number_of_vehicles}</td>
-  <td>₪${Number(data.price_per_vehicle || 0)}</td>
-  <td>₪${vehiclesTotal.toFixed(2)}</td>
-  </tr>
+    <!-- כלי רכב -->
+    <tr>
+      <td>כלי רכב</td>
+      <td>${data.number_of_vehicles}</td>
+      <td>₪${Number(data.price_per_vehicle || 0)}</td>
+      <td>₪${totals.vehiclesTotal.toFixed(2)}</td>
+    </tr>
 
-  <!-- סכום לפני מע״מ -->
-  <tr class="total">
-  <td colspan="3">סה"כ לפני מע״מ</td>
-  <td>₪${totalBeforeVat.toFixed(2)}</td>
-  </tr>
+    <!-- סכום לפני מע״מ -->
+    <tr class="total">
+      <td colspan="3">סה"כ לפני מע״מ</td>
+      <td>₪${totals.totalBeforeVat.toFixed(2)}</td>
+    </tr>
 
-  <!-- סכום מע״מ -->
-  <tr class="total">
-  <td colspan="3">מע״מ</td>
-  <td>₪${vatAmount.toFixed(2)}</td>
-  </tr>
+    <!-- מע״מ -->
+    <tr class="total">
+      <td colspan="3">מע״מ</td>
+      <td>₪${totals.vatAmount.toFixed(2)}</td>
+    </tr>
 
-  <!-- סכום סופי -->
-  <tr class="total">
-  <td colspan="3">סה"כ לתשלום</td>
-  <td>₪${totalWithVat.toFixed(2)}</td>
-  </tr>
+    <!-- סכום סופי -->
+    <tr class="total">
+      <td colspan="3">סה"כ לתשלום</td>
+      <td>₪${totals.totalWithVat.toFixed(2)}</td>
+    </tr>
 
   </table>
 
-  <!-- ------------------------------------------------ -->
-<!-- פרטי החברה -->
-<!-- מוצגים בתחתית החשבונית -->
-<!-- ------------------------------------------------ -->
+  <!-- קו הפרדה -->
+  <hr style="margin-top:40px">
 
-<hr style="margin-top:40px">
+  <!-- פרטי החברה -->
+  <h3>פרטי החברה</h3>
 
-<h3>פרטי החברה</h3>
+  <p><strong>שם החברה:</strong> Trail Quest</p>
+  <p><strong>טלפון:</strong> ${data.manager_phone}</p>
+  <p><strong>אימייל:</strong> ${data.manager_email}</p>
 
-<p>
-<strong>שם החברה:</strong> Trail Quest
-</p>
-
-<p>
-<strong>טלפון:</strong> ${data.manager_phone}
-</p>
-
-<p>
-<strong>אימייל:</strong> ${data.manager_email}
-</p>
-
-<p style="margin-top:20px;font-size:12px;color:#555">
-תודה שבחרתם לטייל איתנו!
-</p>
+  <!-- הודעת תודה -->
+  <p style="margin-top:20px;font-size:12px;color:#555">
+    תודה שבחרתם לטייל איתנו!
+  </p>
 
   </body>
   </html>
   `;
+}
 
-  /**
-   * פתיחת דפדפן וירטואלי באמצעות Puppeteer
-   */
+/**
+ * ----------------------------------------
+ * פונקציה ראשית ליצירת חשבונית PDF
+ * ----------------------------------------
+ */
+async function createInvoicePDF(data, VAT_RATE) {
+
+  // יצירת שם קובץ לפי מספר קבוצה
+  const fileName = `invoice_${data.group_id}.pdf`;
+
+  // יצירת נתיב מלא לשמירת הקובץ
+  const filePath = path.join(invoicesDir, fileName);
+
+  // שלב 1: חישוב כל הסכומים
+  const totals = calculateInvoiceTotals(data, VAT_RATE);
+
+  // שלב 2: יצירת HTML מהנתונים ומהחישובים
+  const html = generateInvoiceHTML(data, totals);
+
+  // פתיחת דפדפן וירטואלי (Puppeteer)
   const browser = await puppeteer.launch();
 
+  // יצירת עמוד חדש
   const page = await browser.newPage();
 
-  /**
-   * טעינת ה-HTML לתוך הדף
-   */
+  // טעינת ה-HTML לעמוד
   await page.setContent(html);
 
-  /**
-   * יצירת קובץ PDF
-   */
+  // יצירת קובץ PDF
   await page.pdf({
     path: filePath,
     format: "A4",
   });
 
-  /**
-   * סגירת הדפדפן
-   */
+  // סגירת הדפדפן
   await browser.close();
 
-  /**
-   * החזרת שם הקובץ שנוצר
-   */
+  // החזרת שם הקובץ שנוצר
   return fileName;
 }
 

@@ -232,7 +232,7 @@ export default function MyGuidances({ user }) {
         return;
       }
 
-      // 🔥 טען מחדש נתונים מהשרת
+      //  טען מחדש נתונים מהשרת
       fetch(`${API_BASE}/api/myGuidances/${user.user_id}`)
         .then((res) => res.json())
         .then((data) => setGuidances(data));

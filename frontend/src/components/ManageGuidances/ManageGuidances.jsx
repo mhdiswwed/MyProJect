@@ -368,7 +368,7 @@ export default function ManageGuidances() {
       actualMinutes,
       diff,
       status,
-      sameDay, // 👈 חשוב!
+      sameDay, 
     };
   }
 

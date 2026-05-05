@@ -85,14 +85,14 @@ router.delete("/users/:id", (req, res) => {
   const sql = `DELETE FROM users WHERE user_id=?`;
 
   db.query(sql, [id], (err) => {
-    // ❌ אם יש שגיאה (לרוב FK)
+    //  אם יש שגיאה (לרוב FK)
     if (err) {
       return res.status(400).json({
         message: "לא ניתן למחוק משתמש - קיימים נתונים קשורים",
       });
     }
 
-    // ✅ הצלחה
+    //  הצלחה
     res.json({ message: "נמחק" });
   });
 });

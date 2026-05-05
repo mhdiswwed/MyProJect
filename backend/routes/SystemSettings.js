@@ -70,13 +70,13 @@ function validateByName(name, num) {
     return "מקסימום משתתפים לא יכול להיות שלילי";
   }
 
-  if (name === "guide_break_minutes" && num < 0) {
-    return "זמן הפסקה למדריך לא יכול להיות שלילי";
-  }
-
-  if (name === "worker_break_minutes" && num < 0) {
-    return "זמן הפסקה לעובד לא יכול להיות שלילי";
-  }
+  
+if (
+  (name === "guide_break_minutes" || name === "worker_break_minutes") &&
+  (!Number.isFinite(num) || num < 0)
+) {
+  return "זמן הפסקה לא יכול להיות שלילי";
+}
 
   return null;
 }
