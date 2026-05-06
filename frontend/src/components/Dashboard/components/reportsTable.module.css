@@ -26,8 +26,8 @@
 /* פריט */
 .item {
   display: flex;
-  align-items: flex-start; /* 🔥 יישור למעלה כמו בתמונה */
-  gap: 15px; /* 🔥 רווח בין תמונה לטקסט */
+  align-items: flex-start; /*  יישור למעלה כמו בתמונה */
+  gap: 15px; /*  רווח בין תמונה לטקסט */
   padding: 14px 0;
   border-bottom: 1px solid rgba(255,255,255,.05);
 }
@@ -42,7 +42,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px; /* 🔥 רווח בין שורות */
+  gap: 4px; /*  רווח בין שורות */
 }
 
 /* סוג בעיה */
@@ -96,23 +96,21 @@
   padding: 4px 18px;
   border-radius: 10px;
   font-size: 12px;
-  align-self: center; /* 🔥 שיהיה באמצע בצד */
+  align-self: center; /*  שיהיה באמצע בצד */
 }
 
 
 
 /* דחוף - אדום */
 .urgent {
-  background-color: #ff4d4f;
-  color: white;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
 }
-
 /* בינוני - צהוב */
 .medium {
-  background-color: #facc15;
-  color: black;
+  background: rgba(250, 204, 21, 0.18);
+  color: #facc15;
 }
-
 /* סכנה - אדום */
 .iconDanger {
   color: #e6ef44;
@@ -130,5 +128,10 @@
 
 /* ניקיון - ירוק */
 .iconClean {
+  color: #22c55e;
+}
+
+.done {
+  background: rgba(34, 197, 94, 0.18);
   color: #22c55e;
 }

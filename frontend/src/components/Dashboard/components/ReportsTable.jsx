@@ -1,3 +1,15 @@
+/**
+ * קומפוננטה להצגת דיווחים  מהשטח
+ * הקומפוננטה מקבלת מערך דיווחים ומציגה:
+ * - תמונה של הדיווח
+ * - סוג הבעיה עם אייקון
+ * - תיאור הבעיה
+ * - שם המסלול
+ * - זמן יחסי (לפני כמה זמן)
+ * - סטטוס בצד
+ * הדיווחים המוצגים הם לפי תארכים שנבחרו
+ */
+
 import styles from "./reportsTable.module.css";
 import {
   FaClock,
@@ -8,19 +20,6 @@ import {
 } from "react-icons/fa";
 import API_BASE from "../../../config/api";
 
-/**
- * קומפוננטה להצגת דיווחים חדשים מהשטח
- *
- * הקומפוננטה מקבלת מערך דיווחים ומציגה:
- * - תמונה של הדיווח
- * - סוג הבעיה עם אייקון
- * - תיאור הבעיה
- * - שם המסלול
- * - זמן יחסי (לפני כמה זמן)
- * - סטטוס בצד
- *
- * הדיווחים המוצגים הם מהיומיים האחרונים בלבד
- */
 export default function ReportsTable({ reports = [] }) {
   // פונקציה שמחזירה "לפני כמה זמן"
   function formatReportTime(date) {
@@ -56,23 +55,35 @@ export default function ReportsTable({ reports = [] }) {
       timeStyle: "short",
     });
   }
-  //===================================
-  // פונקציה שממירה סוג בעיה לסטטוס תצוגה
-  //=================================
-  function getDisplayStatus(problemType) {
-    // אם סכנה → דחוף
-    if (problemType === "סכנה") {
-      return {
-        text: "דחוף",
-        className: "urgent", // CSS
-      };
-    }
+  //========================
+  // פונקציה שמחזירה סטטוס תצוגה
+  //========================
+  function getDisplayStatus(status) {
+    switch (status) {
+      case "חדש":
+        return {
+          text: "חדש",
+          className: "urgent",
+        };
 
-    // אחרת → בינוני
-    return {
-      text: "בינוני",
-      className: "medium",
-    };
+      case "בטיפול":
+        return {
+          text: "בטיפול",
+          className: "medium",
+        };
+
+      case "טופל":
+        return {
+          text: "טופל",
+          className: "done",
+        };
+
+      default:
+        return {
+          text: status,
+          className: "medium",
+        };
+    }
   }
 
   //===================================
@@ -102,11 +113,11 @@ export default function ReportsTable({ reports = [] }) {
       {/* כותרת */}
       <div className={styles.header}>
         <div>
-          <h3>דיווחים חדשים מהשטח</h3>
+          <h3>דיווחים מהשטח</h3>
         </div>
 
         {/* ספירה */}
-        <span className={styles.count}>{reports.length} חדשים</span>
+        <span className={styles.count}>{reports.length} דיווחים</span>
       </div>
 
       {/* אם אין דיווחים */}
@@ -114,7 +125,7 @@ export default function ReportsTable({ reports = [] }) {
         <p>אין דיווחים</p>
       ) : (
         reports.map((r) => {
-          const status = getDisplayStatus(r.problem_type);
+          const status = getDisplayStatus(r.status);
           return (
             <div key={r.report_id} className={styles.item}>
               {/* תמונה בצד (ימין כי RTL) */}

@@ -16,7 +16,7 @@ import Chart from "react-apexcharts";
 import styles from "./chartsSection.module.css";
 import API_BASE from "../../../config/api";
 
-export default function ChartsSection() {
+export default function ChartsSection({ fromDate, toDate }) {
   /* =========================
      נתונים לגרפים
   ========================= */
@@ -27,22 +27,29 @@ export default function ChartsSection() {
   /* =========================
      טעינת נתונים מהשרת
   ========================= */
-  useEffect(() => {
-    loadChartsData();
-  }, []);
+useEffect(() => {
+  loadChartsData();
+}, [fromDate, toDate]);
 
-  async function loadChartsData() {
-    try {
-      const res = await fetch(`${API_BASE}/api/dashboard/charts`);
-      const data = await res.json();
+async function loadChartsData() {
+  try {
+    let url = `${API_BASE}/api/dashboard/charts`;
 
-      setRequestsData(formatDateLabels(data.requestsChart || []));
-      setReportsData(formatDateLabels(data.reportsChart || []));
-      setStatusData(data.statusData || []);
-    } catch (error) {
-      console.error("שגיאה בטעינת גרפים:", error);
+    // אם המשתמש בחר תאריכים
+    if (fromDate && toDate) {
+      url += `?fromDate=${fromDate}&toDate=${toDate}`;
     }
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    setRequestsData(formatDateLabels(data.requestsChart || []));
+    setReportsData(formatDateLabels(data.reportsChart || []));
+    setStatusData(data.statusData || []);
+  } catch (error) {
+    console.error("שגיאה בטעינת גרפים:", error);
   }
+}
 
   /**
    * =========================================
@@ -283,9 +290,7 @@ export default function ChartsSection() {
     tooltip: {
       theme: "dark",
     },
-   colors :statusData.map(
-    (item) => statusColorMap[item.status] ||"#999"
-   )
+    colors: statusData.map((item) => statusColorMap[item.status] || "#999"),
   };
 
   const statusChartSeries = statusData.map((item) => Number(item.count || 0));
@@ -298,7 +303,6 @@ export default function ChartsSection() {
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>בקשות לפי ימים</h3>
-          <span className={styles.cardSubTitle}>7 ימים אחרונים</span>
         </div>
 
         <div className={styles.chartWrapper}>
@@ -317,7 +321,6 @@ export default function ChartsSection() {
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>דיווחים לפי ימים</h3>
-          <span className={styles.cardSubTitle}>7 ימים אחרונים</span>
         </div>
 
         <div className={styles.chartWrapper}>

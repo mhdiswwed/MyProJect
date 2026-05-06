@@ -1,7 +1,7 @@
 /*=======================================================
-קומבוננטה שבונה ומחזירה שתי טבלאות של בקשות אחרונות, 7 ימים אחרונים 
+קומבוננטה שבונה ומחזירה שתי טבלאות של בקשות אחרונות, לפי תאריכים שבוחר המשתמש 
 +
- משימות קרובות ,יומיים הקרובים
+ משימות  ,לפי תאריכים שבוחר המשתמם
 =========================================================*/
 
 import styles from "./requestsAndTasks.module.css";
@@ -36,7 +36,6 @@ export default function RequestsAndTasks({ requests = [], tasks = [] }) {
         <div className={styles.header}>
           <div>
             <h3>בקשות אחרונות</h3>
-            <span className={styles.subtitle}>7 ימים אחרונים</span>
           </div>
 
           <span className={styles.count}>{requests.length} בקשות</span>
@@ -77,12 +76,12 @@ export default function RequestsAndTasks({ requests = [], tasks = [] }) {
         )}
       </div>
 
-      {/* ===== משימות קרובות ===== */}
+      {/* ===== משימות ===== */}
       <div className={styles.box2}>
         {/* כותרת עם מספר משימות */}
         <div className={styles.header}>
           <div>
-            <h3>{tasks.length} משימות קרובות </h3>
+            <h3>{tasks.length} משימות  </h3>
             <span className={styles.subtitle}>יומיים הקרובים</span>
           </div>
         </div>
