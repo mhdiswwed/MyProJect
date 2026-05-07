@@ -180,6 +180,10 @@ export default function Header({ user, onLogout }) {
                 <button onClick={() => navigate("/myReports")}>
                   הדיווחים שלי
                 </button>
+                <button className={styles.mobileLogout} onClick={onLogout}>
+                  <FaSignOutAlt size={14} />
+                  יציאה
+                </button>
               </div>
             )}
           </div>

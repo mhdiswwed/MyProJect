@@ -3,7 +3,7 @@ import styles from "./footer.module.css";
 
 export default function Footer({ prog, year }) {
   const navigate = useNavigate();
-  const location = useLocation(); // 👈 היה חסר
+  const location = useLocation(); 
 
   function isActive(path) {
     return (

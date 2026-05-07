@@ -1,0 +1,106 @@
+.weatherBox{
+
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 16px;
+
+  opacity: 0.9;
+
+  border: 1px solid rgba(255,255,255,.12);
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 0 12px rgba(255,255,255,.05),
+    0 12px 30px rgba(0,0,0,.45);
+}
+.title{
+
+  color: white;
+  font-size: 15px;
+
+  font-weight: 700;
+
+  letter-spacing: .5px;
+
+  text-align: center;
+
+  margin-bottom: 14px;
+
+  opacity: .92;
+}
+
+.daysRow{
+
+  display: flex;
+
+  flex-direction: row;
+justify-content: center;
+align-items: center;
+  gap: 10px;
+
+  overflow-x: auto;
+}
+
+.dayCard{
+min-width: 120px;
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 6px 10px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,.04);
+
+  color: white;
+
+ transition: all .25s ease;
+}
+
+.dayCard:hover{
+
+  background: rgba(255,255,255,.1);
+
+  transform: translateY(-2px);
+}
+
+.dayName{
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  margin: 0;
+}
+
+.temp{
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  margin: 0;
+}
+
+.dayCard img{
+
+  width: 30px;
+
+  height: 30px;
+}
+
+@media (max-width: 768px){
+
+  .weatherBox{
+
+    width: 230px;
+
+    height: auto;
+  }
+}

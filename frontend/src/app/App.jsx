@@ -53,6 +53,7 @@ import TaskManagement from "../components/TaskManagement/TaskManagement";
 import Dashboard from "../components/Dashboard/Dashboard";
 import Contact from "../components/Contact/Contact";
 import Accessibility from "../components/Accessibility/Accessibility";
+import Main from "../components/main/Main";
 
 import API_BASE from "../config/api";
 // ייבוא עיצוב מקומי
@@ -145,98 +146,100 @@ export default function App() {
 
       {/* אזור ניתוב – מוצג רק אם אין אנימציה */}
       {!showWelcome && (
-        <Routes>
-          {/* דף הבית – פתוח לכולם */}
-          <Route path="/" element={<Trails />} />
-          {/* אודות */}
-          <Route path="/about" element={<About />} />
-          {/* צור קשר*/}
-          <Route path="/contact" element={<Contact />} />
-          {/*הצהרת נגישות */}
-          <Route path="/accessibility" element={<Accessibility />} />
-          {/* מסלולים – פתוח לכולם */}
-          <Route path="/trails" element={<Trails />} />
-          {/* פרטי מסלול */}
-          <Route path="/trails/:id" element={<TrailDetails user={user} />} />
-          {/* התחברות */}
-          <Route
-            path="/login"
-            element={
-              isAuth ? <Navigate to="/" /> : <Login onSuccess={handleLogin} />
-            }
-          />
-          {/* פרופיל – רק למשתמש מחובר */}
-          <Route
-            path="/profile"
-            element={
-              <RequireAuth isAuth={isAuth}>
-                <DataUpdate />
-              </RequireAuth>
-            }
-          />
-
-          {/* נתיב הקפתור של ההליכה במסלול כולל דיווח לפי מיקום*/}
-          <Route
-            path="/trail-navigation/:id"
-            element={<TrailNavigation user={user} />}
-          />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          {/* ראוטר הבקשות של המשתמש */}
-          <Route path="/myRequests" element={<MyRequests user={user} />} />
-          {/* ראוטר הדיווחים של המשתמש */}
-          <Route path="/myReports" element={<MyReports user={user} />} />
-
-          {/* ראוטר של מנהל – ניהול מסלולי טיול */}
-          {/* אזור ניהול – רק למנהל */}
-          {/* פרופיל – רק למשתמש מחובר */}
-          <Route
-            path="/admin"
-            element={
-              <RequireRole user={user} allowedRoles={["מנהל"]}>
-                <AdminLayout />
-              </RequireRole>
-            }
-          >
-            {/* ברירת מחדל - כשנכנסים ל /admin */}
-            <Route index element={<Navigate to="Dashboard" replace />} />
-
-            {/* לוח בקרה */}
-            <Route path="Dashboard" element={<Dashboard />} />
-
-            {/* שאר הראוטים */}
-            <Route path="ManagementTrails" element={<ManagementTrails />} />
-            <Route path="SystemSettings" element={<SystemSettings />} />
-            <Route path="ManageRequests" element={<ManageRequests />} />
+        <Main>
+          <Routes>
+            {/* דף הבית – פתוח לכולם */}
+            <Route path="/" element={<Trails />} />
+            {/* אודות */}
+            <Route path="/about" element={<About />} />
+            {/* צור קשר*/}
+            <Route path="/contact" element={<Contact />} />
+            {/*הצהרת נגישות */}
+            <Route path="/accessibility" element={<Accessibility />} />
+            {/* מסלולים – פתוח לכולם */}
+            <Route path="/trails" element={<Trails />} />
+            {/* פרטי מסלול */}
+            <Route path="/trails/:id" element={<TrailDetails user={user} />} />
+            {/* התחברות */}
             <Route
-              path="UsersManagement"
-              element={<UsersManagement currentUser={user} />}
+              path="/login"
+              element={
+                isAuth ? <Navigate to="/" /> : <Login onSuccess={handleLogin} />
+              }
             />
-            <Route path="ManageGuidances" element={<ManageGuidances />} />
-            <Route path="ManageGroups" element={<ManageGroups />} />
-            <Route path="FieldReports" element={<FieldReports />} />
-            <Route path="TaskManagement" element={<TaskManagement />} />
-          </Route>
+            {/* פרופיל – רק למשתמש מחובר */}
+            <Route
+              path="/profile"
+              element={
+                <RequireAuth isAuth={isAuth}>
+                  <DataUpdate />
+                </RequireAuth>
+              }
+            />
 
-          {/* אזורר מדריך רק אם מדריך מחובר */}
-          <Route
-            path="/guide"
-            element={
-              <RequireRole user={user} allowedRoles={["מדריך"]}>
-                <MyGuidances user={user} />
-              </RequireRole>
-            }
-          />
+            {/* נתיב הקפתור של ההליכה במסלול כולל דיווח לפי מיקום*/}
+            <Route
+              path="/trail-navigation/:id"
+              element={<TrailNavigation user={user} />}
+            />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            {/* ראוטר הבקשות של המשתמש */}
+            <Route path="/myRequests" element={<MyRequests user={user} />} />
+            {/* ראוטר הדיווחים של המשתמש */}
+            <Route path="/myReports" element={<MyReports user={user} />} />
 
-          {/* אזורר העובד רק אם העובד מחובר */}
-          <Route
-            path="/myTasks"
-            element={
-              <RequireRole user={user} allowedRoles={["עובד"]}>
-                <MyTasks user={user} />
-              </RequireRole>
-            }
-          />
-        </Routes>
+            {/* ראוטר של מנהל – ניהול מסלולי טיול */}
+            {/* אזור ניהול – רק למנהל */}
+            {/* פרופיל – רק למשתמש מחובר */}
+            <Route
+              path="/admin"
+              element={
+                <RequireRole user={user} allowedRoles={["מנהל"]}>
+                  <AdminLayout />
+                </RequireRole>
+              }
+            >
+              {/* ברירת מחדל - כשנכנסים ל /admin */}
+              <Route index element={<Navigate to="Dashboard" replace />} />
+
+              {/* לוח בקרה */}
+              <Route path="Dashboard" element={<Dashboard />} />
+
+              {/* שאר הראוטים */}
+              <Route path="ManagementTrails" element={<ManagementTrails />} />
+              <Route path="SystemSettings" element={<SystemSettings />} />
+              <Route path="ManageRequests" element={<ManageRequests />} />
+              <Route
+                path="UsersManagement"
+                element={<UsersManagement currentUser={user} />}
+              />
+              <Route path="ManageGuidances" element={<ManageGuidances />} />
+              <Route path="ManageGroups" element={<ManageGroups />} />
+              <Route path="FieldReports" element={<FieldReports />} />
+              <Route path="TaskManagement" element={<TaskManagement />} />
+            </Route>
+
+            {/* אזורר מדריך רק אם מדריך מחובר */}
+            <Route
+              path="/guide"
+              element={
+                <RequireRole user={user} allowedRoles={["מדריך"]}>
+                  <MyGuidances user={user} />
+                </RequireRole>
+              }
+            />
+
+            {/* אזורר העובד רק אם העובד מחובר */}
+            <Route
+              path="/myTasks"
+              element={
+                <RequireRole user={user} allowedRoles={["עובד"]}>
+                  <MyTasks user={user} />
+                </RequireRole>
+              }
+            />
+          </Routes>
+        </Main>
       )}
 
       {/* כותרת תחתונה */}

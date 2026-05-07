@@ -252,3 +252,99 @@
 .dropdown button:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+
+@media (max-width: 768px) {
+  .header {
+    height: auto;
+  }
+
+  .container {
+    flex-wrap: wrap;
+
+    min-height: auto;
+
+    height: auto;
+
+    padding: 10px 14px;
+
+    gap: 10px;
+  }
+
+
+
+  .nav {
+    width: 100%;
+
+    order: 2;
+
+    margin-top: 0;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+  }
+
+
+
+  .userArea {
+    margin-left: auto;
+  }
+
+  .userBtn span,
+  .logoutBtn {
+    display: none;
+  }
+
+
+  .mobileLogout {
+    color: #ff6b6b !important;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+  }
+
+  .mobileLogout:hover {
+    background: rgba(255, 0, 0, 0.1) !important;
+  }
+
+  .dropdown {
+  width: 130px;
+
+  padding: 5px;
+}
+
+.dropdown button {
+  font-size: 11px;
+
+  padding: 7px 8px;
+}
+
+.userBtn {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 50%;
+
+    justify-content: center;
+
+    background: rgba(255,255,255,0.08);
+  }
+
+.logo {
+  width: 65px;
+  height: 65px;
+}
+
+.navBtn {
+  padding: 4px 8px;
+
+  font-size: 10px;
+}
+}

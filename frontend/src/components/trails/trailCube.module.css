@@ -534,3 +534,137 @@
   font-size: 13px;
   font-weight: 500;
 }
+
+.centerArea{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+
+  :root {
+    --cube-w: 230px;
+    --cube-h: 185px;
+  }
+
+  .cubeUi {
+    display: flex;
+margin-top: 15px;
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin-left: 0;
+
+    gap: 28px;
+  }
+
+.faceNav {
+  width: 230px;
+
+  max-width: 270px;
+
+  height: auto;
+
+  flex-direction: row;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 4px 6px;
+
+  transform: none;
+
+  margin-right: 0;
+}
+
+  .panelLogo {
+    display: none;
+  }
+
+  .faceBtn {
+    padding: 5px 8px;
+
+    font-size: 10px;
+
+    border-radius: 8px;
+  }
+
+  .hideMobile {
+    display: none;
+  }
+
+  .scene {
+    width: var(--cube-w);
+
+    height: var(--cube-h);
+  }
+
+  .cubeFace {
+    padding: 8px;
+
+    gap: 4px;
+  }
+
+.h2 {
+  font-size: 11px !important;
+
+  line-height: 1.1;
+
+  margin: 0 !important;
+}
+.sub {
+  font-size: 8px !important;
+
+  line-height: 1.1;
+
+  margin: 0 !important;
+}
+  .imgSlot {
+    flex: 1;
+
+    min-height: 0;
+  }
+
+  .soundBtn {
+    width: 37px;
+    height: 30px;
+
+    font-size: 12px;
+  }
+
+  .cardsArea {
+    margin-top: 60px;
+
+    padding: 0 10px 50px;
+
+    justify-content: center;
+  }
+.toolbar {
+  flex-wrap: wrap;
+  justify-content: center;
+margin-bottom: 15px;
+  gap: 8px;
+
+  padding: 10px;
+}
+
+.toolbar input {
+  width: 160px;
+}
+
+.toolbar button,
+.toolbar select {
+  width: auto;
+}
+}

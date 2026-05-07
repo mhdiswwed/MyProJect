@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import styles from "./trailCube.module.css";
 import TrailCard from "../TrailCard/TrailCard";
+import WeatherForecast from "../WeatherForecast/WeatherForecast";
+
 
 import logo from "../../assets/removebg-preview.png";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -128,6 +130,9 @@ export default function TrailCube() {
   }
   return (
     <div className={styles.trailsPage}>
+      <div className={styles.centerArea}>
+        <WeatherForecast />
+      </div>
       {/* אזור עליון: קובייה + פאנל */}
       <div className={styles.cubeUi} dir="rtl">
         {/* פאנל ניווט וחיפוש */}
@@ -140,28 +145,32 @@ export default function TrailCube() {
             className={`${styles.faceBtn} ${faceIndex === 0 ? styles.active : ""}`}
             onClick={() => goTo(0)}
           >
-            מסלולי רגל
+            <span className={styles.hideMobile}>מסלולי </span>
+            רגל
           </button>
 
           <button
             className={`${styles.faceBtn} ${faceIndex === 1 ? styles.active : ""}`}
             onClick={() => goTo(1)}
           >
-            מסלולי ג׳יפים
+            <span className={styles.hideMobile}>מסלולי </span>
+            ג׳יפים
           </button>
 
           <button
             className={`${styles.faceBtn} ${faceIndex === 2 ? styles.active : ""}`}
             onClick={() => goTo(2)}
           >
-            מסלולי טרקטורונים
+            <span className={styles.hideMobile}>מסלולי </span>
+            טרקטורונים
           </button>
 
           <button
             className={`${styles.faceBtn} ${faceIndex === 3 ? styles.active : ""}`}
             onClick={() => goTo(3)}
           >
-            מסלולי סוסים
+            <span className={styles.hideMobile}>מסלולי </span>
+            סוסים
           </button>
         </nav>
 

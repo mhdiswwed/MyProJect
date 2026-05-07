@@ -1,11 +1,7 @@
 import classes from "./main.module.css";
-import AuthForm from "../auth/AuthForm";
 
-function Main() {
-  return (<main className={classes.main}>
-
-  </main>
-  );
+function Main({ children }) {
+  return <main className={classes.main}>{children}</main>;
 }
 
 export default Main;

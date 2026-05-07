@@ -88,3 +88,55 @@
   box-shadow: none !important;
   color: #c9b458;
 }
+
+/* =========================
+   טאבלט
+========================= */
+@media (max-width: 1024px) {
+  .topNav {
+    gap: 20px;
+  }
+
+  .topNav::before {
+    width: 80%;
+  }
+
+  .container {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* =========================
+   טלפונים
+========================= */
+@media (max-width: 600px) {
+  .topNav {
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px;
+  }
+
+  .topNav::before {
+    width: 90%;
+  }
+
+  .linkBtn {
+    font-size: 13px;
+  }
+
+  .container {
+    flex-direction: column;
+    gap: 4px;
+
+    height: auto;
+    padding: 12px 10px;
+
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .sep {
+    display: none;
+  }
+}
