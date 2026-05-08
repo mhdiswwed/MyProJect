@@ -16,31 +16,45 @@
     0 0 12px rgba(255,255,255,.05),
     0 12px 30px rgba(0,0,0,.45);
 }
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');
 .title{
 
-  color: white;
-  font-size: 15px;
+  font-family: 'Heebo', sans-serif;
+
+  font-size: 18px;
 
   font-weight: 700;
 
-  letter-spacing: .5px;
+  letter-spacing: 1px;
+
+  color: white;
 
   text-align: center;
 
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 
-  opacity: .92;
+   display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
 }
 
+.titleIcon{
+
+  font-size: 28px;
+
+  color: #FFD54F;
+}
 .daysRow{
 
   display: flex;
-
   flex-direction: row;
 justify-content: center;
 align-items: center;
   gap: 10px;
-
   overflow-x: auto;
 }
 
@@ -61,13 +75,13 @@ min-width: 120px;
   color: white;
 
  transition: all .25s ease;
+ cursor: pointer;/*אוצבעות ללחיצה*/
 }
 
 .dayCard:hover{
 
   background: rgba(255,255,255,.1);
 
-  transform: translateY(-2px);
 }
 
 .dayName{
@@ -95,6 +109,104 @@ min-width: 120px;
   height: 30px;
 }
 
+/*עצוב תחזית לפי ימים*/
+.hoursRow{
+
+  display: flex;
+
+  gap: 10px;
+
+  overflow-x: auto;
+
+  margin-top: 18px;
+
+  padding-bottom: 4px;
+  animation: fadeIn .25s ease;
+}
+
+
+@keyframes fadeIn{
+
+  from{
+
+    opacity: 0;
+
+    transform: translateY(-10px);
+  }
+
+  to{
+
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+.hourCard{
+
+  min-width: 8px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 10px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.05);
+
+  color: white;
+
+  transition: .25s;
+}
+
+.hourCard:hover{
+
+  background: rgba(255,255,255,.1);
+
+  transform: translateY(-2px);
+}
+
+.hour{
+
+  font-size: 12px;
+
+  opacity: .8;
+
+  margin: 0;
+}
+
+.hourIcon{
+  width: 23px;
+
+  height: 23px;
+}
+
+.hourTemp{
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  margin: 0;
+}
+
+
+/*לחיצה על יום בתחזית*/
+.active{
+
+  background: rgba(255,255,255,.12);
+
+  border: 1px solid rgba(255,255,255,.18);
+
+  box-shadow:
+    0 0 10px rgba(255,255,255,.06);
+}
 @media (max-width: 768px){
 
   .weatherBox{
