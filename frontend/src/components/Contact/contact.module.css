@@ -251,3 +251,178 @@ textarea {
   background: #242821;
   transform: scale(0.98);
 }
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px){
+
+  /* קופסה ראשית */
+  .wrapper{
+
+    width: calc(100% - 40px);
+
+    max-width: 290px;
+
+    padding: 14px;
+
+    border-radius: 14px;
+
+    margin: 40px auto 30px;
+  }
+
+  /* כותרת */
+  .wrapper h2{
+
+    font-size: 19px;
+
+    margin-bottom: 12px;
+
+    line-height: 1.2;
+  }
+
+  /* לוגו */
+  .titleLogo{
+
+    width: 82px;
+
+    height: 38px;
+
+    margin-bottom: 8px;
+  }
+
+  /* טופס */
+  form{
+
+    gap: 8px;
+  }
+
+  /* שדות */
+  input,
+  textarea{
+
+    padding: 9px 10px;
+
+    font-size: 13px;
+
+    border-radius: 8px;
+  }
+
+  /* placeholder */
+  input::placeholder,
+  textarea::placeholder{
+
+    font-size: 12px;
+  }
+
+  /* textarea */
+  textarea{
+
+    min-height: 75px;
+  }
+
+  /* כפתורים */
+  button{
+
+    padding: 9px 12px;
+
+    font-size: 13px;
+
+    border-radius: 8px;
+  }
+
+  /* כפתור שליחה */
+  .submitButton{
+
+    font-size: 14px;
+  }
+
+  /* שגיאות */
+  .fieldError,
+  .error,
+  .success{
+
+    font-size: 11px;
+
+    line-height: 1.4;
+  }
+
+  /* חלון טעינה */
+  .loaderBox{
+
+    width: 85%;
+
+    max-width: 280px;
+
+    padding: 22px;
+  }
+
+  /* טקסט טעינה */
+  .loaderBox p{
+
+    margin-top: 12px;
+
+    font-size: 13px;
+  }
+
+  /* ספינר */
+  .spinner{
+
+    width: 40px;
+
+    height: 40px;
+  }
+
+}
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (min-width: 769px) and (max-width: 1024px){
+
+  /* קופסה ראשית */
+  .wrapper{
+
+    max-width: 360px;
+
+    padding: 16px;
+
+    margin: 70px auto 10px;
+  }
+
+  /* כותרת */
+  .wrapper h2{
+
+    font-size: 22px;
+  }
+
+  /* לוגו */
+  .titleLogo{
+
+    width: 92px;
+
+    height: 42px;
+  }
+
+  /* שדות */
+  input,
+  textarea{
+
+    font-size: 14px;
+  }
+
+  /* כפתורים */
+  button{
+
+    font-size: 14px;
+  }
+
+  /* כפתור */
+  .submitButton{
+
+    font-size: 16px;
+  }
+
+}

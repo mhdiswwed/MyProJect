@@ -252,13 +252,21 @@
 .dropdown button:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+  .userIcon{
+  font-size: 18px;
+}
+.mobileLogout{
+  display: none;
+}
 
 @media (max-width: 768px) {
+
   .header {
     height: auto;
   }
 
   .container {
+
     flex-wrap: wrap;
 
     min-height: auto;
@@ -270,9 +278,15 @@
     gap: 10px;
   }
 
+  .logo {
 
+    width: 65px;
+
+    height: 65px;
+  }
 
   .nav {
+
     width: 100%;
 
     order: 2;
@@ -286,19 +300,60 @@
     gap: 8px;
   }
 
+  .navBtn {
 
+    padding: 4px 8px;
 
-  .userArea {
-    margin-left: auto;
+    font-size: 10px;
   }
 
-  .userBtn span,
+  .userArea {
+
+    margin-left: auto;
+    gap: 8px;
+  }
+
+  .userBtn {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    padding: 6px 10px;
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.08);
+  }
+
+  .userBtn span {
+gap: 0px;
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.1;
+  }
+
+  .role {
+margin-bottom: -12px;
+    font-size: 11px !important;
+  }
+
+  .fullName {
+
+    font-size: 9px !important;
+  }
+
   .logoutBtn {
+
     display: none;
   }
 
-
   .mobileLogout {
+
     color: #ff6b6b !important;
 
     display: flex;
@@ -311,40 +366,79 @@
   }
 
   .mobileLogout:hover {
+
     background: rgba(255, 0, 0, 0.1) !important;
   }
 
-  .dropdown {
-  width: 130px;
+.dropdown{
 
-  padding: 5px;
-}
+    left: auto;
 
-.dropdown button {
-  font-size: 11px;
+    right: 0;
 
-  padding: 7px 8px;
-}
+    transform: translateY(-10px);
 
-.userBtn {
-    width: 42px;
-    height: 42px;
-
-    border-radius: 50%;
-
-    justify-content: center;
-
-    background: rgba(255,255,255,0.08);
+    width: 110px;
   }
 
-.logo {
-  width: 65px;
-  height: 65px;
+  .userMenu:hover .dropdown{
+
+    transform: translateY(0);
+  }
+
+  .dropdown button {
+
+    font-size: 11px;
+
+    padding: 7px 8px;
+  }
+
+  .userIcon{
+
+    font-size: 13px;
+  }
+
 }
 
-.navBtn {
-  padding: 4px 8px;
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px){
 
-  font-size: 10px;
-}
+  .container{
+
+    padding: 12px 18px;
+  }
+
+  .logo{
+
+    width: 110px;
+
+    height: 110px;
+  }
+
+  .nav{
+
+    gap: 10px;
+  }
+
+  .navBtn{
+
+    font-size: 12px;
+
+    padding: 5px 12px;
+  }
+
+  .userBtn{
+
+    padding: 6px 10px;
+  }
+
+  .role{
+
+    font-size: 10px;
+  }
+
+  .fullName{
+
+    font-size: 11px;
+  }
 }

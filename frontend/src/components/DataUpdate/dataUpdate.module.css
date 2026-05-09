@@ -220,3 +220,156 @@ button:active{
   background: #242821;
   transform: scale(0.98);
 }
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px){
+
+  .wrapper{
+
+    width: calc(100% - 38px);
+
+    max-width: 300px;
+
+    padding: 14px;
+
+    border-radius: 14px;
+
+    margin: 50px auto 120px;
+
+    box-sizing: border-box;
+  }
+
+  .wrapper h2{
+
+    font-size: 19px;
+
+    margin-bottom: 12px;
+
+    line-height: 1.2;
+  }
+
+  .titleLogo{
+
+    width: 82px;
+
+    height: 38px;
+
+    margin-bottom: 8px;
+  }
+
+  form{
+
+    gap: 8px;
+  }
+
+  input{
+
+    padding: 9px 10px;
+
+    font-size: 13px;
+
+    border-radius: 8px;
+  }
+
+  input::placeholder{
+
+    font-size: 12px;
+  }
+
+  button{
+
+    padding: 9px 12px;
+
+    font-size: 13px;
+
+    border-radius: 8px;
+  }
+
+  .submitButton{
+
+    font-size: 14px;
+  }
+
+  .error,
+  .success{
+
+    font-size: 11px;
+
+    line-height: 1.4;
+
+    padding: 8px;
+  }
+
+  .loaderBox{
+
+    width: 85%;
+
+    max-width: 280px;
+
+    padding: 22px;
+  }
+
+  .loaderBox p{
+
+    margin-top: 12px;
+
+    font-size: 13px;
+  }
+
+  .spinner{
+
+    width: 40px;
+
+    height: 40px;
+  }
+}
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (min-width: 769px) and (max-width: 1024px){
+
+  .wrapper{
+
+    width: calc(100% - 60px);
+
+    max-width: 360px;
+
+    padding: 16px;
+
+    margin: 70px auto 110px;
+
+    box-sizing: border-box;
+  }
+
+  .wrapper h2{
+
+    font-size: 22px;
+  }
+
+  .titleLogo{
+
+    width: 92px;
+
+    height: 42px;
+  }
+
+  input{
+
+    font-size: 14px;
+  }
+
+  button{
+
+    font-size: 14px;
+  }
+
+  .submitButton{
+
+    font-size: 16px;
+  }
+}

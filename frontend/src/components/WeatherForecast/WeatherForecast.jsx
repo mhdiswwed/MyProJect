@@ -21,12 +21,12 @@ const [allForecast, setAllForecast] = useState([]);
     )
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+
 
         if (!data.list) return;
 
         const daily = data.list.filter((item) =>
-          item.dt_txt.includes("12:00:00"),
+          item.dt_txt.includes("15:00:00"),
         );
 
         setForecast(daily);

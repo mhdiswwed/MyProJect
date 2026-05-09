@@ -35,3 +35,106 @@
   font-size: 1.04rem;
   opacity: 0.8;
 }
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px){
+
+  /* עמוד */
+  .home{
+
+    padding: 25px 16px;
+  }
+
+  /* תמונה */
+  .image{
+
+    width: 115px;
+
+    height: 115px;
+
+    border-width: 2px;
+  }
+
+  /* אזור תמונה */
+  .imageWrapper{
+
+    margin-top: 18px;
+  }
+
+  /* כותרת */
+  .title{
+
+    font-size: 2rem;
+
+    margin-bottom: 14px;
+
+    line-height: 1.2;
+  }
+
+  /* טקסט */
+  .text{
+
+    font-size: 0.92rem;
+
+    line-height: 1.7;
+
+    margin-bottom: 12px;
+  }
+
+  /* טקסט תחתון */
+  .footerText{
+
+    margin-top: 20px;
+
+    font-size: 0.9rem;
+
+    line-height: 1.5;
+  }
+
+}
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (min-width: 769px) and (max-width: 1024px){
+
+  /* עמוד */
+  .home{
+
+    padding: 35px 24px;
+  }
+
+  /* תמונה */
+  .image{
+
+    width: 140px;
+
+    height: 140px;
+  }
+
+  /* כותרת */
+  .title{
+
+    font-size: 2.5rem;
+  }
+
+  /* טקסט */
+  .text{
+
+    font-size: 1rem;
+
+    line-height: 1.7;
+  }
+
+  /* טקסט תחתון */
+  .footerText{
+
+    font-size: 1rem;
+  }
+
+}

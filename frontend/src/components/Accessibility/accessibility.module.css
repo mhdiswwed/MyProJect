@@ -41,3 +41,124 @@
   font-size: 0.95rem;
   opacity: 0.8;
 }
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 768px){
+
+  .wrapper{
+
+    width: calc(100% - 34px);
+
+    padding: 28px 17px 120px;
+
+    box-sizing: border-box;
+  }
+
+  .title{
+
+    font-size: 1.9rem;
+
+    margin-bottom: 14px;
+
+    text-align: center;
+  }
+
+  .subTitle{
+
+    font-size: 1.15rem;
+
+    margin-top: 18px;
+
+    margin-bottom: 8px;
+  }
+
+  .text{
+
+    font-size: 0.93rem;
+
+    line-height: 1.8;
+  }
+
+  .list{
+
+    padding-right: 18px;
+
+    margin-bottom: 12px;
+  }
+
+  .list li{
+
+    font-size: 0.92rem;
+
+    margin-bottom: 5px;
+
+    line-height: 1.7;
+  }
+
+  .contact{
+
+    font-size: 0.9rem;
+
+    line-height: 1.8;
+  }
+
+  .footerText{
+
+    margin-top: 22px;
+
+    font-size: 0.82rem;
+
+    text-align: center;
+  }
+}
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (min-width: 769px) and (max-width: 1024px){
+
+  .wrapper{
+
+    width: calc(100% - 60px);
+
+    padding: 36px 24px 110px;
+
+    box-sizing: border-box;
+  }
+
+  .title{
+
+    font-size: 2.2rem;
+  }
+
+  .subTitle{
+
+    font-size: 1.28rem;
+  }
+
+  .text{
+
+    font-size: 1rem;
+
+    line-height: 1.8;
+  }
+
+  .list li{
+
+    font-size: 0.98rem;
+  }
+
+  .contact{
+
+    font-size: 0.98rem;
+  }
+
+  .footerText{
+
+    font-size: 0.9rem;
+  }
+}

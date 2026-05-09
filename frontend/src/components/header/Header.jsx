@@ -153,7 +153,7 @@ export default function Header({ user, onLogout }) {
           {/* כפתור משתמש */}
           <div className={styles.userMenu}>
             <button className={styles.userBtn} onClick={handleUserClick}>
-              <FaUser size={18} />
+              <FaUser className={styles.userIcon} />
 
               <span>
                 {!user ? (

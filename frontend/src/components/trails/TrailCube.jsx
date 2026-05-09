@@ -13,7 +13,6 @@ import styles from "./trailCube.module.css";
 import TrailCard from "../TrailCard/TrailCard";
 import WeatherForecast from "../WeatherForecast/WeatherForecast";
 
-
 import logo from "../../assets/removebg-preview.png";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 /* אייקונים לשליטה על סאונד */
@@ -37,16 +36,10 @@ export default function TrailCube() {
   /* שליטה על השתקת הסרטונים (חדש)
      ברירת מחדל: מושתק*/
   const [isMuted, setIsMuted] = useState(true);
+  // רפרנס לאזור הכרטיסים
+  const cardsRef = useRef(null);
 
-  /**
-   * 8 כל פעם שליפת מסלולים מהשרת לפי עמוד
-   * כל שינוי בעמוד – שולח בקשה חדשה לשרת
-   */
-  useEffect(() => {
-    fetch(`${API_BASE}/api/trails?page=${page}`)
-      .then((res) => res.json())
-      .then((data) => setTrails(data));
-  }, [page]);
+
 
   /* הפאה הפעילה בקובייה (0–3) */
   const [faceIndex, setFaceIndex] = useState(0);
@@ -105,17 +98,25 @@ export default function TrailCube() {
   //====================
   //חיפוש מסלול לפי שם
   //====================
-  function handleSearch() {
-    if (!search.trim()) return;
-
-    fetch(`${API_BASE}/api/trails/search?name=${search}`)
+useEffect(() => {
+  // אם השדה ריק -> תחזיר את כל המסלולים
+  if (!search.trim()) {
+    fetch(`${API_BASE}/api/trails?page=${page}`)
       .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setTrails(data.data);
-        }
-      });
+      .then((data) => setTrails(data));
+
+    return;
   }
+
+  // חיפוש בזמן אמת
+  fetch(`${API_BASE}/api/trails/search?name=${search}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        setTrails(data.data);
+      }
+    });
+}, [search, page]);
 
   //====================
   // קשור לכפתור שמחזרת כל המסלולים
@@ -296,14 +297,9 @@ export default function TrailCube() {
             placeholder="חפש לפי שם..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
           />
 
-          <button onClick={handleSearch}>חיפוש</button>
+       
 
           {/* סינון לפי סוג */}
           <span className={styles.filterText}>סינון:</span>
@@ -335,26 +331,44 @@ export default function TrailCube() {
           {/* כפתור איפוס */}
           <button onClick={resetTrails}>הצג את כל המסלולים</button>
         </div>
-        <div className={styles.cardsArea}>
+        {/* אזור כרטיסים*/}
+        <div ref={cardsRef} className={styles.cardsArea}>
           {trails.map((trail) => (
             <TrailCard key={trail.trail_id} trail={trail} />
           ))}
         </div>
-
         {/* עימוד (pagination) */}
         <div className={styles.pagination}>
           <button
             className={styles.pageBtn}
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            onClick={() => {
+              setPage((p) => Math.max(p - 1, 1));
+              {
+                /*גלילה לאזור הכרטיסים*/
+              }
+              cardsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
           >
             <FaChevronLeft />
           </button>
 
           <span className={styles.pageNum}>עמוד {page}</span>
-
+          {/*כפתור עמוד הבא */}
           <button
             className={styles.pageBtn}
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => {
+              setPage((p) => p + 1);
+              {
+                /*גלילה לאזור הכרטיסים*/
+              }
+              cardsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
           >
             <FaChevronRight />
           </button>
