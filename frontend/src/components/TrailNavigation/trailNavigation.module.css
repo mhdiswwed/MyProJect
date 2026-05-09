@@ -290,3 +290,86 @@
   font-size: 14px;
   text-align: center;
 }
+
+.userMarker {
+  width: 40px;
+  height: 40px;
+  background: rgba(30, 144, 255, 0.25);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow:
+  0 0 0 6px rgba(30, 144, 255, 0.25),
+  0 0 15px rgba(30, 144, 255, 0.5);
+}
+
+.userMarkerInner {
+  width: 26px;
+  height: 26px;
+  background: #1e90ff;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px #1e90ff;
+}
+
+.startMarker {
+  width: 18px;
+  height: 18px;
+  background: #00c853;
+  border: 4px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00c853;
+}
+
+.finishMarker {
+  width: 18px;
+  height: 18px;
+  background: #ff1744;
+  border: 4px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ff1744;
+}
+
+:global(.custom-div-icon) {
+  background: transparent !important;
+  border: none !important;
+}
+
+:global(img.leaflet-marker-icon) {
+  display: none !important;
+}
+
+.finishPin {
+  width: 34px;
+  height: 34px;
+
+  background: white;
+
+  border-radius: 50% 50% 50% 0;
+
+  transform: rotate(-45deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #d1d5db;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+.finishCircle {
+  font-size: 28px;
+
+  transform: rotate(45deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

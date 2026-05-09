@@ -181,3 +181,37 @@
   text-align: center; /* מרכז את הטקסט */
   margin-bottom: 15px;
 }
+
+.finishPin {
+  width: 34px;
+  height: 34px;
+
+  background: white;
+
+  border-radius: 50% 50% 50% 0;
+
+  transform: rotate(-45deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #d1d5db;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+.finishCircle {
+  font-size: 28px;
+
+  transform: rotate(45deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.custom-div-icon) {
+  background: transparent !important;
+  border: none !important;
+}

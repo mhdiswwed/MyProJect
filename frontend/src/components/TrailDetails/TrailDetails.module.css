@@ -596,3 +596,438 @@ padding-bottom: 20px;
 .modalCard::-webkit-scrollbar {
   display: none;
 }
+
+
+/* ======================
+   MOBILE
+====================== */
+
+@media (max-width: 768px){
+
+  /* עמוד */
+  .page{
+
+    padding-bottom: 70px;
+  }
+
+  /* HERO */
+  .hero{
+
+    height: 34vh;
+  }
+
+  .heroOverlay{
+
+    padding: 10px;
+  }
+
+  .hero h1{
+
+    font-size: 24px;
+
+    line-height: 1.2;
+  }
+
+  .hero p{
+
+    font-size: 13px;
+
+    margin-top: 4px;
+  }
+
+  /* כפתור חזרה */
+  .backBtn{
+
+    top: 90px;
+
+    right: 12px;
+
+    padding: 7px 12px;
+
+    font-size: 11px;
+
+    gap: 5px;
+  }
+
+  .backIcon{
+
+    font-size: 11px;
+  }
+
+  /* כרטיס */
+  .card{
+
+    width: calc(100% - 55px);
+
+    margin: 16px auto 0;
+
+    padding: 14px;
+
+    border-radius: 18px;
+
+    gap: 22px;
+  }
+
+  /* כותרות */
+  .sectionTitle{
+
+    font-size: 16px;
+
+    margin-bottom: 10px;
+
+    padding-right: 8px;
+  }
+
+  /* תיאור */
+  .desc{
+
+    font-size: 13px;
+
+    line-height: 1.7;
+  }
+
+  /* גלריה */
+  .gallery{
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 8px;
+  }
+
+  .mapGallery{
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 8px;
+  }
+
+  .thumb{
+
+    border-radius: 10px;
+  }
+
+  .mapItem{
+
+    border-radius: 10px;
+  }
+
+  
+
+
+  /* מידע */
+  .infoGrid{
+
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+  }
+
+  .infoBox{
+
+    padding: 14px;
+
+    border-radius: 12px;
+  }
+
+  .infoBox span{
+
+    font-size: 11px;
+  }
+
+  .infoBox strong{
+
+    font-size: 14px;
+
+    margin-top: 4px;
+  }
+
+  small{
+
+    font-size: 10px;
+  }
+
+  /* CTA */
+  .cta{
+
+    margin-top: 0;
+  }
+
+  .cta button{
+
+    width: 100%;
+
+    padding: 12px;
+
+    font-size: 14px;
+  }
+
+  /* ניווט */
+  .navigationBtn{
+
+    max-width: 100%;
+
+    padding: 11px;
+
+    font-size: 13px;
+  }
+
+  /* הודעות */
+  .success,
+  .error,
+  .inlineMsg{
+
+    font-size: 11px;
+
+    padding: 8px 10px;
+
+    border-radius: 10px;
+  }
+
+  /* ======================
+     POPUP
+  ====================== */
+
+  .modalCard{
+
+    width: calc(100% - 100px);
+
+    max-width: 310px;
+
+    padding: 14px;
+
+    border-radius: 16px;
+
+    max-height: 82vh;
+  }
+
+  .modalTitle{
+
+    font-size: 16px;
+
+    margin-bottom: 12px;
+  }
+
+  .modalForm{
+
+    gap: 8px;
+  }
+
+  .modalForm input,
+  .modalForm select,
+  .modalForm textarea{
+
+    padding: 9px 10px;
+
+    font-size: 13px;
+
+    border-radius: 9px;
+  }
+
+  .modalForm textarea{
+
+    min-height: 70px;
+  }
+
+  .submitBtn{
+
+    padding: 10px;
+
+    font-size: 13px;
+  }
+
+  .dateInput{
+
+    padding: 10px 42px 10px 10px;
+
+    font-size: 13px;
+  }
+
+  .dateIcon{
+
+    right: 14px;
+
+    font-size: 13px;
+  }
+
+  .modalClose{
+
+    top: 8px;
+
+    left: 8px;
+
+    font-size: 15px;
+  }
+
+  .timeNote{
+
+    font-size: 10px;
+
+    padding: 7px 8px;
+
+    line-height: 1.4;
+  }
+
+  /* טעינה */
+  .loading{
+
+    margin-top: 120px;
+
+    font-size: 16px;
+  }
+}
+
+/* ======================
+   TABLET
+====================== */
+
+@media (min-width: 769px) and (max-width: 1024px){
+
+  .page{
+
+    padding-bottom: 90px;
+  }
+
+  /* HERO */
+  .hero{
+
+    height: 44vh;
+  }
+
+  .heroOverlay{
+
+    padding: 36px;
+  }
+
+  .hero h1{
+
+    font-size: 34px;
+  }
+
+  .hero p{
+
+    font-size: 15px;
+  }
+
+  /* כפתור חזרה */
+  .backBtn{
+
+    top: 110px;
+
+    right: 18px;
+
+    padding: 9px 14px;
+
+    font-size: 13px;
+  }
+
+  /* כרטיס */
+  .card{
+
+    width: calc(100% - 90px);
+
+    padding: 28px;
+
+    gap: 32px;
+
+    margin-top: 28px;
+
+    border-radius: 24px;
+  }
+
+  /* טקסט */
+  .desc{
+
+    font-size: 15px;
+  }
+
+  /* מידע */
+  .infoGrid{
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 14px;
+  }
+
+  .infoBox{
+
+    padding: 18px;
+  }
+
+  .infoBox strong{
+
+    font-size: 17px;
+  }
+
+  /* מפה */
+  .map{
+
+    height: 320px;
+  }
+
+  /* כפתורים */
+  .cta button{
+
+    padding: 14px 32px;
+
+    font-size: 16px;
+  }
+
+  .navigationBtn{
+
+    font-size: 15px;
+  }
+
+  /* ======================
+     POPUP
+  ====================== */
+
+  .modalCard{
+
+    width: calc(100% - 80px);
+
+    max-width: 420px;
+
+    padding: 22px;
+
+    border-radius: 18px;
+
+    max-height: 86vh;
+  }
+
+  .modalTitle{
+
+    font-size: 20px;
+  }
+
+  .modalForm input,
+  .modalForm select,
+  .modalForm textarea{
+
+    font-size: 14px;
+
+    padding: 11px 12px;
+  }
+
+  .submitBtn{
+
+    font-size: 15px;
+
+    padding: 12px;
+  }
+
+  .timeNote{
+
+    font-size: 12px;
+  }
+
+  .dateInput{
+
+    font-size: 14px;
+  }
+
+  .dateIcon{
+
+    font-size: 15px;
+  }
+}

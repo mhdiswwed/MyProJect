@@ -230,7 +230,7 @@ export default function TrailDetails({ user }) {
       });
       setMsg({
         type: "success",
-        text: "הבקשה נשלחה בהצלחה ✅",
+        text: "הבקשה נשלחה בהצלחה ",
       });
 
       // סגירת החלון אחרי שהמשתמש רואה את ההודעה

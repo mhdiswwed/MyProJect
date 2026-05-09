@@ -11,7 +11,7 @@
 .modal {
   width: 420px;
 
-  /* 🔥 צבע כמו בשאר המערכת */
+  /*  צבע כמו בשאר המערכת */
   background: linear-gradient(
     180deg,
     rgba(18, 22, 28, 0.92),
@@ -21,12 +21,12 @@
   padding: 24px;
   border-radius: 16px;
 
-  /* 🔥 מסגרת עדינה */
+  /*  מסגרת עדינה */
   border: 1px solid rgba(255, 255, 255, 0.18);
 
   color: white;
 
-  /* 🔥 צל כמו במודאלים */
+  /*  צל כמו במודאלים */
   box-shadow:
     0 30px 60px rgba(0, 0, 0, 0.6),
     inset 0 0 40px rgba(255, 255, 255, 0.04);
@@ -35,11 +35,11 @@
 .modal {
   width: 420px;
 
-  /* 🔥 זה החלק החשוב */
+  /*  זה החלק החשוב */
   max-height: 80vh;
   overflow-y: auto;
 
-  /* 🔥 מסתיר את הסקרול */
+  /*  מסתיר את הסקרול */
   scrollbar-width: none; /* Firefox */
 }
 
@@ -123,3 +123,37 @@
   border-radius: 16px;
 }
 
+
+.finishPin {
+  width: 34px;
+  height: 34px;
+
+  background: white;
+
+  border-radius: 50% 50% 50% 0;
+
+  transform: rotate(-45deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #d1d5db;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+.finishCircle {
+  font-size: 28px;
+
+  transform: rotate(45deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.custom-div-icon) {
+  background: transparent !important;
+  border: none !important;
+}

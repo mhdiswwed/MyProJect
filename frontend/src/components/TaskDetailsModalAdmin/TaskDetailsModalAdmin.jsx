@@ -25,7 +25,36 @@ import L from "leaflet";
 import "leaflet-gpx";
 
 import API_BASE from "../../config/api";
+// ================= START ICON =================
+const startIcon = L.divIcon({
+  html: `
+    <div style="
+      width: 22px;
+      height: 22px;
+      background: #2ecc71;
+      border: 4px solid white;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #2ecc71;
+    "></div>
+  `,
+  className: "custom-div-icon",
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
 
+// ================= FINISH ICON =================
+const finishIcon = L.divIcon({
+  html: `
+    <div class="${styles.finishPin}">
+      <div class="${styles.finishCircle}">
+        🏁
+      </div>
+    </div>
+  `,
+  className: "custom-div-icon",
+  iconSize: [44, 44],
+  iconAnchor: [22, 44],
+});
 export default function TaskDetailsModalAdmin({ task, onClose }) {
   // =========================
   // מודאלים פנימיים
@@ -370,12 +399,59 @@ function GPXLayer({ fileName }) {
   useEffect(() => {
     const gpx = new L.GPX(`${API_BASE}/uploads/gpx/${fileName}`, {
       async: true,
-    }).on("loaded", (e) => {
-      map.fitBounds(e.target.getBounds());
+
+      marker_options: {
+        startIconUrl: null,
+        endIconUrl: null,
+        shadowUrl: null,
+      },
+    });
+
+    gpx.on("loaded", async () => {
+      map.fitBounds(gpx.getBounds());
+
+      // קורא GPX ידנית
+      const response = await fetch(`${API_BASE}/uploads/gpx/${fileName}`);
+
+      const text = await response.text();
+
+      const parser = new DOMParser();
+
+      const xml = parser.parseFromString(text, "application/xml");
+
+      // כל נקודות המסלול
+      const points = xml.getElementsByTagName("trkpt");
+
+      if (!points.length) return;
+
+      // התחלה
+      const startLat = parseFloat(points[0].getAttribute("lat"));
+
+      const startLng = parseFloat(points[0].getAttribute("lon"));
+
+      // סיום
+      const last = points[points.length - 1];
+
+      const endLat = parseFloat(last.getAttribute("lat"));
+
+      const endLng = parseFloat(last.getAttribute("lon"));
+
+      // נקודת התחלה
+      L.marker([startLat, startLng], {
+        icon: startIcon,
+      }).addTo(map);
+
+      // נקודת סיום
+      L.marker([endLat, endLng], {
+        icon: finishIcon,
+      }).addTo(map);
     });
 
     gpx.addTo(map);
-    return () => map.removeLayer(gpx);
+
+    return () => {
+      map.removeLayer(gpx);
+    };
   }, [fileName, map]);
 
   return null;
