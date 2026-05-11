@@ -20,6 +20,8 @@ import {
   FaBell,
 } from "react-icons/fa";
 
+import Select from "react-select";
+
 export default function ManageRequests() {
   /* =========================
      רשימת כל הבקשות
@@ -970,190 +972,194 @@ export default function ManageRequests() {
       </div>
 
       {/* טבלת הבקשות */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>לקוח</th>
-            <th>מסלול</th>
-            <th>תאריך</th>
-            <th>שעה</th>
-            <th>מדריך</th>
-            <th>
-              משתתפים /<br /> רכבים
-            </th>
-            <th>סטטוס</th>
-            <th>הודעות</th>
-            <th>פעולות</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredRequests.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="8">אין בקשות להצגה</td>
+              <th>לקוח</th>
+              <th>מסלול</th>
+              <th>תאריך</th>
+              <th>שעה</th>
+              <th>מדריך</th>
+              <th>
+                משתתפים /<br /> רכבים
+              </th>
+              <th>סטטוס</th>
+              <th>הודעות</th>
+              <th>פעולות</th>
             </tr>
-          ) : (
-            filteredRequests.map((req) => (
-              // מוסיף class אם זו השורה שנבחרה
-              <tr
-                id={`req-${req.request_id}`}
-                key={req.request_id}
-                className={`${(() => {
-                  const now = new Date();
-                  const tripDate = new Date(req.trip_date);
+          </thead>
 
-                  now.setHours(0, 0, 0, 0);
-                  tripDate.setHours(0, 0, 0, 0);
-
-                  const diffDays = (tripDate - now) / (1000 * 60 * 60 * 24);
-
-                  const isUrgent = diffDays >= 0 && diffDays <= 2;
-                  const isPending = req.status === "ממתין";
-                  const isCancelRequest = req.cancel_requested === 1;
-
-                  const shouldBlink =
-                    isUrgent && (isPending || isCancelRequest);
-
-                  return shouldBlink ? styles.urgentRow : "";
-                })()} ${
-                  highlightedId === req.request_id ? styles.highlightRow : ""
-                }`}
-              >
-                <td>
-                  {/* שם לקוח לחיץ */}
-                  <span
-                    style={{ cursor: "pointer", color: "#38bdf8" }}
-                    onClick={() => openUserDetails(req)}
-                  >
-                    {req.user_name}
-                  </span>
-                </td>
-                <td>
-                  <div className={styles.trailCell}>
-                    <div className={styles.trailName}>{req.trail_name}</div>
-
-                    <div className={styles.trailType}>{req.trail_type}</div>
-                  </div>
-                </td>
-                <td>
-                  <div>
-                    {req.trip_date
-                      ? new Date(req.trip_date).toLocaleDateString("he-IL")
-                      : "—"}
-                  </div>
-
-                  {req.changed_trip_date &&
-                    req.changed_trip_date !== req.trip_date && (
-                      <div className={styles.changedValue}>
-                        <FaExchangeAlt className={styles.changeIcon} />
-                        {new Date(req.changed_trip_date).toLocaleDateString(
-                          "he-IL",
-                        )}
-                      </div>
-                    )}
-                </td>
-                <td>
-                  {req.trip_time?.slice(0, 5)}
-
-                  {req.changed_trip_time &&
-                    req.changed_trip_time !== req.trip_time && (
-                      <div className={styles.changedValue}>
-                        <FaExchangeAlt className={styles.changeIcon} />
-                        {req.changed_trip_time?.slice(0, 5)}
-                      </div>
-                    )}
-                </td>
-                <td>
-                  <div>{req.guide_name || "—"}</div>
-
-                  {req.changed_guide_name &&
-                    req.changed_guide_name !== req.guide_name && (
-                      <div className={styles.changedValue}>
-                        <FaExchangeAlt className={styles.changeIcon} />
-                        {req.changed_guide_name}
-                      </div>
-                    )}
-                </td>
-                <td>
-                  <div className={styles.peopleCars}>
-                    <span>
-                      <FaUser className={styles.smallIcon} />
-                      {req.number_of_participants}
-                    </span>
-
-                    <span>
-                      <FaCar className={styles.smallIcon} />
-                      {req.trail_type === "רגלי" ? "—" : req.number_of_vehicles}
-                    </span>
-                  </div>
-                </td>
-                <td>{req.status}</td>
-
-                {/* עמודת הודעות */}
-                <td>
-                  {/* מציג אייקון רק אם קיימות הודעות */}
-                  {(req.cancel_reason ||
-                    req.reject_reason ||
-                    req.cancel_reject_reason ||
-                    req.change_reason) && (
-                    <FaEye
-                      className={styles.viewing}
-                      title="צפייה בהודעות"
-                      onClick={() => openMessages(req)}
-                    />
-                  )}
-                </td>
-
-                <td>
-                  <div className={styles.actionsRow}>
-                    {req.status === "ממתין" && (
-                      <>
-                        <button
-                          className={styles.approveBtn}
-                          onClick={() => openApproveModal(req)}
-                        >
-                          אשר
-                        </button>
-
-                        <button
-                          className={styles.rejectBtn}
-                          onClick={() => openRejectModal(req)}
-                        >
-                          דחה
-                        </button>
-                      </>
-                    )}
-
-                    {req.cancel_requested === 1 && (
-                      <>
-                        <button
-                          className={styles.cancelBtn}
-                          onClick={() =>
-                            setConfirmAction({
-                              type: "approveCancel",
-                              id: req.request_id,
-                              text: "האם אתה בטוח שברצונך לאשר את ביטול הבקשה?",
-                            })
-                          }
-                        >
-                          אשר ביטול
-                        </button>
-
-                        <button
-                          className={styles.rejectBtn}
-                          onClick={() => openRejectCancelModal(req)}
-                        >
-                          דחה ביטול
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
+          <tbody>
+            {filteredRequests.length === 0 ? (
+              <tr>
+                <td colSpan="8">אין בקשות להצגה</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              filteredRequests.map((req) => (
+                // מוסיף class אם זו השורה שנבחרה
+                <tr
+                  id={`req-${req.request_id}`}
+                  key={req.request_id}
+                  className={`${(() => {
+                    const now = new Date();
+                    const tripDate = new Date(req.trip_date);
+
+                    now.setHours(0, 0, 0, 0);
+                    tripDate.setHours(0, 0, 0, 0);
+
+                    const diffDays = (tripDate - now) / (1000 * 60 * 60 * 24);
+
+                    const isUrgent = diffDays >= 0 && diffDays <= 2;
+                    const isPending = req.status === "ממתין";
+                    const isCancelRequest = req.cancel_requested === 1;
+
+                    const shouldBlink =
+                      isUrgent && (isPending || isCancelRequest);
+
+                    return shouldBlink ? styles.urgentRow : "";
+                  })()} ${
+                    highlightedId === req.request_id ? styles.highlightRow : ""
+                  }`}
+                >
+                  <td>
+                    {/* שם לקוח לחיץ */}
+                    <span
+                      style={{ cursor: "pointer", color: "#38bdf8" }}
+                      onClick={() => openUserDetails(req)}
+                    >
+                      {req.user_name}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.trailCell}>
+                      <div className={styles.trailName}>{req.trail_name}</div>
+
+                      <div className={styles.trailType}>{req.trail_type}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      {req.trip_date
+                        ? new Date(req.trip_date).toLocaleDateString("he-IL")
+                        : "—"}
+                    </div>
+
+                    {req.changed_trip_date &&
+                      req.changed_trip_date !== req.trip_date && (
+                        <div className={styles.changedValue}>
+                          <FaExchangeAlt className={styles.changeIcon} />
+                          {new Date(req.changed_trip_date).toLocaleDateString(
+                            "he-IL",
+                          )}
+                        </div>
+                      )}
+                  </td>
+                  <td>
+                    {req.trip_time?.slice(0, 5)}
+
+                    {req.changed_trip_time &&
+                      req.changed_trip_time !== req.trip_time && (
+                        <div className={styles.changedValue}>
+                          <FaExchangeAlt className={styles.changeIcon} />
+                          {req.changed_trip_time?.slice(0, 5)}
+                        </div>
+                      )}
+                  </td>
+                  <td>
+                    <div>{req.guide_name || "—"}</div>
+
+                    {req.changed_guide_name &&
+                      req.changed_guide_name !== req.guide_name && (
+                        <div className={styles.changedValue}>
+                          <FaExchangeAlt className={styles.changeIcon} />
+                          {req.changed_guide_name}
+                        </div>
+                      )}
+                  </td>
+                  <td>
+                    <div className={styles.peopleCars}>
+                      <span>
+                        <FaUser className={styles.smallIcon} />
+                        {req.number_of_participants}
+                      </span>
+
+                      <span>
+                        <FaCar className={styles.smallIcon} />
+                        {req.trail_type === "רגלי"
+                          ? "—"
+                          : req.number_of_vehicles}
+                      </span>
+                    </div>
+                  </td>
+                  <td>{req.status}</td>
+
+                  {/* עמודת הודעות */}
+                  <td>
+                    {/* מציג אייקון רק אם קיימות הודעות */}
+                    {(req.cancel_reason ||
+                      req.reject_reason ||
+                      req.cancel_reject_reason ||
+                      req.change_reason) && (
+                      <FaEye
+                        className={styles.viewing}
+                        title="צפייה בהודעות"
+                        onClick={() => openMessages(req)}
+                      />
+                    )}
+                  </td>
+
+                  <td>
+                    <div className={styles.actionsRow}>
+                      {req.status === "ממתין" && (
+                        <>
+                          <button
+                            className={styles.approveBtn}
+                            onClick={() => openApproveModal(req)}
+                          >
+                            אשר
+                          </button>
+
+                          <button
+                            className={styles.rejectBtn}
+                            onClick={() => openRejectModal(req)}
+                          >
+                            דחה
+                          </button>
+                        </>
+                      )}
+
+                      {req.cancel_requested === 1 && (
+                        <>
+                          <button
+                            className={styles.cancelBtn}
+                            onClick={() =>
+                              setConfirmAction({
+                                type: "approveCancel",
+                                id: req.request_id,
+                                text: "האם אתה בטוח שברצונך לאשר את ביטול הבקשה?",
+                              })
+                            }
+                          >
+                            אשר ביטול
+                          </button>
+
+                          <button
+                            className={styles.rejectBtn}
+                            onClick={() => openRejectCancelModal(req)}
+                          >
+                            דחה ביטול
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* מודאל אישור בקשה */}
       {showApproveModal && (
@@ -1304,24 +1310,31 @@ export default function ManageRequests() {
 
                   {changeGuide && (
                     <div className={styles.editBox}>
-                      <select
-                        className={styles.select}
-                        value={approveData.guide_id}
-                        onChange={(e) =>
+                      <Select
+                        className={styles.guideSelectCustom}
+                        classNamePrefix="react-select"
+                        placeholder="בחר מדריך"
+                        isRtl={true}
+                        options={guides.map((g) => ({
+                          value: g.user_id,
+                          label: g.full_name,
+                        }))}
+                        value={
+                          guides
+                            .map((g) => ({
+                              value: g.user_id,
+                              label: g.full_name,
+                            }))
+                            .find((x) => x.value == approveData.guide_id) ||
+                          null
+                        }
+                        onChange={(selected) =>
                           setApproveData({
                             ...approveData,
-                            guide_id: e.target.value,
+                            guide_id: selected?.value || "",
                           })
                         }
-                      >
-                        <option value="">בחר מדריך</option>
-
-                        {guides.map((g) => (
-                          <option key={g.user_id} value={g.user_id}>
-                            {g.full_name}
-                          </option>
-                        ))}
-                      </select>
+                      />
 
                       <textarea
                         className={styles.textarea}

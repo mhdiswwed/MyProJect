@@ -957,3 +957,482 @@ white-space: nowrap;
   color:#9ca3af; /* אפור */
   margin-top:2px;
 }
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 28px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .alertBox {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .alertItem {
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(6, 72px);
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .statBox {
+    width: 72px;
+    height: 72px;
+  }
+
+  .statNumber {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .filterBox {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 1250px;
+  }
+
+  th {
+    font-size: 12px;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  td {
+    font-size: 12px;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  .modalOverlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    padding: 22px;
+    box-sizing: border-box;
+  }
+
+  .modalTitle,
+  .modal h2 {
+    font-size: 20px;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .page {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .topBar {
+    margin-bottom: 16px;
+  }
+
+  .alertBox {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+
+  .alertTitle {
+    font-size: 13px;
+  }
+
+  .alertItem {
+    font-size: 12px;
+    line-height: 1.5;
+    flex-wrap: wrap;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    width: 100%;
+    margin: 12px 0;
+  }
+
+  .statBox {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+  }
+
+  .statNumber {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .statLabel {
+    font-size: 6.5px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 2px;
+  }
+
+  .filterBox {
+    grid-column: 1 / -1;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .filterLabel {
+    font-size: 12px;
+  }
+
+  .filterSelect {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 1150px;
+    border-radius: 12px;
+  }
+
+  th {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  td {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .approveBtn,
+  .rejectBtn,
+  .cancelBtn,
+  .viewing {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .modalOverlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 310px;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .modalContent {
+    max-height: 68vh;
+  }
+
+  .modalTitle,
+  .modal h2 {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .modal input,
+  .modal select,
+  .modal textarea {
+    font-size: 13px;
+    padding: 9px;
+    box-sizing: border-box;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modalActions button {
+    width: 100%;
+  }
+
+  .inlineMsg {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .toast {
+    min-width: 0;
+    width: calc(100% - 36px);
+    font-size: 13px;
+    padding: 12px;
+  }
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .page {
+    padding: 28px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .alertBox {
+    width: 90%;
+    box-sizing: border-box;
+  }
+
+  .alertTitle {
+    font-size: 14px;
+    
+  }
+
+  .alertItem {
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(6, 72px);
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 16px auto;
+  }
+
+  .statBox {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+  }
+
+  .statNumber {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 9px;
+    text-align: center;
+  }
+
+  .filterBox {
+    grid-column: 1 / -1;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .filterLabel {
+    font-size: 13px;
+  }
+
+  .filterSelect {
+    font-size: 13px;
+    padding: 7px 12px;
+  }
+
+  .tableWrapper {
+    width: 90%;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 1250px;
+  }
+
+  th {
+    font-size: 12px;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  td {
+    font-size: 12px;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  .modalOverlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: 22px;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+}
+
+/* =========================================
+   react-select
+========================================= */
+
+.guideSelectCustom {
+  width: 100%;
+  max-width: 100%;
+  font-size: 14px;
+}
+
+/* control */
+.guideSelectCustom :global(.react-select__control) {
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  min-height: 48px;
+  box-shadow: none;
+  cursor: pointer;
+  transition: .2s;
+}
+
+/* hover */
+.guideSelectCustom :global(.react-select__control:hover) {
+  border-color: #7dd3fc;
+}
+
+/* focus */
+.guideSelectCustom :global(.react-select__control--is-focused) {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px #38bdf8;
+}
+
+/* value */
+.guideSelectCustom :global(.react-select__single-value) {
+  color: white;
+}
+
+/* placeholder */
+.guideSelectCustom :global(.react-select__placeholder) {
+  color: rgba(255,255,255,.6);
+}
+
+/* input */
+.guideSelectCustom :global(.react-select__input-container) {
+  color: white;
+}
+
+/* menu */
+.guideSelectCustom :global(.react-select__menu) {
+  background: #0b1220;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 99999;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+/* option */
+.guideSelectCustom :global(.react-select__option) {
+  background: #0b1220;
+  color: white;
+  cursor: pointer;
+  transition: .15s;
+}
+
+/* hover option */
+.guideSelectCustom :global(.react-select__option--is-focused) {
+  background: rgba(34,197,94,.18);
+}
+
+/* selected option */
+.guideSelectCustom :global(.react-select__option--is-selected) {
+  background: #16a34a;
+  color: white;
+}
+
+/* arrows */
+.guideSelectCustom :global(.react-select__indicator) {
+  color: rgba(255,255,255,.7);
+}
+
+/* separator */
+.guideSelectCustom :global(.react-select__indicator-separator) {
+  background: rgba(255,255,255,.12);
+}
+
+/* menu scroll */
+.guideSelectCustom :global(.react-select__menu-list) {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width:768px){
+
+  .guideSelectCustom{
+    font-size:13px;
+  }
+
+  .guideSelectCustom :global(.react-select__control){
+    min-height:42px;
+    font-size:13px;
+  }
+
+  .guideSelectCustom :global(.react-select__menu){
+    font-size:13px;
+  }
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (min-width:769px) and (max-width:1024px){
+
+  .guideSelectCustom{
+    font-size:14px;
+  }
+
+  .guideSelectCustom :global(.react-select__control){
+    min-height:46px;
+  }
+}

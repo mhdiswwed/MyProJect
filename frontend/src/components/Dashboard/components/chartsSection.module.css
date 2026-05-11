@@ -149,3 +149,68 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .card {
+    padding: 16px 14px 8px;
+    border-radius: 18px;
+  }
+
+  .cardTitle {
+    font-size: 15px;
+  }
+
+  .cardSubTitle {
+    font-size: 11px;
+  }
+
+  .chartWrapper {
+    min-height: 240px;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 18px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    padding: 14px 10px 6px;
+    border-radius: 16px;
+  }
+
+  .cardTitle {
+    font-size: 14px;
+  }
+
+  .cardSubTitle {
+    font-size: 10px;
+  }
+
+  .chartWrapper {
+    min-height: 220px;
+  }
+
+  .chartWrapper :global(.apexcharts-legend) {
+    font-size: 11px !important;
+  }
+
+  .chartWrapper :global(.apexcharts-xaxis-label),
+  .chartWrapper :global(.apexcharts-yaxis-label) {
+    font-size: 10px !important;
+  }
+}

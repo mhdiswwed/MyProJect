@@ -545,34 +545,35 @@ export default function MyGuidances({ user }) {
         </div>
       </div>
       {/* טבלה כמו ManageRequests */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>קבוצה</th>
-            <th>נציג קבוצה</th>
-            <th>מסלול</th>
-            <th>סוג</th>
-            <th>משתתפים</th>
-            <th>רכבים</th>
-            <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
-            <th>מפגש</th>
-            <th>סטטוס</th>
-            <th>פעולות</th>
-            <th>פרטים</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filtered.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="11">אין הדרכות להצגה</td>
+              <th>קבוצה</th>
+              <th>נציג קבוצה</th>
+              <th>מסלול</th>
+              <th>סוג</th>
+              <th>משתתפים</th>
+              <th>רכבים</th>
+              <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
+              <th>מפגש</th>
+              <th>סטטוס</th>
+              <th>פעולות</th>
+              <th>פרטים</th>
             </tr>
-          ) : (
-            filtered.map((g) => (
-              <tr
-                key={g.group_id}
-                id={`guidance-${g.group_id}`}
-                className={`
+          </thead>
+
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan="11">אין הדרכות להצגה</td>
+              </tr>
+            ) : (
+              filtered.map((g) => (
+                <tr
+                  key={g.group_id}
+                  id={`guidance-${g.group_id}`}
+                  className={`
                 ${(() => {
                   const now = new Date();
                   const tripDate = new Date(g.trip_date);
@@ -592,155 +593,156 @@ export default function MyGuidances({ user }) {
 
                 ${highlightedId === g.group_id ? styles.highlightRow : ""}
               `}
-              >
-                <td>{g.group_id}</td>
-                <td>
-                  <span
-                    style={{ cursor: "pointer", color: "#38bdf8" }}
-                    onClick={() => openRepresentativeDetails(g)}
-                  >
-                    {g.user_name}
-                  </span>
-                </td>
-                <td>{g.trail_name}</td>
-                <td>{g.trail_type}</td>
-                <td>{g.number_of_participants}</td>
-                <td>{g.number_of_vehicles}</td>
-
-                <td>
-                  {/* התחלה */}
-                  <div className={styles.timeRow}>
-                    <FaPlay title="התחלה" className={styles.FaPlay} />{" "}
-                    <FaCalendarAlt />{" "}
-                    {new Date(g.trip_date).toLocaleDateString("he-IL")}
-                    {" | "}
-                    <FaClock /> {g.trip_time?.slice(0, 5)}
-                  </div>
-
-                  {/* סיום מחושב */}
-                  <div className={styles.timeRow}>
-                    <FaFlagCheckered
-                      title="סיום"
-                      className={styles.FaFlagCheckered}
-                    />{" "}
-                    <FaCalendarAlt />{" "}
-                    {(() => {
-                      if (!g.trip_date || !g.trip_time || !g.duration_minutes)
-                        return "-";
-
-                      const start = new Date(g.trip_date);
-
-                      // מוסיפים את השעה לתאריך
-                      start.setHours(
-                        Number(g.trip_time.slice(0, 2)),
-                        Number(g.trip_time.slice(3, 5)),
-                      );
-
-                      // חישוב סיום
-                      const end = new Date(
-                        start.getTime() + g.duration_minutes * 60000,
-                      );
-
-                      return end.toLocaleDateString("he-IL");
-                    })()}
-                    {" | "}
-                    <FaClock />{" "}
-                    {(() => {
-                      if (!g.trip_date || !g.trip_time || !g.duration_minutes)
-                        return "-";
-
-                      const start = new Date(g.trip_date);
-
-                      start.setHours(
-                        Number(g.trip_time.slice(0, 2)),
-                        Number(g.trip_time.slice(3, 5)),
-                      );
-
-                      const end = new Date(
-                        start.getTime() + g.duration_minutes * 60000,
-                      );
-
-                      return end.toTimeString().slice(0, 5);
-                    })()}
-                  </div>
-                </td>
-
-                <td>{g.meeting_point}</td>
-
-                {/* סטטוס */}
-                <td>
-                  <span
-                    className={`${styles.status} ${getStatusClass(
-                      g.guidance_status,
-                    )}`}
-                  >
-                    {g.guidance_status}
-                  </span>
-                  {/* אם הטיול בתהליך → מציג סטופר */}
-                  {g.guidance_status === "בתהליך" && (
-                    <span>
-                      <div className={styles.timer}>
-                        ⏱ {getTimer(g.start_time)}
-                      </div>
+                >
+                  <td>{g.group_id}</td>
+                  <td>
+                    <span
+                      style={{ cursor: "pointer", color: "#38bdf8" }}
+                      onClick={() => openRepresentativeDetails(g)}
+                    >
+                      {g.user_name}
                     </span>
-                  )}
-                </td>
+                  </td>
+                  <td>{g.trail_name}</td>
+                  <td>{g.trail_type}</td>
+                  <td>{g.number_of_participants}</td>
+                  <td>{g.number_of_vehicles}</td>
 
-                {/* פעולות */}
-                <td>
-                  {g.guidance_status === "מתוכנן" && (
-                    <button
-                      className={styles.approveBtn}
-                      onClick={() => startTrip(g.group_id)}
-                    >
-                      <FaPlay className={styles.btnIcon} />
-                      התחלה
-                    </button>
-                  )}
-                  {/*============================== 
-                 כפתור סיום טיול - פותח מודאל דיווח 
-                   ==============================*/}
-                  {g.guidance_status === "בתהליך" && (
-                    <button
-                      className={styles.cancelBtn}
-                      onClick={() => endTrip(g.group_id, g)}
-                    >
-                      <FaFlagCheckered className={styles.btnIcon} />
-                      סיום
-                    </button>
-                  )}
+                  <td>
+                    {/* התחלה */}
+                    <div className={styles.timeRow}>
+                      <FaPlay title="התחלה" className={styles.FaPlay} />{" "}
+                      <FaCalendarAlt />{" "}
+                      {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                      {" | "}
+                      <FaClock /> {g.trip_time?.slice(0, 5)}
+                    </div>
 
-                  {/*============================== 
-                 כפתור דיווח מופיע רק אם המדריך לא שלח דיווח ברגע שנפתח לו חלון פופה ברגע שלחץ על סיום 
-                   ==============================*/}
-                  {g.guidance_status === "הסתיים" &&
-                    (!g.notes || !g.images) && (
+                    {/* סיום מחושב */}
+                    <div className={styles.timeRow}>
+                      <FaFlagCheckered
+                        title="סיום"
+                        className={styles.FaFlagCheckered}
+                      />{" "}
+                      <FaCalendarAlt />{" "}
+                      {(() => {
+                        if (!g.trip_date || !g.trip_time || !g.duration_minutes)
+                          return "-";
+
+                        const start = new Date(g.trip_date);
+
+                        // מוסיפים את השעה לתאריך
+                        start.setHours(
+                          Number(g.trip_time.slice(0, 2)),
+                          Number(g.trip_time.slice(3, 5)),
+                        );
+
+                        // חישוב סיום
+                        const end = new Date(
+                          start.getTime() + g.duration_minutes * 60000,
+                        );
+
+                        return end.toLocaleDateString("he-IL");
+                      })()}
+                      {" | "}
+                      <FaClock />{" "}
+                      {(() => {
+                        if (!g.trip_date || !g.trip_time || !g.duration_minutes)
+                          return "-";
+
+                        const start = new Date(g.trip_date);
+
+                        start.setHours(
+                          Number(g.trip_time.slice(0, 2)),
+                          Number(g.trip_time.slice(3, 5)),
+                        );
+
+                        const end = new Date(
+                          start.getTime() + g.duration_minutes * 60000,
+                        );
+
+                        return end.toTimeString().slice(0, 5);
+                      })()}
+                    </div>
+                  </td>
+
+                  <td>{g.meeting_point}</td>
+
+                  {/* סטטוס */}
+                  <td>
+                    <span
+                      className={`${styles.status} ${getStatusClass(
+                        g.guidance_status,
+                      )}`}
+                    >
+                      {g.guidance_status}
+                    </span>
+                    {/* אם הטיול בתהליך → מציג סטופר */}
+                    {g.guidance_status === "בתהליך" && (
+                      <span>
+                        <div className={styles.timer}>
+                          ⏱ {getTimer(g.start_time)}
+                        </div>
+                      </span>
+                    )}
+                  </td>
+
+                  {/* פעולות */}
+                  <td>
+                    {g.guidance_status === "מתוכנן" && (
                       <button
-                        className={styles.reportBtn}
-                        onClick={() => {
-                          setSelected(g);
-                          setShowReportModal(true);
-                        }}
+                        className={styles.approveBtn}
+                        onClick={() => startTrip(g.group_id)}
                       >
-                        <FaCamera className={styles.btnIcon} />
-                        שלח דיווח
+                        <FaPlay className={styles.btnIcon} />
+                        התחלה
                       </button>
                     )}
-                </td>
+                    {/*============================== 
+                 כפתור סיום טיול - פותח מודאל דיווח 
+                   ==============================*/}
+                    {g.guidance_status === "בתהליך" && (
+                      <button
+                        className={styles.cancelBtn}
+                        onClick={() => endTrip(g.group_id, g)}
+                      >
+                        <FaFlagCheckered className={styles.btnIcon} />
+                        סיום
+                      </button>
+                    )}
 
-                {/* פרטים */}
-                <td>
-                  <FaEye
-                    className={styles.iconBtn}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => openDetails(g)}
-                  />
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                    {/*============================== 
+                 כפתור דיווח מופיע רק אם המדריך לא שלח דיווח ברגע שנפתח לו חלון פופה ברגע שלחץ על סיום 
+                   ==============================*/}
+                    {g.guidance_status === "הסתיים" &&
+                      (!g.notes || !g.images) && (
+                        <button
+                          className={styles.reportBtn}
+                          onClick={() => {
+                            setSelected(g);
+                            setShowReportModal(true);
+                          }}
+                        >
+                          <FaCamera className={styles.btnIcon} />
+                          שלח דיווח
+                        </button>
+                      )}
+                  </td>
+
+                  {/* פרטים */}
+                  <td>
+                    <FaEye
+                      className={styles.iconBtn}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => openDetails(g)}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
       {/* מודאל פרטי ההדרכה */}
       {showDetails && selected && (
         <div className={styles.modalOverlay}>

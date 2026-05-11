@@ -82,7 +82,6 @@ export default function RequestsAndTasks({ requests = [], tasks = [] }) {
         <div className={styles.header}>
           <div>
             <h3>{tasks.length} משימות  </h3>
-            <span className={styles.subtitle}>יומיים הקרובים</span>
           </div>
         </div>
 

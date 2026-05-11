@@ -20,6 +20,7 @@ import { MdNavigation } from "react-icons/md";
 import { FaFlagCheckered, FaPlayCircle } from "react-icons/fa";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { PiCheckerboardBold } from "react-icons/pi";
+import Select from "react-select";
 // ================= ICONS =================
 const userIcon = L.divIcon({
   html: `
@@ -81,7 +82,6 @@ export default function TrailNavigation({ user }) {
   // מביא מהשרת את מזהה הקבוצה הפעילה של המשתמש במסלול ושומר אותו ב-state
   const [groupId, setGroupId] = useState(null);
 
-  
   //=====================================
   //שולף מהשרת את מזהה הקבוצה הפעילה של המשתמש במסלול ושומר אותו ב-state
   //====================================
@@ -287,16 +287,26 @@ export default function TrailNavigation({ user }) {
             <h2 className={styles.modalTitle}>דיווח בעיה מהשטח</h2>
 
             <div className={styles.modalForm}>
-              <select
-                value={problemType}
-                onChange={(e) => setProblemType(e.target.value)}
-              >
-                <option value="">בחר סוג בעיה</option>
-                <option value="סכנה">סכנה</option>
-                <option value="חסימה">חסימה</option>
-                <option value="תחזוקה">תחזוקה</option>
-                <option value="ניקיון">ניקיון</option>
-              </select>
+              <Select
+                value={
+                  problemType
+                    ? { value: problemType, label: problemType }
+                    : null
+                }
+                onChange={(selected) =>
+                  setProblemType(selected ? selected.value : "")
+                }
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                menuPlacement="top"
+                options={[
+                  { value: "סכנה", label: "סכנה" },
+                  { value: "חסימה", label: "חסימה" },
+                  { value: "תחזוקה", label: "תחזוקה" },
+                  { value: "ניקיון", label: "ניקיון" },
+                ]}
+                placeholder="בחר סוג בעיה"
+              />
 
               <textarea
                 placeholder="תיאור הבעיה"

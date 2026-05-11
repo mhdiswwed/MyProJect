@@ -921,3 +921,279 @@ border-top:1px solid #ccc;
   border-top: 1px solid #333;
   margin: 10px 0;
 }
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+
+  .page {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .topBarRow {
+    gap: 12px;
+  }
+
+  .alertBox {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .alertTitle {
+    font-size: 13px;
+  }
+
+  .alertItem {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .filterRow {
+    justify-content: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .filterBox {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filterLabel {
+    font-size: 12px;
+  }
+
+  .filterSelect {
+    font-size: 12px;
+    padding: 7px 10px;
+    max-width: 160px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+  }
+
+  .table {
+    min-width: 850px;
+    border-radius: 12px;
+  }
+
+  th {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  td {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .status,
+  .pendingCancelText,
+  .cancelRejectedText,
+  .tripInProgressText,
+  .tripFinishedText {
+    font-size: 10px;
+    padding: 5px 7px;
+    border-radius: 7px;
+  }
+
+  .cancelBtn,
+  .detailsBtn {
+    font-size: 11px;
+    padding: 5px 9px;
+    border-radius: 7px;
+  }
+
+  .priceTableIcon {
+    font-size: 16px;
+  }
+
+  .peopleCars span {
+    font-size: 11px;
+  }
+
+  .changedValue {
+    font-size: 11px;
+  }
+
+  /* POPUP */
+  .modalOverlay {
+    padding: 10px;
+  }
+
+  .modal {
+    width: calc(100% - 42px);
+    max-width: 310px;
+    padding: 14px;
+    border-radius: 16px;
+    max-height: 82vh;
+    gap: 10px;
+    scrollbar-width: none;
+  }
+
+  .modal::-webkit-scrollbar {
+    display: none;
+  }
+
+  .modal h3 {
+    font-size: 17px;
+    margin-bottom: 4px;
+  }
+
+  .modal h4 {
+    font-size: 14px;
+    margin: 6px 0;
+  }
+
+  .modal p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .modal textarea {
+    font-size: 13px;
+    padding: 10px;
+    min-height: 75px;
+    border-radius: 10px;
+  }
+
+  .modalButtons {
+    gap: 8px;
+  }
+
+  .confirmBtn,
+  .closeBtn {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .error {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .messagesBox {
+    margin-top: 10px;
+    padding: 8px;
+  }
+
+  .userMessage,
+  .adminMessage,
+  .adminMessageUrgent {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .invoiceRow {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .iconBtn {
+    font-size: 18px;
+  }
+
+  .priceSection {
+    padding: 8px;
+  }
+
+  .priceRow,
+  .priceRowTotal {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .priceTotal {
+    font-size: 14px;
+  }
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .page {
+    padding: 28px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .alertBox {
+    font-size: 14px;
+  }
+
+  .filterRow {
+    margin-bottom: 16px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    border-radius: 14px;
+  }
+
+  .table {
+    min-width: 950px;
+  }
+
+  th {
+    font-size: 12px;
+    padding: 9px;
+    white-space: nowrap;
+  }
+
+  td {
+    font-size: 12px;
+    padding: 9px;
+    white-space: nowrap;
+  }
+
+  .status {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  .cancelBtn,
+  .detailsBtn {
+    font-size: 12px;
+    padding: 6px 11px;
+  }
+
+  .modal {
+    width: calc(100% - 80px);
+    max-width: 520px;
+    padding: 22px;
+    border-radius: 18px;
+    max-height: 86vh;
+  }
+
+  .modal h3 {
+    font-size: 20px;
+  }
+
+  .modal p {
+    font-size: 13px;
+  }
+
+  .modal textarea {
+    font-size: 14px;
+  }
+
+  .confirmBtn,
+  .closeBtn {
+    font-size: 14px;
+    padding: 11px;
+  }
+}

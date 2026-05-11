@@ -128,7 +128,8 @@ export default function MyReports({ user }) {
     <div className={styles.page}>
       <h1 className={styles.title}>הדיווחים שלי</h1>
 
-      <table className={styles.table}>
+    <div className={styles.tableWrapper}>
+  <table className={styles.table}>
         <thead>
           <tr>
             <th>סוג הבעיה</th>
@@ -204,6 +205,7 @@ export default function MyReports({ user }) {
           )}
         </tbody>
       </table>
+      </div>
 
       {/* חלון אישור ביטול */}
 

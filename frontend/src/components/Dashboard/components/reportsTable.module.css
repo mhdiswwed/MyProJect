@@ -135,3 +135,108 @@
   background: rgba(34, 197, 94, 0.18);
   color: #22c55e;
 }
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .box {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .header {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .header h3 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .count {
+    font-size: 12px;
+  }
+
+  .item {
+    gap: 10px;
+    padding: 12px 0;
+    align-items: flex-start;
+  }
+
+  .image {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .problem {
+    font-size: 13px;
+    gap: 5px;
+  }
+
+  .description {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .trail,
+  .time {
+    font-size: 11px;
+  }
+
+  .status {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .box {
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .header h3 {
+    font-size: 18px;
+  }
+
+  .count {
+    font-size: 13px;
+  }
+
+  .item {
+    gap: 12px;
+    padding: 13px 0;
+  }
+
+  .image {
+    width: 54px;
+    height: 54px;
+  }
+
+  .problem {
+    font-size: 14px;
+  }
+
+  .description {
+    font-size: 13px;
+  }
+
+  .trail,
+  .time {
+    font-size: 12px;
+  }
+
+  .status {
+    font-size: 11px;
+    padding: 4px 12px;
+  }
+}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import styles from "./Dashboard.module.css";
 import API_BASE from "../../config/api";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // קומפוננטות
 import StatsCards from "./components/StatsCards";
@@ -23,32 +25,41 @@ export default function Dashboard() {
   const [fromDate, setFromDate] = useState("");
   // תאריך סיום
   const [toDate, setToDate] = useState("");
+  const [fromDateObj, setFromDateObj] = useState(null);
+  const [toDateObj, setToDateObj] = useState(null);
+
+  //סנכרון עם הפורמט שהשרת מצפה לו
+  useEffect(() => {
+    setFromDate(fromDateObj ? fromDateObj.toISOString().split("T")[0] : "");
+
+    setToDate(toDateObj ? toDateObj.toISOString().split("T")[0] : "");
+  }, [fromDateObj, toDateObj]);
 
   // טעינת נתונים בעת כניסה לדף
-useEffect(() => {
-  loadDashboard();
-}, [fromDate, toDate]);
+  useEffect(() => {
+    loadDashboard();
+  }, [fromDate, toDate]);
 
   /**
    * שליפת נתוני הדשבורד מהשרת
    */
-async function loadDashboard() {
-  try {
-    let url = `${API_BASE}/api/dashboard`;
+  async function loadDashboard() {
+    try {
+      let url = `${API_BASE}/api/dashboard`;
 
-    // אם נבחרו תאריכים
-    if (fromDate && toDate) {
-      url += `?fromDate=${fromDate}&toDate=${toDate}`;
+      // אם נבחרו תאריכים
+      if (fromDate && toDate) {
+        url += `?fromDate=${fromDate}&toDate=${toDate}`;
+      }
+
+      const res = await fetch(url);
+      const json = await res.json();
+
+      setData(json);
+    } catch (err) {
+      console.error("שגיאה בדשבורד:", err);
     }
-
-    const res = await fetch(url);
-    const json = await res.json();
-
-    setData(json);
-  } catch (err) {
-    console.error("שגיאה בדשבורד:", err);
   }
-}
 
   // בזמן טעינה
   if (!data) return <div className={styles.page}>טוען...</div>;
@@ -63,21 +74,25 @@ async function loadDashboard() {
         <div className={styles.dateFilters}>
           <div className={styles.inputGroup}>
             <label>מתאריך</label>
-
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
+            <DatePicker
+              selected={fromDateObj}
+              onChange={(date) => setFromDateObj(date)}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="בחר תאריך"
+              className={styles.dateInput}
+              popperPlacement="bottom-start"
             />
           </div>
 
           <div className={styles.inputGroup}>
             <label>עד תאריך</label>
-
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
+            <DatePicker
+              selected={toDateObj}
+              onChange={(date) => setToDateObj(date)}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="בחר תאריך"
+              className={styles.dateInput}
+              popperPlacement="bottom-start"
             />
           </div>
         </div>

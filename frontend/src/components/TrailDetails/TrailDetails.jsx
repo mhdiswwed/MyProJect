@@ -40,6 +40,7 @@ import { FaArrowRight } from "react-icons/fa";
 
 import API_BASE from "../../config/api";
 
+import Select from "react-select";
 // קומפוננטה להצגת פרטי מסלול
 export default function TrailDetails({ user }) {
   // הדפסת המשתמש לקונסול (בדיקה)
@@ -551,7 +552,7 @@ export default function TrailDetails({ user }) {
                 </div>
               )}
               <div className={styles.dateWrapper}>
-               { hasValidTimeRange && (<FaClock className={styles.dateIcon} />)}
+                {hasValidTimeRange && <FaClock className={styles.dateIcon} />}
                 {hasValidTimeRange && (
                   <DatePicker
                     selected={tripTime}
@@ -618,17 +619,19 @@ export default function TrailDetails({ user }) {
                 )}
               </div>
               {/* בחירת מדריך */}
-              <select
-                value={selectedGuide}
-                onChange={(e) => setSelectedGuide(e.target.value)}
-              >
-                <option value="">בחר מדריך</option>
-                {guides.map((g) => (
-                  <option key={g.user_id} value={g.user_id}>
-                    {g.full_name}
-                  </option>
-                ))}
-              </select>
+              <Select
+                placeholder="בחר מדריך"
+                options={guides.map((g) => ({
+                  value: g.user_id,
+                  label: g.full_name,
+                }))}
+                onChange={(selected) =>
+                  setSelectedGuide(selected ? selected.value : "")
+                }
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                menuPlacement="top"
+              />
               {/* הודעת הצלחה / שגיאה למשתמש */}
               {requestMsg.text && (
                 <div

@@ -371,34 +371,35 @@ export default function MyTasks({ user }) {
         </div>
       </div>
       {/* טבלה */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>משימה</th>
-            <th>מקור</th>
-            <th>סוג</th>
-            <th>תפקיד שלי</th>
-            <th>טיול</th>
-            <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
-            <th>פרטים</th>
-            <th>סטטוס</th>
-            <th>פעולות</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filtered.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="8" className={styles.emptyRow}>
-                אין משימות
-              </td>
+              <th>משימה</th>
+              <th>מקור</th>
+              <th>סוג</th>
+              <th>תפקיד שלי</th>
+              <th>טיול</th>
+              <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
+              <th>פרטים</th>
+              <th>סטטוס</th>
+              <th>פעולות</th>
             </tr>
-          ) : (
-            filtered.map((t) => (
-              <tr
-                key={t.task_id}
-                id={`task-${t.task_id}`}
-                className={`
+          </thead>
+
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan="8" className={styles.emptyRow}>
+                  אין משימות
+                </td>
+              </tr>
+            ) : (
+              filtered.map((t) => (
+                <tr
+                  key={t.task_id}
+                  id={`task-${t.task_id}`}
+                  className={`
                   ${(() => {
                     if (!t.start_time) return "";
 
@@ -419,135 +420,136 @@ export default function MyTasks({ user }) {
 
                   ${highlightedId === t.task_id ? styles.highlightRow : ""}
                 `}
-              >
-                <td>{t.task_id}</td>
-                <td>
-                  <p>
-                    {t.report_id ? (
-                      <span className={styles.reportBadge}>
-                        <FaMapMarkerAlt /> מבוסס על דיווח מהשטח
-                      </span>
-                    ) : (
-                      <span className={styles.manualBadge}>
-                        <FaClipboardList /> משימה מתוזמנת
-                      </span>
-                    )}
-                  </p>
-                </td>
-                <td>{t.task_type}</td>
-                <td>{t.role}</td>
-                <td>{t.trail_name}</td>
+                >
+                  <td>{t.task_id}</td>
+                  <td>
+                    <p>
+                      {t.report_id ? (
+                        <span className={styles.reportBadge}>
+                          <FaMapMarkerAlt /> מבוסס על דיווח מהשטח
+                        </span>
+                      ) : (
+                        <span className={styles.manualBadge}>
+                          <FaClipboardList /> משימה מתוזמנת
+                        </span>
+                      )}
+                    </p>
+                  </td>
+                  <td>{t.task_type}</td>
+                  <td>{t.role}</td>
+                  <td>{t.trail_name}</td>
 
-                {/* 🔥 עמודת זמנים */}
-                <td>
-                  <div>
-                    <FaPlay title="התחלה" className={styles.FaPlay} />{" "}
-                    <FaCalendarAlt />{" "}
-                    {t.start_time
-                      ? new Date(t.start_time).toLocaleDateString("he-IL")
-                      : "-"}
-                    {" | "}
-                    <FaClock />{" "}
-                    {t.start_time
-                      ? new Date(t.start_time).toTimeString().slice(0, 5)
-                      : "-"}
-                  </div>
-
-                  <div>
-                    <FaFlagCheckered
-                      title="סיום"
-                      className={styles.FaFlagCheckered}
-                    />{" "}
-                    <FaCalendarAlt />{" "}
-                    {t.end_time
-                      ? new Date(t.end_time).toLocaleDateString("he-IL")
-                      : "-"}
-                    {" | "}
-                    <FaClock />{" "}
-                    {t.end_time
-                      ? new Date(t.end_time).toTimeString().slice(0, 5)
-                      : "-"}
-                  </div>
-                </td>
-
-                {/* פרטים */}
-                <td>
-                  {/*לחיצה על העין פותחת את המודאל עם המשימה*/}
-                  <FaEye
-                    className={styles.iconBtn}
-                    onClick={() => setSelectedTask(t)}
-                  />
-                </td>
-
-                {/* סטטוס */}
-                <td>
-                  <span
-                    className={`${styles.status} ${getStatusClass(t.status)}`}
-                  >
-                    {t.status}
-                  </span>
-
-                  {t.status === "בטיפול" && (
-                    <div className={styles.timer}>
-                      <br />⏱ {getTimer(t.execution_start_time)}
+                  {/* 🔥 עמודת זמנים */}
+                  <td>
+                    <div>
+                      <FaPlay title="התחלה" className={styles.FaPlay} />{" "}
+                      <FaCalendarAlt />{" "}
+                      {t.start_time
+                        ? new Date(t.start_time).toLocaleDateString("he-IL")
+                        : "-"}
+                      {" | "}
+                      <FaClock />{" "}
+                      {t.start_time
+                        ? new Date(t.start_time).toTimeString().slice(0, 5)
+                        : "-"}
                     </div>
-                  )}
-                </td>
 
-                {/* פעולות */}
-                <td>
-                  {/* התחלה */}
-                  {t.status === "פתוחה" && (
-                    <button
-                      className={styles.approveBtn}
-                      onClick={() => startTask(t)}
+                    <div>
+                      <FaFlagCheckered
+                        title="סיום"
+                        className={styles.FaFlagCheckered}
+                      />{" "}
+                      <FaCalendarAlt />{" "}
+                      {t.end_time
+                        ? new Date(t.end_time).toLocaleDateString("he-IL")
+                        : "-"}
+                      {" | "}
+                      <FaClock />{" "}
+                      {t.end_time
+                        ? new Date(t.end_time).toTimeString().slice(0, 5)
+                        : "-"}
+                    </div>
+                  </td>
+
+                  {/* פרטים */}
+                  <td>
+                    {/*לחיצה על העין פותחת את המודאל עם המשימה*/}
+                    <FaEye
+                      className={styles.iconBtn}
+                      onClick={() => setSelectedTask(t)}
+                    />
+                  </td>
+
+                  {/* סטטוס */}
+                  <td>
+                    <span
+                      className={`${styles.status} ${getStatusClass(t.status)}`}
                     >
-                      <FaPlay className={styles.btnIcon} /> התחלה
-                    </button>
-                  )}
+                      {t.status}
+                    </span>
 
-                  {/* סיום */}
-                  {t.status === "בטיפול" && (
-                    <button
-                      className={styles.cancelBtn}
-                      onClick={() => endTask(t)}
-                    >
-                      <FaFlagCheckered className={styles.btnIcon} /> סיום
-                    </button>
-                  )}
+                    {t.status === "בטיפול" && (
+                      <div className={styles.timer}>
+                        <br />⏱ {getTimer(t.execution_start_time)}
+                      </div>
+                    )}
+                  </td>
 
-                  {/* אם כבר בוצעה ואין דיווח */}
-                  {t.status === "בוצעה" &&
-                    !t.execution_note &&
-                    !t.execution_image && (
+                  {/* פעולות */}
+                  <td>
+                    {/* התחלה */}
+                    {t.status === "פתוחה" && (
                       <button
-                        onClick={() => endTask(t)}
-                        className={styles.reportBtn}
+                        className={styles.approveBtn}
+                        onClick={() => startTask(t)}
                       >
-                        <FaCamera className={styles.btnIcon} />
-                        שלח דיווח
+                        <FaPlay className={styles.btnIcon} /> התחלה
                       </button>
                     )}
 
-                  {/* אם בוטלה → כפתור סיבה */}
-                  {t.status === "בוטלה" && (
-                    <button
-                      className={styles.cancelBtn}
-                      onClick={() => {
-                        setSelectedCancelTask(t);
-                        setShowCancelReasonModal(true);
-                      }}
-                    >
-                      <FaInfoCircle className={styles.btnIconFaInfoCircle} />{" "}
-                      סיבה
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                    {/* סיום */}
+                    {t.status === "בטיפול" && (
+                      <button
+                        className={styles.cancelBtn}
+                        onClick={() => endTask(t)}
+                      >
+                        <FaFlagCheckered className={styles.btnIcon} /> סיום
+                      </button>
+                    )}
+
+                    {/* אם כבר בוצעה ואין דיווח */}
+                    {t.status === "בוצעה" &&
+                      !t.execution_note &&
+                      !t.execution_image && (
+                        <button
+                          onClick={() => endTask(t)}
+                          className={styles.reportBtn}
+                        >
+                          <FaCamera className={styles.btnIcon} />
+                          שלח דיווח
+                        </button>
+                      )}
+
+                    {/* אם בוטלה → כפתור סיבה */}
+                    {t.status === "בוטלה" && (
+                      <button
+                        className={styles.cancelBtn}
+                        onClick={() => {
+                          setSelectedCancelTask(t);
+                          setShowCancelReasonModal(true);
+                        }}
+                      >
+                        <FaInfoCircle className={styles.btnIconFaInfoCircle} />{" "}
+                        סיבה
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
       {/* ========================= מודאל פרטי משימה ========================= */}
       {selectedTask && (
         <TaskDetailsModal

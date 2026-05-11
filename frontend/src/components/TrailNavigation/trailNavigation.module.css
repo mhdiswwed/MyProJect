@@ -373,3 +373,192 @@
   align-items: center;
   justify-content: center;
 }
+
+/* react-select */
+.guideSelectCustom {
+  width: 100%;
+  font-size: 14px;
+}
+
+/* control */
+.guideSelectCustom :global(.react-select__control) {
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  min-height: 48px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* hover */
+.guideSelectCustom :global(.react-select__control:hover) {
+  border-color: rgba(255,255,255,.35);
+}
+
+/* text */
+.guideSelectCustom :global(.react-select__single-value) {
+  color: white;
+}
+
+/* placeholder */
+.guideSelectCustom :global(.react-select__placeholder) {
+  color: rgba(255,255,255,.6);
+}
+
+/* input */
+.guideSelectCustom :global(.react-select__input-container) {
+  color: white;
+}
+
+/* menu */
+.guideSelectCustom :global(.react-select__menu) {
+  background: #0b1220;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 99999;
+}
+
+/* option */
+.guideSelectCustom :global(.react-select__option) {
+  background: #0b1220;
+  color: white;
+  cursor: pointer;
+}
+
+/* option hover */
+.guideSelectCustom :global(.react-select__option--is-focused) {
+  background: rgba(34,197,94,.25);
+}
+
+/* selected */
+.guideSelectCustom :global(.react-select__option--is-selected) {
+  background: #16a34a;
+  color: white;
+}
+
+/* arrows */
+.guideSelectCustom :global(.react-select__indicator) {
+  color: rgba(255,255,255,.7);
+}
+
+/* separator */
+.guideSelectCustom :global(.react-select__indicator-separator) {
+  background: rgba(255,255,255,.15);
+}
+
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+
+  .page {
+    height: 75vh;
+  }
+
+  .backBtn{
+
+    top: 140px;
+
+    right: 12px;
+
+    padding: 7px 12px;
+
+    font-size: 11px;
+
+    gap: 5px;
+  }
+
+    .backIcon{
+
+    font-size: 11px;
+  }
+
+  .reportBtn {
+    bottom: 14px;
+    right: 14px;
+    padding: 10px 12px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .infoBar {
+    left: 12px;
+    bottom: 14px;
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .modalCard {
+    width: calc(100% - 28px);
+    max-width: 300px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .modalTitle {
+    font-size: 16px;
+  }
+
+  .modalForm input,
+  .modalForm select,
+  .modalForm textarea {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .submitBtn {
+    font-size: 13px;
+    padding: 10px;
+  }
+  
+}
+
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .page {
+    height: 85vh;
+  }
+
+  .backBtn {
+    top: 160px;
+    right: 18px;
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .reportBtn {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .infoBar {
+    font-size: 12px;
+    padding: 9px 11px;
+  }
+
+  .modalCard {
+    width: calc(100% - 60px);
+    max-width: 380px;
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .modalTitle {
+    font-size: 20px;
+  }
+
+  .modalForm input,
+  .modalForm select,
+  .modalForm textarea {
+    font-size: 14px;
+  }
+
+  .submitBtn {
+    font-size: 14px;
+  }
+}

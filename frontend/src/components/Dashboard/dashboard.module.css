@@ -99,3 +99,161 @@
   filter: invert(1);
   cursor: pointer;
 }
+
+.dateInput {
+  width: 180px;
+  padding: 8px 18px;
+
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,0.2);
+
+  background: rgba(255,255,255,0.08);
+  color: white;
+
+  font-size: 17px;
+  font-weight: bold;
+
+  outline: none;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .dateInput {
+    width: 100%;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .inputGroup {
+    width: 100%;
+  }
+}
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+
+  .page {
+    padding: 16px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  .dateFilters {
+    margin-top: 16px;
+    margin-bottom: 20px;
+
+    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+
+    width: 100%;
+  }
+
+  .inputGroup {
+    width: 100%;
+    min-width: 0; /* חשוב */
+    gap: 6px;
+  }
+
+  .inputGroup label {
+    font-size: 13px;
+  }
+
+  .inputGroup input {
+    width: 100%;
+    min-width: 0; /* חשוב */
+    max-width: 100%;
+
+    padding: 10px 12px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+
+    .dateFilters {
+    width: 100%;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .inputGroup input {
+    width: 100%;
+    max-width: 280px;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .page {
+    padding: 24px;
+  }
+
+  .header {
+    margin-bottom: 28px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .dateFilters {
+    margin-top: 20px;
+    margin-bottom: 28px;
+
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    width: 100%;
+  }
+
+  .inputGroup {
+    min-width: 0; /* חשוב */
+  }
+
+  .inputGroup label {
+    font-size: 15px;
+  }
+
+  .inputGroup input {
+    width: 100%;
+    min-width: 0;
+    max-width: 160px;
+
+    padding: 9px 14px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    border-radius: 14px;
+    box-sizing: border-box;
+  }
+}

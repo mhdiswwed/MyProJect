@@ -143,3 +143,142 @@
   margin-top: 4px;
   margin-bottom: 6px; /*  מוסיף הפרדה יפה */
 }
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .box1,
+  .box2 {
+    width: 100%;
+    padding: 18px;
+    border-radius: 15px;
+    box-sizing: border-box;
+  }
+
+  .header h3 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .count {
+    font-size: 13px;
+  }
+
+  .tableHeader,
+  .row {
+    grid-template-columns: 1.4fr 1fr 1fr 0.8fr;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .status,
+  .taskType {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .taskDesc {
+    font-size: 13px;
+  }
+
+  .taskDate {
+    font-size: 12px;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .box1,
+  .box2 {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    box-sizing: border-box;
+  }
+
+  .header {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .header h3 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .count,
+  .subtitle {
+    font-size: 11px;
+  }
+
+  /* במובייל הופכים כל בקשה לכרטיס */
+  .tableHeader {
+    display: none;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    padding: 12px;
+    margin-bottom: 10px;
+
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+
+    font-size: 12px;
+  }
+
+  .date {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+
+  .status {
+    width: fit-content;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+
+  .taskItem {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .taskTop {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .taskType {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .taskDesc {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .taskDate {
+    font-size: 11px;
+  }
+}
