@@ -446,6 +446,10 @@
   background: rgba(255,255,255,.15);
 }
 
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 25px;
+}
+
 
 /* ======================
    MOBILE

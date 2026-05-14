@@ -117,18 +117,6 @@
   box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
-  .dateInput {
-    width: 100%;
-    font-size: 13px;
-    padding: 10px 12px;
-    border-radius: 12px;
-  }
-
-  .inputGroup {
-    width: 100%;
-  }
-}
 /* ======================
    MOBILE
 ====================== */
@@ -154,52 +142,39 @@
   }
 
   .dateFilters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* שתי תיבות בשורה אחת */
+    gap: 8px;
+
     margin-top: 16px;
     margin-bottom: 20px;
-
-    gap: 12px;
-    flex-direction: column;
-    align-items: stretch;
 
     width: 100%;
   }
 
   .inputGroup {
     width: 100%;
-    min-width: 0; /* חשוב */
+    min-width: 0;
     gap: 6px;
   }
 
   .inputGroup label {
-    font-size: 13px;
+    font-size: 11px;
+    font-weight: 600;
   }
 
-  .inputGroup input {
+  .dateInput {
     width: 100%;
-    min-width: 0; /* חשוב */
+    min-width: 0;
     max-width: 100%;
 
-    padding: 10px 12px;
+    padding: 8px 10px;
 
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
 
-    border-radius: 12px;
+    border-radius: 10px;
     box-sizing: border-box;
-  }
-
-    .dateFilters {
-    width: 100%;
-    max-width: 280px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .inputGroup input {
-    width: 100%;
-    max-width: 280px;
-    font-size: 12px;
-    padding: 8px 10px;
   }
 }
 
@@ -225,35 +200,40 @@
   }
 
   .dateFilters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* שתי תיבות בשורה אחת */
+    gap: 12px;
+
     margin-top: 20px;
     margin-bottom: 28px;
 
-    gap: 18px;
-    justify-content: center;
-    flex-wrap: wrap;
-
-    width: 100%;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .inputGroup {
-    min-width: 0; /* חשוב */
+    width: 100%;
+    min-width: 0;
+    gap: 6px;
   }
 
   .inputGroup label {
-    font-size: 15px;
+    font-size: 13px;
+    font-weight: 600;
   }
 
-  .inputGroup input {
+  .dateInput {
     width: 100%;
     min-width: 0;
-    max-width: 160px;
+    max-width: 100%;
 
-    padding: 9px 14px;
+    padding: 9px 12px;
 
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
 
-    border-radius: 14px;
+    border-radius: 12px;
     box-sizing: border-box;
   }
 }

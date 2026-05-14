@@ -668,6 +668,10 @@ padding-bottom: 20px;
 .guideSelectCustom :global(.react-select__indicator-separator) {
   background: rgba(255,255,255,.15);
 }
+
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 25px;
+}
 /* ======================
    MOBILE
 ====================== */

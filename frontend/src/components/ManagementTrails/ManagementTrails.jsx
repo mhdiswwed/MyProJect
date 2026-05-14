@@ -3,8 +3,9 @@ ManagementTrails
 קומפוננטה שמנהלת מסלולים: מציגה רשימה עם עימוד וחיפוש, מאפשרת הוספה, עריכה ומחיקה של מסלול כולל קבצים ותמונות
 //===================================*/
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from "./managementTrails.module.css";
+import Select from "react-select";
 // אייקונים לכפתורים
 import {
   FaPlus,
@@ -54,7 +55,8 @@ export default function ManagementTrails() {
   const [trailToDelete, setTrailToDelete] = useState(null);
   // בדיקה אם אנחנו במצב עדכון
   const isEdit = Boolean(editingTrail);
-
+  // רפרנס לאזור הכרטיסים
+  const cardsRef = useRef(null);
   // נתוני הטופס (משותף להוספה ולעדכון)
   const [form, setForm] = useState({
     trail_name: "",
@@ -137,13 +139,19 @@ export default function ManagementTrails() {
   // חישוב העמוד הנוכחי
   // =========================
   const startIndex = (page - 1) * rowsPerPage;
-
   // רשימת המסלולים שמוצגים בעמוד
   const paginatedTrails = filteredTrails.slice(
     startIndex,
     startIndex + rowsPerPage,
   );
 
+  // גלילה לראש הכרטיסים בכל שינוי עמוד
+  useEffect(() => {
+    cardsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [page]);
   // =========================
   // שינוי ערכים בטופס (כולל קבצים)
   // =========================
@@ -202,7 +210,7 @@ export default function ManagementTrails() {
       if (!res.ok) {
         setMsg({
           type: "error",
-          text: data.error || "❌ שגיאה בשמירת המסלול",
+          text: data.error || " שגיאה בשמירת המסלול",
         });
         return;
       }
@@ -210,7 +218,7 @@ export default function ManagementTrails() {
       // הודעת הצלחה (שונה להוספה / עדכון)
       setMsg({
         type: "success",
-        text: isEdit ? "✅ המסלול עודכן בהצלחה" : "✅ המסלול נוסף בהצלחה",
+        text: isEdit ? " המסלול עודכן בהצלחה" : " המסלול נוסף בהצלחה",
       });
 
       // רענון הרשימה מהשרת
@@ -228,7 +236,7 @@ export default function ManagementTrails() {
       // שגיאת תקשורת
       setMsg({
         type: "error",
-        text: "❌ שגיאת תקשורת עם השרת",
+        text: " שגיאת תקשורת עם השרת",
       });
 
       setTimeout(() => setMsg({ type: "", text: "" }), 3000);
@@ -251,7 +259,7 @@ export default function ManagementTrails() {
       if (!res.ok) {
         setMsg({
           type: "error",
-          text: data.error || "❌ שגיאה במחיקת המסלול",
+          text: data.error || " שגיאה במחיקת המסלול",
         });
         return;
       }
@@ -269,7 +277,7 @@ export default function ManagementTrails() {
     } catch {
       setMsg({
         type: "error",
-        text: "❌ שגיאת תקשורת עם השרת",
+        text: " שגיאת תקשורת עם השרת",
       });
 
       setTimeout(() => setMsg({ type: "", text: "" }), 3000);
@@ -348,7 +356,7 @@ export default function ManagementTrails() {
       if (!res.ok) {
         setMsg({
           type: "error",
-          text: data.error || "❌ שגיאה במחיקת כל המסלולים",
+          text: data.error || " שגיאה במחיקת כל המסלולים",
         });
         return;
       }
@@ -358,14 +366,14 @@ export default function ManagementTrails() {
 
       setMsg({
         type: "success",
-        text: "✅ כל המסלולים נמחקו בהצלחה",
+        text: " כל המסלולים נמחקו בהצלחה",
       });
 
       setTimeout(() => setMsg({ type: "", text: "" }), 3000);
     } catch {
       setMsg({
         type: "error",
-        text: "❌ שגיאת תקשורת עם השרת",
+        text: " שגיאת תקשורת עם השרת",
       });
     }
   }*/
@@ -460,7 +468,7 @@ export default function ManagementTrails() {
       </div>
 
       {/*הצגת המידע בקרטיסים */}
-      <div className={styles.cards}>
+      <div ref={cardsRef} className={styles.cards}>
         {/* מעבר על כל המסלולים להצגה */}
         {paginatedTrails.map((t) => (
           <div key={t.trail_id} className={styles.card}>
@@ -649,30 +657,59 @@ export default function ManagementTrails() {
                 placeholder="שם מסלול"
                 onChange={handleChange}
               />
-
-              <select
-                name="trail_type"
-                value={form.trail_type}
-                onChange={handleChange}
-              >
-                <option value="">בחר סוג</option>
-                <option>רגלי</option>
-                <option>גיפים</option>
-                <option>טרקטורונים</option>
-                <option>סוסים</option>
-              </select>
-
-              <select
-                name="difficulty_level"
-                value={form.difficulty_level}
-                onChange={handleChange}
-              >
-                <option value="">בחר קושי</option>
-                <option>קל</option>
-                <option>בינוני</option>
-                <option>קשה</option>
-              </select>
-
+              /* סוג המסלול במודאל */
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                isRtl={true}
+                placeholder="בחר סוג"
+                options={[
+                  { value: "רגלי", label: "רגלי" },
+                  { value: "גיפים", label: "גיפים" },
+                  { value: "טרקטורונים", label: "טרקטורונים" },
+                  { value: "סוסים", label: "סוסים" },
+                ]}
+                value={
+                  [
+                    { value: "רגלי", label: "רגלי" },
+                    { value: "גיפים", label: "גיפים" },
+                    { value: "טרקטורונים", label: "טרקטורונים" },
+                    { value: "סוסים", label: "סוסים" },
+                  ].find((option) => option.value === form.trail_type) || null
+                }
+                onChange={(selected) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    trail_type: selected?.value || "",
+                  }))
+                }
+              />
+              /*  שדה רמת הקושי במודאל */
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                isRtl={true}
+                placeholder="בחר קושי"
+                options={[
+                  { value: "קל", label: "קל" },
+                  { value: "בינוני", label: "בינוני" },
+                  { value: "קשה", label: "קשה" },
+                ]}
+                value={
+                  [
+                    { value: "קל", label: "קל" },
+                    { value: "בינוני", label: "בינוני" },
+                    { value: "קשה", label: "קשה" },
+                  ].find((option) => option.value === form.difficulty_level) ||
+                  null
+                }
+                onChange={(selected) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    difficulty_level: selected?.value || "",
+                  }))
+                }
+              />
               <input
                 type="number"
                 name="length_km"
@@ -680,7 +717,6 @@ export default function ManagementTrails() {
                 placeholder="אורך בק״מ"
                 onChange={handleChange}
               />
-
               <label className={styles.fileLabel}>
                 משך זמן הטיול (שעות ודקות)
               </label>
@@ -716,7 +752,6 @@ export default function ManagementTrails() {
                 placeholder="מחיר לאדם"
                 onChange={handleChange}
               />
-
               <input
                 type="number"
                 name="price_per_vehicle"
@@ -725,7 +760,6 @@ export default function ManagementTrails() {
                 disabled={form.trail_type === "רגלי"}
                 onChange={handleChange}
               />
-
               <label className={styles.fileLabel}>
                 קובץ עקיבה למסלול (GPX)
               </label>
@@ -738,14 +772,12 @@ export default function ManagementTrails() {
               <small className={styles.helpText}>
                 יש לבחור קובץ GPX של המסלול
               </small>
-
               <textarea
                 name="description"
                 value={form.description}
                 placeholder="תיאור מסלול"
                 onChange={handleChange}
               />
-
               <label className={styles.fileLabel}>תמונה למסלול</label>
               <input
                 type="file"
@@ -754,7 +786,6 @@ export default function ManagementTrails() {
                 onChange={handleChange}
               />
               <small className={styles.helpText}>התמונה תוצג למשתמשים</small>
-
               {/* הודעה */}
               {msg.text && (
                 <div
@@ -765,7 +796,6 @@ export default function ManagementTrails() {
                   {msg.text}
                 </div>
               )}
-
               <button type="submit" className={styles.saveBtn}>
                 שמור
               </button>

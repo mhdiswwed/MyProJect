@@ -1402,6 +1402,10 @@ white-space: nowrap;
   overflow-y: auto;
 }
 
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 25px;
+}
+
 /* =========================================
    MOBILE
 ========================================= */

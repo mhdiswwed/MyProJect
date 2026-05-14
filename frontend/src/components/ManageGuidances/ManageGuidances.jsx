@@ -27,7 +27,7 @@ import {
 } from "react-icons/io5";
 
 import API_BASE from "../../config/api";
-
+import Select from "react-select";
 export default function ManageGuidances() {
   /* =========================
      רשימת הדרכות
@@ -489,124 +489,146 @@ export default function ManageGuidances() {
                 onChange={(e) => setSearch(e.target.value)}
               />
 
-              <select
-                className={styles.filterSelect}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">כל הסטטוסים</option>
-                <option value="מתוכנן">מתוכנן</option>
-                <option value="בתהליך">בתהליך</option>
-                <option value="הסתיים">הסתיים</option>
-                <option value="בוטל">בוטל</option>
-              </select>
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                placeholder="כל הסטטוסים"
+                isRtl={true}
+                options={[
+                  { value: "all", label: "כל הסטטוסים" },
+                  { value: "מתוכנן", label: "מתוכנן" },
+                  { value: "בתהליך", label: "בתהליך" },
+                  { value: "הסתיים", label: "הסתיים" },
+                  { value: "בוטל", label: "בוטל" },
+                ]}
+                value={[
+                  { value: "all", label: "כל הסטטוסים" },
+                  { value: "מתוכנן", label: "מתוכנן" },
+                  { value: "בתהליך", label: "בתהליך" },
+                  { value: "הסתיים", label: "הסתיים" },
+                  { value: "בוטל", label: "בוטל" },
+                ].find((option) => option.value === statusFilter)}
+                onChange={(selected) =>
+                  setStatusFilter(selected?.value || "all")
+                }
+              />
 
-              <select
-                className={styles.filterSelect}
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
-              >
-                <option value="all">הכל</option>
-                <option value="future">עתידיים</option>
-                <option value="history">היסטוריה</option>
-              </select>
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                placeholder="הכל"
+                isRtl={true}
+                options={[
+                  { value: "all", label: "הכל" },
+                  { value: "future", label: "עתידיים" },
+                  { value: "history", label: "היסטוריה" },
+                ]}
+                value={[
+                  { value: "all", label: "הכל" },
+                  { value: "future", label: "עתידיים" },
+                  { value: "history", label: "היסטוריה" },
+                ].find((option) => option.value === timeFilter)}
+                onChange={(selected) => setTimeFilter(selected?.value || "all")}
+              />
             </div>
           </div>
         </div>
       </div>
 
       {/* טבלה */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>מדריך</th>
-            <th>קבוצה</th>
-            <th>מסלול</th>
-            <th>תאריך ושעה</th>
-            <th>סטטוס</th>
-            <th>פרטים</th>
-            <th>פעולות</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {/* אם אין הדרכות להצגה */}
-          {filtered.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="7">אין הדרכות להצגה</td>
+              <th>מדריך</th>
+              <th>קבוצה</th>
+              <th>מסלול</th>
+              <th>תאריך ושעה</th>
+              <th>סטטוס</th>
+              <th>פרטים</th>
+              <th>פעולות</th>
             </tr>
-          ) : (
-            filtered.map((g) => (
-              <tr key={g.guidance_id}>
-                <td>
-                  {/* שם מדריך לחיץ */}
-                  <span
-                    style={{ cursor: "pointer", color: "#38bdf8" }}
-                    onClick={() => openGuideDetails(g)}
-                  >
-                    {g.guide_name}
-                  </span>
-                </td>
-                <td>{g.group_id}</td>
-                <td>{g.trail_name}</td>
-                <td>
-                  <div>
-                    <div>
-                      {new Date(g.trip_date).toLocaleDateString("he-IL")}
-                    </div>
+          </thead>
 
-                    <div className={styles.timeRow}>
-                      {g.trip_time?.slice(0, 5)} -{" "}
-                      {calculateEndTime(
-                        g.trip_time?.slice(0, 5),
-                        g.duration_minutes,
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td>{g.status}</td>
-
-                <td>
-                  {/* אייקון צפייה בפרטים */}
-                  <FaEye
-                    className={styles.viewing}
-                    title=" צפייה בפרטי הדרכה"
-                    onClick={() => openDetails(g)}
-                  />
-                </td>
-
-                <td>
-                  <div className={styles.actionsRow}>
-                    {/* אייקון החלפת מדריך */}
-                    {g.status !== "בוטל" &&
-                      g.status !== "הסתיים" &&
-                      g.status !== "בתהליך" && (
-                        <FaExchangeAlt
-                          className={styles.iconBtn}
-                          title="החלפת מדריך"
-                          style={{ cursor: "pointer", marginRight: "10px" }}
-                          onClick={() => openChangeGuide(g)}
-                        />
-                      )}
-
-                    {/* ביטול הדרכה */}
-                    {g.status !== "בוטל" &&
-                      g.status !== "הסתיים" &&
-                      g.status !== "בתהליך" && (
-                        <button
-                          className={styles.cancellation}
-                          onClick={() => openCancel(g)}
-                        >
-                          בטל
-                        </button>
-                      )}
-                  </div>
-                </td>
+          <tbody>
+            {/* אם אין הדרכות להצגה */}
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan="7">אין הדרכות להצגה</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              filtered.map((g) => (
+                <tr key={g.guidance_id}>
+                  <td>
+                    {/* שם מדריך לחיץ */}
+                    <span
+                      style={{ cursor: "pointer", color: "#38bdf8" }}
+                      onClick={() => openGuideDetails(g)}
+                    >
+                      {g.guide_name}
+                    </span>
+                  </td>
+                  <td>{g.group_id}</td>
+                  <td>{g.trail_name}</td>
+                  <td>
+                    <div>
+                      <div>
+                        {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                      </div>
+
+                      <div className={styles.timeRow}>
+                        {g.trip_time?.slice(0, 5)} -{" "}
+                        {calculateEndTime(
+                          g.trip_time?.slice(0, 5),
+                          g.duration_minutes,
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td>{g.status}</td>
+
+                  <td>
+                    {/* אייקון צפייה בפרטים */}
+                    <FaEye
+                      className={styles.viewing}
+                      title=" צפייה בפרטי הדרכה"
+                      onClick={() => openDetails(g)}
+                    />
+                  </td>
+
+                  <td>
+                    <div className={styles.actionsRow}>
+                      {/* אייקון החלפת מדריך */}
+                      {g.status !== "בוטל" &&
+                        g.status !== "הסתיים" &&
+                        g.status !== "בתהליך" && (
+                          <FaExchangeAlt
+                            className={styles.iconBtn}
+                            title="החלפת מדריך"
+                            style={{ cursor: "pointer", marginRight: "10px" }}
+                            onClick={() => openChangeGuide(g)}
+                          />
+                        )}
+
+                      {/* ביטול הדרכה */}
+                      {g.status !== "בוטל" &&
+                        g.status !== "הסתיים" &&
+                        g.status !== "בתהליך" && (
+                          <button
+                            className={styles.cancellation}
+                            onClick={() => openCancel(g)}
+                          >
+                            בטל
+                          </button>
+                        )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* מודאל ביטול הדרכה */}
       {showCancelModal && (
@@ -658,7 +680,7 @@ export default function ManageGuidances() {
                   const result = calculateTripStatus(selectedGuidance);
 
                   if (!result) return null;
-                  // 🔵 יצירת זמן התחלה מתוכנן
+                  //  יצירת זמן התחלה מתוכנן
                   const plannedStart = new Date(selectedGuidance.trip_date);
 
                   const [hours, minutes] =
@@ -666,13 +688,13 @@ export default function ManageGuidances() {
 
                   plannedStart.setHours(hours, minutes);
 
-                  // 🔵 סיום מתוכנן נכון
+                  //  סיום מתוכנן נכון
                   const plannedEnd = new Date(
                     plannedStart.getTime() +
                       selectedGuidance.duration_minutes * 60000,
                   );
 
-                  // 🔴 בדיקת איחור
+                  //  בדיקת איחור
                   const isLate = result.diff > 0;
 
                   return (
@@ -787,8 +809,8 @@ export default function ManageGuidances() {
                         </p>
 
                         {/* ===============================
-   אזהרה על תאריך שונה
-================================ */}
+                            אזהרה על תאריך שונה
+                          ================================ */}
                         {!result.sameDay && (
                           <p style={{ color: "orange", marginTop: "10px" }}>
                             ⚠️ הטיול בוצע בתאריך שונה מהתכנון
@@ -835,18 +857,25 @@ export default function ManageGuidances() {
           <div className={styles.modal}>
             <h2>החלפת מדריך</h2>
 
-            <select
-              className={styles.select}
-              value={newGuideId}
-              onChange={(e) => setNewGuideId(e.target.value)}
-            >
-              <option value="">בחר מדריך</option>
-              {availableGuides.map((g) => (
-                <option key={g.user_id} value={g.user_id}>
-                  {g.full_name}
-                </option>
-              ))}
-            </select>
+            <Select
+              className={styles.guideSelectCustom}
+              classNamePrefix="react-select"
+              placeholder="בחר מדריך"
+              isRtl={true}
+              options={availableGuides.map((g) => ({
+                value: g.user_id,
+                label: g.full_name,
+              }))}
+              value={
+                availableGuides
+                  .map((g) => ({
+                    value: g.user_id,
+                    label: g.full_name,
+                  }))
+                  .find((option) => option.value == newGuideId) || null
+              }
+              onChange={(selected) => setNewGuideId(selected?.value || "")}
+            />
 
             <textarea
               className={styles.textarea}

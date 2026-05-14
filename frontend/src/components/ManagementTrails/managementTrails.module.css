@@ -780,3 +780,358 @@ small{
   background:rgba(0,0,0,.35);
   color:white;
 }
+
+/* =========================================
+   react-select
+========================================= */
+
+.guideSelectCustom {
+  width: 100%;
+  max-width: 100%;
+  font-size: 14px;
+}
+
+/* control */
+.guideSelectCustom :global(.react-select__control) {
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  min-height: 48px;
+  box-shadow: none;
+  cursor: pointer;
+  transition: .2s;
+}
+
+/* hover */
+.guideSelectCustom :global(.react-select__control:hover) {
+  border-color: #7dd3fc;
+}
+
+/* focus */
+.guideSelectCustom :global(.react-select__control--is-focused) {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px #38bdf8;
+}
+
+/* value */
+.guideSelectCustom :global(.react-select__single-value) {
+  color: white;
+}
+
+/* placeholder */
+.guideSelectCustom :global(.react-select__placeholder) {
+  color: rgba(255,255,255,.6);
+}
+
+/* input */
+.guideSelectCustom :global(.react-select__input-container) {
+  color: white;
+}
+
+/* menu */
+.guideSelectCustom :global(.react-select__menu) {
+  background: #0b1220;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 99999;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+/* option */
+.guideSelectCustom :global(.react-select__option) {
+  background: #0b1220;
+  color: white;
+  cursor: pointer;
+  transition: .15s;
+}
+
+/* hover option */
+.guideSelectCustom :global(.react-select__option--is-focused) {
+  background: rgba(34,197,94,.18);
+}
+
+/* selected option */
+.guideSelectCustom :global(.react-select__option--is-selected) {
+  background: #16a34a;
+  color: white;
+}
+
+/* arrows */
+.guideSelectCustom :global(.react-select__indicator) {
+  color: rgba(255,255,255,.7);
+}
+
+/* separator */
+.guideSelectCustom :global(.react-select__indicator-separator) {
+  background: rgba(255,255,255,.12);
+}
+
+/* menu scroll */
+.guideSelectCustom :global(.react-select__menu-list) {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 25px;
+}
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .page {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    width: 100%;
+    margin: 12px 0;
+  }
+
+  .statBox {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+  }
+
+  .statNumber {
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .statLabel {
+    font-size: 7px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 2px;
+  }
+
+  .actionsRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .filters,
+  .search,
+  .addBtn {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .search {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+
+  .addBtn {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .cardImg {
+    height: 150px;
+  }
+
+  .cardBody {
+    padding: 12px;
+  }
+
+  .cardTitle {
+    font-size: 16px;
+  }
+
+  .cardInfo {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .cardInfo span,
+  .cardDesc,
+  .trackLink {
+    font-size: 12px;
+  }
+
+  .pricesBox {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .priceItem {
+    padding: 10px;
+  }
+
+  .priceItem strong {
+    font-size: 12px;
+  }
+
+  .priceItem small {
+    font-size: 11px;
+  }
+
+  .actions button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pagination {
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .pageBtn {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .pageNum {
+    font-size: 12px;
+  }
+
+  .overlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 310px;
+    max-height: 82vh;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .modal h2 {
+    font-size: 17px;
+  }
+
+  .modal input,
+  .modal select,
+  .modal textarea {
+    font-size: 13px;
+    padding: 9px;
+    box-sizing: border-box;
+  }
+
+  .saveBtn {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .toast {
+    min-width: 0;
+    width: calc(100% - 36px);
+    font-size: 13px;
+    padding: 12px;
+  }
+
+  .confirmModal {
+    width: 100%;
+    max-width: 310px;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 28px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(5, 72px);
+    justify-content: center;
+    gap: 10px;
+    margin: 16px auto;
+  }
+
+  .statBox {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+  }
+
+  .statNumber {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .actionsRow {
+    gap: 14px;
+  }
+
+  .search {
+    width: 180px;
+    font-size: 13px;
+  }
+
+  .addBtn {
+    font-size: 13px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .cardImg {
+    height: 160px;
+  }
+
+  .cardTitle {
+    font-size: 18px;
+  }
+
+  .cardInfo span,
+  .cardDesc,
+  .trackLink {
+    font-size: 13px;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    padding: 22px;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+
+  .overlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .confirmModal {
+    max-width: 420px;
+    box-sizing: border-box;
+  }
+}

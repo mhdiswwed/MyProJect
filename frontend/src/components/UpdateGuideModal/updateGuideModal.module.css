@@ -120,3 +120,115 @@
   border-radius: 8px;
   color: white;
 }
+
+/* =========================================
+   react-select
+========================================= */
+.guideSelectCustom {
+  width: 100%;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.guideSelectCustom :global(.react-select__control) {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  min-height: 42px;
+  box-shadow: none;
+}
+
+.guideSelectCustom :global(.react-select__single-value),
+.guideSelectCustom :global(.react-select__input-container) {
+  color: white;
+}
+
+.guideSelectCustom :global(.react-select__placeholder) {
+  color: rgba(255,255,255,0.65);
+}
+
+.guideSelectCustom :global(.react-select__menu) {
+  background: #0b1220;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 99999;
+}
+
+.guideSelectCustom :global(.react-select__option) {
+  background: #0b1220;
+  color: white;
+}
+
+.guideSelectCustom :global(.react-select__option--is-focused) {
+  background: rgba(34,197,94,0.18);
+}
+
+.guideSelectCustom :global(.react-select__option--is-selected) {
+  background: #16a34a;
+}
+
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 25px;
+}
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .overlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    padding: 22px;
+    box-sizing: border-box;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .overlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 310px;
+    max-height: 82vh;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .textarea {
+    font-size: 13px;
+    padding: 9px;
+  }
+
+  .guideSelectCustom {
+    font-size: 13px;
+  }
+
+  .guideSelectCustom :global(.react-select__control) {
+    min-height: 40px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

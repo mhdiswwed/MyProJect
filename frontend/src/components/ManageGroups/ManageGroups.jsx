@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import styles from "./manageGroups.module.css";
 import API_BASE from "../../config/api";
 import UpdateGroupModal from "../UpdateGuideModal/UpdateGuideModal";
-
+import Select from "react-select";
 import {
   FaEye,
   FaCheck,
@@ -489,165 +489,176 @@ export default function ManageGroups() {
             <div className={styles.filterBox}>
               <label className={styles.filterLabel}>סינון:</label>
 
-              <select
-                className={styles.filterSelect}
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                <option value="all">כל הקבוצות</option>
-                <option value="active">פעיל</option>
-                <option value="cancelRequest">מבקש ביטול</option>
-                <option value="finished">הסתיים</option>
-                <option value="cancelled">בוטל</option>
-              </select>
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                placeholder="כל הקבוצות"
+                isRtl={true}
+                options={[
+                  { value: "all", label: "כל הקבוצות" },
+                  { value: "active", label: "פעיל" },
+                  { value: "cancelRequest", label: "מבקש ביטול" },
+                  { value: "finished", label: "הסתיים" },
+                  { value: "cancelled", label: "בוטל" },
+                ]}
+                value={[
+                  { value: "all", label: "כל הקבוצות" },
+                  { value: "active", label: "פעיל" },
+                  { value: "cancelRequest", label: "מבקש ביטול" },
+                  { value: "finished", label: "הסתיים" },
+                  { value: "cancelled", label: "בוטל" },
+                ].find((option) => option.value === filter)}
+                onChange={(selected) => setFilter(selected?.value || "all")}
+              />
             </div>
           </div>
         </div>
       </div>
       {/* טבלה */}
-
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>מס׳ קבוצה</th>
-            <th>נציג קבוצה</th>
-            <th>טיול</th>
-            <th>מדריך</th>
-            <th>תאריך ושעה</th>
-            <th>נקודת מפגש</th>
-            <th>סטטוס</th>
-            <th>הודעות</th>
-            <th>פעולות</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredGroups.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="8">אין קבוצות להצגה</td>
+              <th>מס׳ קבוצה</th>
+              <th>נציג קבוצה</th>
+              <th>טיול</th>
+              <th>מדריך</th>
+              <th>תאריך ושעה</th>
+              <th>נקודת מפגש</th>
+              <th>סטטוס</th>
+              <th>הודעות</th>
+              <th>פעולות</th>
             </tr>
-          ) : (
-            filteredGroups.map((g) => {
-              const endTime = calculateEndTime(
-                g.trip_time?.slice(0, 5),
-                g.duration_minutes,
-              );
+          </thead>
 
-              return (
-                <tr key={g.group_id}>
-                  <td>{g.group_id}</td>
-                  <td>
-                    {/* שם הנציג - לחיץ */}
-                    <span
-                      style={{ cursor: "pointer", color: "#38bdf8" }} // עיצוב לחיץ
-                      onClick={() => openUserDetails(g)} // פתיחת מודאל
-                    >
-                      {g.user_name}
-                    </span>
-                  </td>
-                  <td>{g.trail_name}</td>
+          <tbody>
+            {filteredGroups.length === 0 ? (
+              <tr>
+                <td colSpan="8">אין קבוצות להצגה</td>
+              </tr>
+            ) : (
+              filteredGroups.map((g) => {
+                const endTime = calculateEndTime(
+                  g.trip_time?.slice(0, 5),
+                  g.duration_minutes,
+                );
 
-                  <td>{g.guide_name || "לא שובץ"}</td>
+                return (
+                  <tr key={g.group_id}>
+                    <td>{g.group_id}</td>
+                    <td>
+                      {/* שם הנציג - לחיץ */}
+                      <span
+                        style={{ cursor: "pointer", color: "#38bdf8" }} // עיצוב לחיץ
+                        onClick={() => openUserDetails(g)} // פתיחת מודאל
+                      >
+                        {g.user_name}
+                      </span>
+                    </td>
+                    <td>{g.trail_name}</td>
 
-                  <td>
-                    <div>
+                    <td>{g.guide_name || "לא שובץ"}</td>
+
+                    <td>
                       <div>
-                        {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                        <div>
+                          {new Date(g.trip_date).toLocaleDateString("he-IL")}
+                        </div>
+                        <div className={styles.timeRow}>
+                          {g.trip_time?.slice(0, 5)} - {endTime}
+                        </div>
                       </div>
-                      <div className={styles.timeRow}>
-                        {g.trip_time?.slice(0, 5)} - {endTime}
-                      </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className={styles.meetingPoint}>{g.meeting_point}</td>
+                    <td className={styles.meetingPoint}>{g.meeting_point}</td>
 
-                  <td>{g.status}</td>
+                    <td>{g.status}</td>
 
-                  {/* =========================================
+                    {/* =========================================
                    כפתור צפייה בהודעות (עין)
                   ========================================= */}
-                  <td>
-                    <FaEye
-                      className={styles.viewing}
-                      title="צפייה בהודעות" // טולטיפ כשעוברים עם העכבר
-                      onClick={() => openMessages(g)} // פתיחת ההודעות של הקבוצה
-                    />
-                  </td>
+                    <td>
+                      <FaEye
+                        className={styles.viewing}
+                        title="צפייה בהודעות" // טולטיפ כשעוברים עם העכבר
+                        onClick={() => openMessages(g)} // פתיחת ההודעות של הקבוצה
+                      />
+                    </td>
 
-                  <td>
-                    <div className={styles.actionsRow}>
-                      {/* מבקש ביטול */}
-                      {g.status === "מבקש ביטול" && (
-                        <>
-                          {/* כפתור אישור ביטול */}
-                          <button
-                            className={styles.cancelBtn}
-                            title="אשר ביטול"
-                            onClick={() => openApproveCancelModal(g)}
-                          >
-                            <FaCheck />
-                          </button>
-
-                          {/* כפתור דחיית ביטול */}
-                          <button
-                            className={styles.rejectCancelBtn}
-                            title="דחה ביטול"
-                            onClick={() => openRejectCancelModalSimple(g)} // 🔥 תיקון
-                          >
-                            <FaTimes />
-                          </button>
-                        </>
-                      )}
-
-                      {/* פעיל */}
-                      {g.status === "פעיל" &&
-                        g.guidance_status === "מתוכנן" && (
+                    <td>
+                      <div className={styles.actionsRow}>
+                        {/* מבקש ביטול */}
+                        {g.status === "מבקש ביטול" && (
                           <>
+                            {/* כפתור אישור ביטול */}
                             <button
-                              className={`${styles.actionBtn} ${styles.editBtn}`}
-                              title="עדכן קבוצה"
-                              onClick={() => {
-                                // שומר את הקבוצה שנבחרה
-                                setSelectedGroup(g);
-
-                                // פותח את הפופאפ
-                                setShowUpdateModal(true);
-                              }}
+                              className={styles.cancelBtn}
+                              title="אשר ביטול"
+                              onClick={() => openApproveCancelModal(g)}
                             >
-                              <FaEdit />
+                              <FaCheck />
                             </button>
 
+                            {/* כפתור דחיית ביטול */}
                             <button
-                              className={`${styles.actionBtn} ${styles.cancelsBtn}`}
-                              title="בטל קבוצה"
-                              onClick={() => openCancelModal(g)}
+                              className={styles.rejectCancelBtn}
+                              title="דחה ביטול"
+                              onClick={() => openRejectCancelModalSimple(g)} // 🔥 תיקון
                             >
-                              <FaTrash />
+                              <FaTimes />
                             </button>
                           </>
                         )}
 
-                      {/* יצאו לטיול */}
-                      {g.status === "פעיל" &&
-                        g.guidance_status === "בתהליך" && (
-                          <span className={styles.inProgressText}>
-                            <FaRoute /> הקבוצה נמצאת בטיול
-                          </span>
-                        )}
+                        {/* פעיל */}
+                        {g.status === "פעיל" &&
+                          g.guidance_status === "מתוכנן" && (
+                            <>
+                              <button
+                                className={`${styles.actionBtn} ${styles.editBtn}`}
+                                title="עדכן קבוצה"
+                                onClick={() => {
+                                  // שומר את הקבוצה שנבחרה
+                                  setSelectedGroup(g);
 
-                      {/* הסתיים / בוטל */}
-                      {(g.status === "הסתיים" ||
-                        g.status === "בוטל" ||
-                        g.guidance_status === "הסתיים") && <span>—</span>}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+                                  // פותח את הפופאפ
+                                  setShowUpdateModal(true);
+                                }}
+                              >
+                                <FaEdit />
+                              </button>
+
+                              <button
+                                className={`${styles.actionBtn} ${styles.cancelsBtn}`}
+                                title="בטל קבוצה"
+                                onClick={() => openCancelModal(g)}
+                              >
+                                <FaTrash />
+                              </button>
+                            </>
+                          )}
+
+                        {/* יצאו לטיול */}
+                        {g.status === "פעיל" &&
+                          g.guidance_status === "בתהליך" && (
+                            <span className={styles.inProgressText}>
+                              <FaRoute /> הקבוצה נמצאת בטיול
+                            </span>
+                          )}
+
+                        {/* הסתיים / בוטל */}
+                        {(g.status === "הסתיים" ||
+                          g.status === "בוטל" ||
+                          g.guidance_status === "הסתיים") && <span>—</span>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* מודאל דחיית ביטול*/}
       {showRejectCancelModal && (

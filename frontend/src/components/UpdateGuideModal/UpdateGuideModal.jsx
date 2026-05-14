@@ -6,6 +6,7 @@ UpdateGuideModal
 import { useEffect, useState } from "react";
 import styles from "./updateGuideModal.module.css";
 import API_BASE from "../../config/api";
+import Select from "react-select";
 
 export default function UpdateGuideModal({ group, onClose, onSuccess }) {
   const [guides, setGuides] = useState([]);
@@ -88,18 +89,25 @@ export default function UpdateGuideModal({ group, onClose, onSuccess }) {
 
         {/* בלוק */}
         <div className={styles.section}>
-          <select
-            value={guideId}
-            onChange={(e) => setGuideId(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">בחר מדריך פנוי</option>
-            {guides.map((g) => (
-              <option key={g.user_id} value={g.user_id}>
-                {g.full_name}
-              </option>
-            ))}
-          </select>
+          <Select
+            className={styles.guideSelectCustom}
+            classNamePrefix="react-select"
+            placeholder="בחר מדריך פנוי"
+            isRtl={true}
+            options={guides.map((g) => ({
+              value: g.user_id,
+              label: g.full_name,
+            }))}
+            value={
+              guides
+                .map((g) => ({
+                  value: g.user_id,
+                  label: g.full_name,
+                }))
+                .find((option) => option.value == guideId) || null
+            }
+            onChange={(selected) => setGuideId(selected?.value || "")}
+          />
 
           <textarea
             placeholder="סיבה להחלפה"
