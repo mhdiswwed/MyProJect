@@ -1184,10 +1184,10 @@ export default function ManageRequests() {
             )}
 
             {/* =====================================================
-   הצגת שדות רק אם:
-   - לא דחיית ביטול
-   - או שאין קבוצה
-===================================================== */}
+              הצגת שדות רק אם:
+              - לא דחיית ביטול
+              - או שאין קבוצה
+            ===================================================== */}
             {(!isRejectCancelMode || !hasGroup) && (
               <>
                 {/* בלוק תאריך ושעה */}
@@ -1223,7 +1223,13 @@ export default function ManageRequests() {
                       <input
                         className={styles.input}
                         type="date"
-                        value={approveData.trip_date}
+                        value={
+                          approveData.trip_date
+                            ? new Date(approveData.trip_date)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
                         onChange={(e) => {
                           const newDate = e.target.value;
 
@@ -1527,8 +1533,8 @@ export default function ManageRequests() {
       )}
 
       {/* =========================================
-   מודאל פרטי לקוח
-========================================= */}
+        מודאל פרטי לקוח
+      ========================================= */}
       {showUserModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -1540,8 +1546,8 @@ export default function ManageRequests() {
             </p>
 
             {/* =========================
-         טלפון
-      ========================= */}
+              טלפון
+            ========================= */}
             <p>
               <strong>טלפון:</strong>{" "}
               {selectedUser?.user_phone ? (
@@ -1568,8 +1574,8 @@ export default function ManageRequests() {
             </p>
 
             {/* =========================
-         אימייל
-      ========================= */}
+              אימייל
+            ========================= */}
             <p>
               <strong>אימייל:</strong>{" "}
               {selectedUser?.user_email ? (

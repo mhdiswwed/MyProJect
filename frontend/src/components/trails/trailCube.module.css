@@ -543,6 +543,78 @@
   gap: 20px;
 }
 
+/* השדה עצמו */
+.guideSelectCustom {
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+  font-size: 13px;
+}
+
+/* control */
+.guideSelectCustom :global(.react-select__control) {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  min-height: 42px;
+  box-shadow: none;
+}
+
+/* מכולת הערך - לימין */
+.guideSelectCustom :global(.react-select__value-container) {
+  direction: rtl;
+  text-align: right;
+}
+
+/* value + placeholder + input */
+.guideSelectCustom :global(.react-select__single-value),
+.guideSelectCustom :global(.react-select__placeholder),
+.guideSelectCustom :global(.react-select__input-container) {
+  color: white;
+  direction: rtl;
+  text-align: right;
+}
+
+/* חשוב בגלל menuPortalTarget */
+:global(.react-select__menu-portal) {
+  z-index: 999999 !important;
+}
+
+/* התפריט שנפתח */
+:global(.react-select__menu) {
+  background: #0b1220 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* רשימת האפשרויות */
+:global(.react-select__menu-list) {
+  background: #0b1220 !important;
+  max-height: 220px;
+}
+
+/* option */
+:global(.react-select__option) {
+  background: #0b1220 !important;
+  color: white !important;
+  cursor: pointer;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: right;
+}
+
+/* hover */
+:global(.react-select__option--is-focused) {
+  background: rgba(34, 197, 94, 0.18) !important;
+}
+
+/* selected */
+:global(.react-select__option--is-selected) {
+  background: #16a34a !important;
+  color: white !important;
+}
+
 @media (max-width: 768px) {
 
   :root {
@@ -707,7 +779,32 @@ margin-top: 15px;
     font-size: 11px;
   }
 
-  
+  /* react-select במובייל */
+.guideSelectCustom {
+  width: 115px;
+  min-width: 115px;
+  max-width: 115px;
+  font-size: 11px;
+}
+
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+.guideSelectCustom :global(.react-select__value-container) {
+  padding: 0 6px;
+}
+
+.guideSelectCustom :global(.react-select__single-value),
+.guideSelectCustom :global(.react-select__placeholder),
+.guideSelectCustom :global(.react-select__input-container) {
+  font-size: 11px;
+}
+
+.guideSelectCustom :global(.react-select__indicator) {
+  padding: 4px;
+}
 }
 
 @media (min-width: 769px) and (max-width: 1024px){

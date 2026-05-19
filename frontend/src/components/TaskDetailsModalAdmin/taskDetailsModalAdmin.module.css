@@ -215,3 +215,126 @@
   background: transparent !important;
   border: none !important;
 }
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .modalOverlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    padding: 22px;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+
+  .title,
+  .modalTitle {
+    font-size: 22px;
+  }
+
+  .modal p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .mapWrapper {
+    height: 240px;
+  }
+
+  .reportImage {
+    max-height: 240px;
+  }
+
+  .bigMapModal {
+    width: 92vw;
+    height: 78vh;
+  }
+
+  .bigImageModal {
+    width: 92vw;
+    max-width: 700px;
+  }
+
+  .bigImage {
+    max-height: 82vh;
+    object-fit: contain;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 320px;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .title,
+  .modalTitle {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .modal p {
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 7px 0;
+  }
+
+  .mapWrapper {
+    height: 180px;
+    border-radius: 10px;
+  }
+
+  .reportImage {
+    max-height: 170px;
+    border-radius: 10px;
+  }
+
+  .closeBtn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .bigMapModal {
+    width: 94vw;
+    height: 72vh;
+  }
+
+  .bigImageModal {
+    width: 94vw;
+    max-width: 94vw;
+  }
+
+  .bigImage {
+    max-height: 80vh;
+    object-fit: contain;
+  }
+
+  .finishPin {
+    width: 28px;
+    height: 28px;
+  }
+
+  .finishCircle {
+    font-size: 22px;
+  }
+}

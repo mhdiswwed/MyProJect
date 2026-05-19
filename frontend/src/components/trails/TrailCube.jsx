@@ -6,6 +6,7 @@ TrailCube
 import hikingVideo from "../../assets/hiking.mp4";
 import jeepsVideo from "../../assets/jeeps.mp4";
 import atvVideo from "../../assets/atv.mp4";
+import Select from "react-select";
 import horsesVideo from "../../assets/horses.mp4";
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -299,13 +300,27 @@ useEffect(() => {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-       
-
+          {/* סינון לפי סוג */}
           {/* סינון לפי סוג */}
           <span className={styles.filterText}>סינון:</span>
-          <select
-            onChange={(e) => {
-              const value = e.target.value;
+
+          <Select
+            className={styles.guideSelectCustom}
+            classNamePrefix="react-select"
+            isRtl={true}
+            menuPortalTarget={document.body}
+            menuPosition="fixed"
+            placeholder="כל המסלולים"
+            value={[
+              { value: "all", label: "כל המסלולים" },
+              { value: "רגלי", label: "מסלולי רגל" },
+              { value: "גיפים", label: "ג׳יפים" },
+              { value: "טרקטורונים", label: "טרקטורונים" },
+              { value: "סוסים", label: "סוסים" },
+            ].find((option) => option.value === (typeFilter || "all"))}
+            onChange={(selected) => {
+              const value = selected.value;
+              setTypeFilter(value);
 
               if (value === "all") {
                 resetTrails();
@@ -320,13 +335,14 @@ useEffect(() => {
                   }
                 });
             }}
-          >
-            <option value="all">כל המסלולים</option>
-            <option value="רגלי">מסלולי רגל</option>
-            <option value="גיפים">ג׳יפים</option>
-            <option value="טרקטורונים">טרקטורונים</option>
-            <option value="סוסים">סוסים</option>
-          </select>
+            options={[
+              { value: "all", label: "כל המסלולים" },
+              { value: "רגלי", label: "מסלולי רגל" },
+              { value: "גיפים", label: "ג׳יפים" },
+              { value: "טרקטורונים", label: "טרקטורונים" },
+              { value: "סוסים", label: "סוסים" },
+            ]}
+          />
 
           {/* כפתור איפוס */}
           <button onClick={resetTrails}>הצג את כל המסלולים</button>

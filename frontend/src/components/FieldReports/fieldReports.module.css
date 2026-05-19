@@ -476,3 +476,222 @@ white-space: nowrap;
 
   cursor:pointer;
 }
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 28px;
+    overflow-x: hidden;
+  }
+
+  .title {
+    font-size: 28px;
+    text-align: center;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(4, 72px);
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 16px auto;
+  }
+
+  .statBox {
+    width: 72px !important;
+    height: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    box-sizing: border-box;
+  }
+
+  .statNumber {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .statLabel {
+    font-size: 9px;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .filterBox {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .filterLabel {
+    font-size: 12px;
+  }
+
+  .filterSelect {
+    width: 160px;
+    font-size: 13px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+  }
+
+  .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 950px;
+  }
+
+  th,
+  td {
+    font-size: 12px;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  .modalOverlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    padding: 22px;
+    box-sizing: border-box;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .page {
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  .title {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(4, 52px);
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin: 12px auto;
+  }
+
+  .statBox {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    box-sizing: border-box;
+  }
+
+  .statNumber {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .statLabel {
+    font-size: 6.5px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 2px;
+  }
+
+  .filterBox {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .filterLabel {
+    display: none;
+  }
+
+  .filterSelect {
+    width: 120px;
+    min-width: 120px;
+    font-size: 12px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+  }
+
+  .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 900px;
+  }
+
+  th,
+  td {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .actionsRow {
+    gap: 6px;
+  }
+
+  .editBtn,
+  .cancelBtn {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .modalOverlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 310px;
+    max-height: 82vh;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .modal h2 {
+    font-size: 17px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modalActions button {
+    width: 100%;
+  }
+
+  .inlineMsg {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+}

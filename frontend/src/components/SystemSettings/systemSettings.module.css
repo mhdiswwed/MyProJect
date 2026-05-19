@@ -345,3 +345,131 @@ tr:hover{
   text-align: center; /* ממרכז טקסט */
   margin-bottom: 15px; /* רווח מתחת */
 }
+
+/* ======================
+   עטיפת טבלה
+====================== */
+.tableWrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: 14px;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 10px;
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 80px 28px 28px;
+  }
+
+  .title {
+    font-size: 28px;
+    margin-top: -20px;
+    margin-bottom: 22px;
+  }
+
+  .table {
+    min-width: 650px;
+  }
+
+  th,
+  td {
+    font-size: 13px;
+    padding: 11px;
+    white-space: nowrap;
+  }
+
+  .modalOverlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 420px;
+    max-height: 86vh;
+    padding: 22px;
+    box-sizing: border-box;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .page {
+    padding: 70px 16px 20px;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-top: -42px;
+    margin-bottom: 18px;
+  }
+
+  .table {
+    min-width: 620px;
+  }
+
+  th,
+  td {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .editIcon {
+    font-size: 14px;
+  }
+
+  .modalOverlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 310px;
+    max-height: 82vh;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .modalTitle {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+
+  .modal input {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+
+  .modalButtons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .confirmBtn {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .formMsg {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}

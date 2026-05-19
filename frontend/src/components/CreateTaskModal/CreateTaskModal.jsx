@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import styles from "./createTaskModal.module.css";
 import API_BASE from "../../config/api";
+import Select from "react-select";
 
 export default function CreateTaskModal({
   report,
@@ -283,17 +284,20 @@ export default function CreateTaskModal({
         <h2>יצירת משימה חדשה</h2>
         {/* סוג משימה */}
         <label className={styles.label}>סוג משימה</label>
-        <select
-          className={styles.input}
-          value={taskType}
-          onChange={(e) => setTaskType(e.target.value)}
-        >
-          <option value="">בחר סוג משימה</option>
-          <option value="סכנה">סכנה</option>
-          <option value="חסימה">חסימה</option>
-          <option value="תחזוקה">תחזוקה</option>
-          <option value="ניקיון">ניקיון</option>
-        </select>
+        <Select
+          className={styles.guideSelectCustom}
+          classNamePrefix="react-select"
+          isRtl={true}
+          placeholder="בחר סוג משימה"
+          value={taskType ? { value: taskType, label: taskType } : null}
+          onChange={(selected) => setTaskType(selected ? selected.value : "")}
+          options={[
+            { value: "סכנה", label: "סכנה" },
+            { value: "חסימה", label: "חסימה" },
+            { value: "תחזוקה", label: "תחזוקה" },
+            { value: "ניקיון", label: "ניקיון" },
+          ]}
+        />
 
         {/* =========================
          בחירת מסלול (רק למנהל)
@@ -302,19 +306,30 @@ export default function CreateTaskModal({
           <>
             <label className={styles.label}>בחר מסלול</label>
 
-            <select
-              className={styles.input}
-              value={selectedTrail}
-              onChange={(e) => setSelectedTrail(e.target.value)}
-            >
-              <option value="">בחר מסלול</option>
-
-              {trails.map((t) => (
-                <option key={t.trail_id} value={t.trail_id}>
-                  {t.trail_name}
-                </option>
-              ))}
-            </select>
+            <Select
+              className={styles.guideSelectCustom}
+              classNamePrefix="react-select"
+              isRtl={true}
+              placeholder="בחר מסלול"
+              value={
+                selectedTrail
+                  ? {
+                      value: selectedTrail,
+                      label:
+                        trails.find(
+                          (t) => String(t.trail_id) === String(selectedTrail),
+                        )?.trail_name || "",
+                    }
+                  : null
+              }
+              onChange={(selected) =>
+                setSelectedTrail(selected ? selected.value : "")
+              }
+              options={trails.map((t) => ({
+                value: t.trail_id,
+                label: t.trail_name,
+              }))}
+            />
           </>
         )}
         {/* תיאור */}
@@ -326,8 +341,8 @@ export default function CreateTaskModal({
           placeholder="תיאור..."
         />
         {/* =========================
-   תמונה (רק במצב ידני)
-========================= */}
+          תמונה (רק במצב ידני)
+        ========================= */}
         {mode === "manual" && (
           <>
             <label className={styles.label}>תמונה (אופציונלי)</label>
@@ -366,14 +381,23 @@ export default function CreateTaskModal({
           onChange={(e) => setDueTime(e.target.value)}
         />
         {/* עובדים */}
-        <select className={styles.input} onChange={handleSelectWorker}>
-          <option value="">בחר עובד</option>
-          {workers.map((w) => (
-            <option key={w.user_id} value={w.user_id}>
-              {w.full_name}
-            </option>
-          ))}
-        </select>
+        <Select
+          className={styles.guideSelectCustom}
+          classNamePrefix="react-select"
+          isRtl={true}
+          placeholder="בחר עובד"
+          onChange={(selected) => {
+            if (selected) {
+              handleSelectWorker({
+                target: { value: selected.value },
+              });
+            }
+          }}
+          options={workers.map((w) => ({
+            value: w.user_id,
+            label: w.full_name,
+          }))}
+        />
         {/* עובדים שנבחרו */}
         {selectedWorkers.map((w) => {
           const worker = workers.find((x) => x.user_id === w.user_id);
@@ -382,15 +406,21 @@ export default function CreateTaskModal({
             <div key={w.user_id} className={styles.workerRow}>
               <span>{worker?.full_name}</span>
 
-              <select
-                className={styles.roleSelect}
-                onChange={(e) => handleRoleChange(w.user_id, e.target.value)}
-              >
-                <option value="">בחר תפקיד</option>
-                <option value="מבצע">מבצע</option>
-                <option value="אחראי">אחראי</option>
-                <option value="מפקח">מפקח</option>
-              </select>
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                isRtl={true}
+                placeholder="בחר תפקיד"
+                value={w.role ? { value: w.role, label: w.role } : null}
+                onChange={(selected) =>
+                  handleRoleChange(w.user_id, selected ? selected.value : "")
+                }
+                options={[
+                  { value: "מבצע", label: "מבצע" },
+                  { value: "אחראי", label: "אחראי" },
+                  { value: "מפקח", label: "מפקח" },
+                ]}
+              />
 
               <button
                 className={styles.removeBtn}

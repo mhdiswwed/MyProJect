@@ -19,6 +19,7 @@ import {
 
 // Hook לשמירת חישוב (כמו סינון) כדי למנוע רינדור מיותר ולשפר ביצועים
 import { useMemo } from "react";
+import Select from "react-select";
 export default function UsersManagement({ currentUser }) {
   /* =========================
      רשימת משתמשים
@@ -228,7 +229,7 @@ export default function UsersManagement({ currentUser }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        // ❌ אם יש שגיאה מהשרת (למשל קשרים בטבלאות)
+        //  אם יש שגיאה מהשרת (למשל קשרים בטבלאות)
         if (!data.message || data.message !== "נמחק") {
           setMsg({
             type: "error",
@@ -237,7 +238,7 @@ export default function UsersManagement({ currentUser }) {
           return;
         }
 
-        // ✅ הצלחה
+        //  הצלחה
         setMsg({
           type: "success",
           text: "המשתמש נמחק בהצלחה",
@@ -247,7 +248,7 @@ export default function UsersManagement({ currentUser }) {
         setTimeout(() => {
           setUsers((prev) => prev.filter((u) => u.user_id !== id));
           setConfirmDelete(null);
-          setMsg({ type: "", text: "" }); // 🔥
+          setMsg({ type: "", text: "" }); 
         }, 2000);
       })
       .catch(() => {
@@ -394,17 +395,26 @@ export default function UsersManagement({ currentUser }) {
               <div className={styles.filterItem}>
                 <label className={styles.filterLabel}>תפקיד:</label>
 
-                <select
-                  className={styles.filterSelect}
-                  value={roleFilter}
-                  onChange={(e) => changeRoleFilter(e.target.value)}
-                >
-                  <option value="all">הכל</option>
-                  <option value="מנהל">מנהלים</option>
-                  <option value="מדריך">מדריכים</option>
-                  <option value="עובד">עובדי שטח</option>
-                  <option value="נציג קבוצה">נציגי קבוצה</option>
-                </select>
+                <Select
+                  className={styles.guideSelectCustom}
+                  classNamePrefix="react-select"
+                  isSearchable={false}
+                  value={[
+                    { value: "all", label: "הכל" },
+                    { value: "מנהל", label: "מנהלים" },
+                    { value: "מדריך", label: "מדריכים" },
+                    { value: "עובד", label: "עובדי שטח" },
+                    { value: "נציג קבוצה", label: "נציגי קבוצה" },
+                  ].find((option) => option.value === roleFilter)}
+                  onChange={(selected) => changeRoleFilter(selected.value)}
+                  options={[
+                    { value: "all", label: "הכל" },
+                    { value: "מנהל", label: "מנהלים" },
+                    { value: "מדריך", label: "מדריכים" },
+                    { value: "עובד", label: "עובדי שטח" },
+                    { value: "נציג קבוצה", label: "נציגי קבוצה" },
+                  ]}
+                />
               </div>
               {/* סינון לפי סטטוס */}
               {/*<div className={styles.filterItem}>
@@ -456,7 +466,7 @@ export default function UsersManagement({ currentUser }) {
                   <button onClick={() => openEdit(u)} title="עדכון פרטים">
                     <FaEdit />
                   </button>
-                {/*
+                  {/*
                   {u.user_id !== currentUser.user_id && (
                     <button
                       onClick={() => toggleStatus(u)}
@@ -489,7 +499,7 @@ export default function UsersManagement({ currentUser }) {
           <div className={styles.modal}>
             <p>האם אתה בטוח שברצונך למחוק משתמש?</p>
 
-            {/* 🔥 הודעה בתוך הפופאפ */}
+            {/*  הודעה בתוך הפופאפ */}
             {msg.text && (
               <div
                 className={`${styles.inlineMsg} ${
@@ -541,16 +551,26 @@ export default function UsersManagement({ currentUser }) {
 
             {/* הצגת תפקיד רק אם זה לא המשתמש המחובר */}
             {selectedUser?.user_id !== currentUser?.user_id && (
-              <select
-                className={styles.select}
-                value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-              >
-                <option value="מנהל">מנהל</option>
-                <option value="מדריך">מדריך</option>
-                <option value="עובד">עובד</option>
-                <option value="נציג קבוצה">נציג קבוצה</option>
-              </select>
+              <Select
+                className={styles.guideSelectCustom}
+                classNamePrefix="react-select"
+                menuPlacement="top"
+                value={[
+                  { value: "מנהל", label: "מנהל" },
+                  { value: "מדריך", label: "מדריך" },
+                  { value: "עובד", label: "עובד" },
+                  { value: "נציג קבוצה", label: "נציג קבוצה" },
+                ].find((option) => option.value === form.role)}
+                onChange={(selected) =>
+                  setForm({ ...form, role: selected.value })
+                }
+                options={[
+                  { value: "מנהל", label: "מנהל" },
+                  { value: "מדריך", label: "מדריך" },
+                  { value: "עובד", label: "עובד" },
+                  { value: "נציג קבוצה", label: "נציג קבוצה" },
+                ]}
+              />
             )}
 
             {/* הודעות */}
@@ -581,7 +601,7 @@ export default function UsersManagement({ currentUser }) {
           </div>
         </div>
       )}
-      
+
       {/* =========================================
        מודאל פרטי משתמש מציג: - שם - טלפון + אייקונים - אימייל + אייקון
       ========================================= */}
@@ -660,7 +680,6 @@ export default function UsersManagement({ currentUser }) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

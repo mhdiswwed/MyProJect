@@ -270,166 +270,167 @@ success();
       <h1 className={styles.title}>הגדרות מערכת</h1>
 
       {/* טבלת הגדרות */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>הגדרה</th>
-            <th>ערך</th>
-            <th>פעולה</th>
-          </tr>
-        </thead>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>הגדרה</th>
+              <th>ערך</th>
+              <th>פעולה</th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {/* שורת מע״מ */}
-          <tr>
-            <td>מע״מ</td>
+          <tbody>
+            {/* שורת מע״מ */}
+            <tr>
+              <td>מע״מ</td>
 
-            <td>{settings.vat}%</td>
+              <td>{settings.vat}%</td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  // שמירת שם ההגדרה
-                  setCurrentKey("vat");
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    // שמירת שם ההגדרה
+                    setCurrentKey("vat");
 
-                  // הכנסת הערך הנוכחי לשדה
-                  setInputValue(settings.vat);
+                    // הכנסת הערך הנוכחי לשדה
+                    setInputValue(settings.vat);
 
-                  // פתיחת מודאל
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
+                    // פתיחת מודאל
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
 
-          {/* כמות דיווחים */}
-          <tr>
-            <td>כמות דיווחים אפשרית למסלול</td>
+            {/* כמות דיווחים */}
+            <tr>
+              <td>כמות דיווחים אפשרית למסלול</td>
 
-            <td>{settings.max_reports_per_route} דיווחים</td>
+              <td>{settings.max_reports_per_route} דיווחים</td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  setCurrentKey("max_reports_per_route");
-                  setInputValue(settings.max_reports_per_route);
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setCurrentKey("max_reports_per_route");
+                    setInputValue(settings.max_reports_per_route);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
 
-          {/* זמן בין דיווחים */}
-          <tr>
-            <td>זמן בין דיווחים (דקות)</td>
+            {/* זמן בין דיווחים */}
+            <tr>
+              <td>זמן בין דיווחים (דקות)</td>
 
-            <td>{settings.report_interval_minutes} דקות</td>
+              <td>{settings.report_interval_minutes} דקות</td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  setCurrentKey("report_interval_minutes");
-                  setInputValue(settings.report_interval_minutes);
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setCurrentKey("report_interval_minutes");
+                    setInputValue(settings.report_interval_minutes);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
 
-          {/* כמות משתתפים בטיול( מינימום ומקסימום )*/}
-          <tr>
-            <td>כמות משתתפים בטיול</td>
+            {/* כמות משתתפים בטיול( מינימום ומקסימום )*/}
+            <tr>
+              <td>כמות משתתפים בטיול</td>
 
-            <td>
-              מינימום: {settings.min_participants} | מקסימום:{" "}
-              {settings.max_participants}
-            </td>
+              <td>
+                מינימום: {settings.min_participants} | מקסימום:{" "}
+                {settings.max_participants}
+              </td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  setCurrentKey("participants"); // מפתח מיוחד
-                  setMinValue(settings.min_participants);
-                  setMaxValue(settings.max_participants);
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setCurrentKey("participants"); // מפתח מיוחד
+                    setMinValue(settings.min_participants);
+                    setMaxValue(settings.max_participants);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
 
-          <tr>
-            <td>הפסקה בין טיולים למדריך</td>
+            <tr>
+              <td>הפסקה בין טיולים למדריך</td>
 
-            <td>{settings.guide_break_minutes} דקות</td>
+              <td>{settings.guide_break_minutes} דקות</td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  setCurrentKey("guide_break_minutes");
-                  setInputValue(settings.guide_break_minutes);
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setCurrentKey("guide_break_minutes");
+                    setInputValue(settings.guide_break_minutes);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
 
-          <tr>
-            <td>הפסקה בין משימות לעובד</td>
+            <tr>
+              <td>הפסקה בין משימות לעובד</td>
 
-            <td>{settings.worker_break_minutes} דקות</td>
+              <td>{settings.worker_break_minutes} דקות</td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  setCurrentKey("worker_break_minutes");
-                  setInputValue(settings.worker_break_minutes);
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>שעות פעילות מערכת</td>
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setCurrentKey("worker_break_minutes");
+                    setInputValue(settings.worker_break_minutes);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td>שעות פעילות מערכת</td>
 
-            <td>
-              {settings.working_hours_start} - {settings.working_hours_end}
-            </td>
+              <td>
+                {settings.working_hours_start} - {settings.working_hours_end}
+              </td>
 
-            <td>
-              <button
-                className={styles.editIcon}
-                onClick={() => {
-                  setCurrentKey("working_hours");
-                  setStartHour(settings.working_hours_start);
-                  setEndHour(settings.working_hours_end);
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
+              <td>
+                <button
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setCurrentKey("working_hours");
+                    setStartHour(settings.working_hours_start);
+                    setEndHour(settings.working_hours_end);
+                    setShowModal(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       {/* מודאל עריכה */}
       {showModal && (
         <div className={styles.modalOverlay}>

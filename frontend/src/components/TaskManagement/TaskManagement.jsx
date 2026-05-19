@@ -22,7 +22,7 @@ import {
   FaPlay,
   FaChartBar,
 } from "react-icons/fa";
-
+import Select from "react-select";
 export default function TaskManagement() {
   //===========================
   // STATE
@@ -210,27 +210,51 @@ export default function TaskManagement() {
       {/* פילטרים + כפתור */}
       <div className={styles.actionsRow}>
         <div className={styles.filters}>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">כל הסטטוסים</option>
-            <option value="פתוחה">פתוחה</option>
-            <option value="בטיפול">בטיפול</option>
-            <option value="בוצעה">בוצעה</option>
-            <option value="בוטלה">בוטלה</option>
-          </select>
+          {/* סינון לפי סטטוס */}
+          <Select
+            className={styles.guideSelectCustom}
+            classNamePrefix="react-select"
+            isRtl={true}
+            placeholder="כל הסטטוסים"
+            value={[
+              { value: "all", label: "כל הסטטוסים" },
+              { value: "פתוחה", label: "פתוחה" },
+              { value: "בטיפול", label: "בטיפול" },
+              { value: "בוצעה", label: "בוצעה" },
+              { value: "בוטלה", label: "בוטלה" },
+            ].find((option) => option.value === statusFilter)}
+            onChange={(selected) => setStatusFilter(selected.value)}
+            options={[
+              { value: "all", label: "כל הסטטוסים" },
+              { value: "פתוחה", label: "פתוחה" },
+              { value: "בטיפול", label: "בטיפול" },
+              { value: "בוצעה", label: "בוצעה" },
+              { value: "בוטלה", label: "בוטלה" },
+            ]}
+          />
 
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-          >
-            <option value="all">כל הסוגים</option>
-            <option value="סכנה">סכנה</option>
-            <option value="חסימה">חסימה</option>
-            <option value="תחזוקה">תחזוקה</option>
-            <option value="ניקיון">ניקיון</option>
-          </select>
+          {/* סינון לפי סוג */}
+          <Select
+            className={styles.guideSelectCustom}
+            classNamePrefix="react-select"
+            isRtl={true}
+            placeholder="כל הסוגים"
+            value={[
+              { value: "all", label: "כל הסוגים" },
+              { value: "סכנה", label: "סכנה" },
+              { value: "חסימה", label: "חסימה" },
+              { value: "תחזוקה", label: "תחזוקה" },
+              { value: "ניקיון", label: "ניקיון" },
+            ].find((option) => option.value === typeFilter)}
+            onChange={(selected) => setTypeFilter(selected.value)}
+            options={[
+              { value: "all", label: "כל הסוגים" },
+              { value: "סכנה", label: "סכנה" },
+              { value: "חסימה", label: "חסימה" },
+              { value: "תחזוקה", label: "תחזוקה" },
+              { value: "ניקיון", label: "ניקיון" },
+            ]}
+          />
         </div>
 
         <button
@@ -242,116 +266,117 @@ export default function TaskManagement() {
       </div>
 
       {/* טבלה */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>מספר</th>
-            <th>סוג</th>
-            <th>מקור</th>
-            <th>טיול</th>
-            <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
-            <th>סטטוס</th>
-            <th>פרטים</th>
-            <th>בקרה</th>
-            <th>פעולות</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredTasks.length === 0 ? (
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="9" className={styles.emptyRow}>
-                אין משימות
-              </td>
+              <th>מספר</th>
+              <th>סוג</th>
+              <th>מקור</th>
+              <th>טיול</th>
+              <th>זמנים (שעת התחלה וסיום מתוכננים)</th>
+              <th>סטטוס</th>
+              <th>פרטים</th>
+              <th>בקרה</th>
+              <th>פעולות</th>
             </tr>
-          ) : (
-            filteredTasks.map((t) => (
-              <tr key={t.task_id}>
-                <td>{t.task_id}</td>
-                <td>{t.task_type}</td>
-                <td>
-                  {t.report_id ? (
-                    <span className={styles.reportBadge}>📍 דיווח</span>
-                  ) : (
-                    <span className={styles.manualBadge}>🛠 ידני</span>
-                  )}
-                </td>
-                <td>{t.trail_name || "-"}</td>
+          </thead>
 
-                <td>
-                  {/* התחלה */}
-                  <div>
-                    <FaPlay className={styles.FaPlay} /> <FaCalendarAlt />{" "}
-                    {t.start_time
-                      ? new Date(t.start_time).toLocaleDateString("he-IL")
-                      : "-"}
-                    {" | "}
-                    <FaClock />{" "}
-                    {t.start_time
-                      ? new Date(t.start_time).toTimeString().slice(0, 5)
-                      : "-"}
-                  </div>
-
-                  {/* סיום */}
-                  <div>
-                    <FaFlagCheckered className={styles.FaFlagCheckered} />{" "}
-                    <FaCalendarAlt />{" "}
-                    {t.due_time
-                      ? new Date(t.due_time).toLocaleDateString("he-IL")
-                      : "-"}
-                    {" | "}
-                    <FaClock />{" "}
-                    {t.due_time
-                      ? new Date(t.due_time).toTimeString().slice(0, 5)
-                      : "-"}
-                  </div>
-                </td>
-
-                {/* סטטוס*/}
-                <td>
-                  <span
-                    className={`${styles.status} ${getStatusClass(t.status)}`}
-                  >
-                    {t.status}
-                  </span>
-                </td>
-
-                {/* פרטים */}
-                <td>
-                  {/* כפתור צפייה בפרטי משימה */}
-                  <FaEye
-                    className={styles.iconBtn}
-                    onClick={() => openDetailsModal(t)} // פתיחת מודאל עם המשימה
-                  />
-                </td>
-
-                {/* בקרה */}
-                <td>
-                  {(t.status === "בוצעה" || t.status === "בוטלה") && (
-                    <FaChartBar
-                      className={styles.iconBtn}
-                      onClick={() => openControlModal(t)} // פתיחת בקרה
-                    />
-                  )}
-                </td>
-
-                {/* פעולות*/}
-                <td>
-                  {t.status === "פתוחה" && (
-                    <button
-                      className={styles.cancelBtn}
-                      onClick={() => openCancelModal(t)}
-                    >
-                      בטל
-                    </button>
-                  )}
+          <tbody>
+            {filteredTasks.length === 0 ? (
+              <tr>
+                <td colSpan="9" className={styles.emptyRow}>
+                  אין משימות
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              filteredTasks.map((t) => (
+                <tr key={t.task_id}>
+                  <td>{t.task_id}</td>
+                  <td>{t.task_type}</td>
+                  <td>
+                    {t.report_id ? (
+                      <span className={styles.reportBadge}>📍 דיווח</span>
+                    ) : (
+                      <span className={styles.manualBadge}>🛠 ידני</span>
+                    )}
+                  </td>
+                  <td>{t.trail_name || "-"}</td>
 
+                  <td>
+                    {/* התחלה */}
+                    <div>
+                      <FaPlay className={styles.FaPlay} /> <FaCalendarAlt />{" "}
+                      {t.start_time
+                        ? new Date(t.start_time).toLocaleDateString("he-IL")
+                        : "-"}
+                      {" | "}
+                      <FaClock />{" "}
+                      {t.start_time
+                        ? new Date(t.start_time).toTimeString().slice(0, 5)
+                        : "-"}
+                    </div>
+
+                    {/* סיום */}
+                    <div>
+                      <FaFlagCheckered className={styles.FaFlagCheckered} />{" "}
+                      <FaCalendarAlt />{" "}
+                      {t.due_time
+                        ? new Date(t.due_time).toLocaleDateString("he-IL")
+                        : "-"}
+                      {" | "}
+                      <FaClock />{" "}
+                      {t.due_time
+                        ? new Date(t.due_time).toTimeString().slice(0, 5)
+                        : "-"}
+                    </div>
+                  </td>
+
+                  {/* סטטוס*/}
+                  <td>
+                    <span
+                      className={`${styles.status} ${getStatusClass(t.status)}`}
+                    >
+                      {t.status}
+                    </span>
+                  </td>
+
+                  {/* פרטים */}
+                  <td>
+                    {/* כפתור צפייה בפרטי משימה */}
+                    <FaEye
+                      className={styles.iconBtn}
+                      onClick={() => openDetailsModal(t)} // פתיחת מודאל עם המשימה
+                    />
+                  </td>
+
+                  {/* בקרה */}
+                  <td>
+                    {(t.status === "בוצעה" || t.status === "בוטלה") && (
+                      <FaChartBar
+                        className={styles.iconBtn}
+                        onClick={() => openControlModal(t)} // פתיחת בקרה
+                      />
+                    )}
+                  </td>
+
+                  {/* פעולות*/}
+                  <td>
+                    {t.status === "פתוחה" && (
+                      <button
+                        className={styles.cancelBtn}
+                        onClick={() => openCancelModal(t)}
+                      >
+                        בטל
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
       {/* מודאל ביטול משימה */}
       {showCancelModal && (
         <div className={styles.modalOverlay}>

@@ -306,3 +306,770 @@ td {
   color:#ef4444;
   border:1px solid rgba(239,68,68,.4);
 }
+
+/* עמוד ראשי */
+.page {
+  padding: 30px 40px;
+  color: white;
+}
+
+/* כותרת */
+.title {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+/* סטטיסטיקות */
+.statsRow {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+   margin:20px auto;
+}
+
+/* עיגול סטטיסטיקה */
+.statBox {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: rgba(18, 22, 28, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+    transition:.3s;
+}
+
+.statBox:hover{
+  transform:scale(1.05);
+}
+
+/* מספר */
+.statNumber {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+/* טקסט */
+.statLabel {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* צבעים לפי סטטוס */
+.openBox {
+  border-right: 4px solid #f59e0b;
+}
+.progressBox {
+  border-right: 4px solid #3b82f6;
+}
+.doneBox {
+  border-right: 4px solid #22c55e;
+}
+.cancelBox {
+  border-right: 4px solid #6b7280;
+}
+
+/* שורת פעולות */
+.actionsRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+
+/* פילטרים */
+.filters select {
+  margin-left: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+}
+
+/* כפתור הוספה */
+.addBtn {
+  background: #22c55e;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
+.addBtn:hover {
+  background: rgba(0,0,0,.55);
+  transform: translateY(-1px);
+}
+
+/* טבלה */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(18, 22, 28, 0.9);
+}
+
+/* כותרות */
+th {
+  background: #111827;
+  color: #7dd3fc;
+  padding: 12px;
+}
+
+/* תאים */
+td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* סטטוס */
+.status {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #3b82f6;
+}
+
+/* אייקונים */
+.iconBtn {
+  color: #7dd3fc;
+  cursor: pointer;
+}
+
+/* אין נתונים */
+.emptyRow {
+  text-align: center;
+}
+
+/* סטטוס בסיס */
+.status {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+}
+
+/* פתוחה */
+.open {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+}
+
+/* בטיפול */
+.inProgress {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+
+/* בוצעה */
+.done {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+/* בוטלה */
+.cancelled {
+  background: rgba(107, 114, 128, 0.15);
+  border: 1px solid rgba(107, 114, 128, 0.4);
+  color: #d1d5db;
+}
+
+/* אייקונים */
+.FaPlay {
+  color: #1111e3;
+}
+
+.FaFlagCheckered {
+  color: #22c55e;
+}
+
+.reportBadge {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.manualBadge {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+/* כפתור ביטול */
+.cancelBtn {
+  background: #ef4444;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: #dc2626;
+}
+
+
+/* ======================
+ מודאל ביטול משימה
+====================== */
+.modalOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.modal{
+  width:420px;
+  max-height:80vh;
+  overflow-y:auto;
+
+  background:linear-gradient(
+    180deg,
+    rgba(18,22,28,.92),
+    rgba(10,14,18,.92)
+  );
+
+  border:1px solid rgba(255,255,255,.18);
+  padding:28px;
+  border-radius:20px;
+  color:white;
+}
+
+/* textarea */
+.modal textarea{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  background:rgba(0,0,0,.35);
+  color:white;
+  border:1px solid rgba(255,255,255,.2);
+}
+
+/* שורת כפתורים */
+.btnRow{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+}
+
+/* כפתור אישור */
+.saveBtn{
+  background:#22c55e;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* hover */
+.saveBtn:hover{
+  background:#16a34a;
+}
+
+/* כפתור סגירה */
+.closeBtn{
+  border:1px solid rgba(255,255,255,.25);
+  background:transparent;
+  color:white;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* ======================
+   הודעות (זהה 1:1)
+====================== */
+
+.formMsg{
+  margin-top:10px;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  text-align:center;
+  animation:fadeIn .25s ease;
+}
+
+.successMsg{
+  background:rgba(34,197,94,.15);
+  color:#22c55e;
+  border:1px solid rgba(34,197,94,.4);
+}
+
+.errorMsg{
+  background:rgba(239,68,68,.15);
+  color:#ef4444;
+  border:1px solid rgba(239,68,68,.4);
+}
+
+
+/* =========================================
+   react-select
+========================================= */
+
+.guideSelectCustom {
+  width: 100%;
+  max-width: 100%;
+  font-size: 14px;
+}
+
+/* control */
+.guideSelectCustom :global(.react-select__control) {
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  min-height: 48px;
+  box-shadow: none;
+  cursor: pointer;
+  transition: .2s;
+}
+
+/* hover */
+.guideSelectCustom :global(.react-select__control:hover) {
+  border-color: #7dd3fc;
+}
+
+/* focus */
+.guideSelectCustom :global(.react-select__control--is-focused) {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px #38bdf8;
+}
+
+/* value */
+.guideSelectCustom :global(.react-select__single-value) {
+  color: white;
+}
+
+/* placeholder */
+.guideSelectCustom :global(.react-select__placeholder) {
+  color: rgba(255,255,255,.6);
+}
+
+/* input */
+.guideSelectCustom :global(.react-select__input-container) {
+  color: white;
+}
+
+/* menu */
+.guideSelectCustom :global(.react-select__menu) {
+  background: #0b1220;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 99999;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+/* option */
+.guideSelectCustom :global(.react-select__option) {
+  background: #0b1220;
+  color: white;
+  cursor: pointer;
+  transition: .15s;
+}
+
+/* hover option */
+.guideSelectCustom :global(.react-select__option--is-focused) {
+  background: rgba(34,197,94,.18);
+}
+
+/* selected option */
+.guideSelectCustom :global(.react-select__option--is-selected) {
+  background: #16a34a;
+  color: white;
+}
+
+/* arrows */
+.guideSelectCustom :global(.react-select__indicator) {
+  color: rgba(255,255,255,.7);
+}
+
+/* separator */
+.guideSelectCustom :global(.react-select__indicator-separator) {
+  background: rgba(255,255,255,.12);
+}
+
+/* menu scroll */
+.guideSelectCustom :global(.react-select__menu-list) {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.guideSelectCustom :global(.react-select__control) {
+  min-height: 25px;
+}
+
+
+.filters {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.guideSelectCustom {
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+  font-size: 13px;
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .page {
+    padding: 28px;
+    overflow-x: hidden;
+  }
+
+  .title {
+    font-size: 28px;
+    margin-bottom: 18px;
+  }
+
+  .topBar {
+    margin-bottom: 20px;
+  }
+
+  /* ===============================
+     סטטיסטיקות
+  =============================== */
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(5, 72px);
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 16px auto;
+  }
+
+  .statBox {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    min-height: 72px;
+    max-height: 72px;
+    box-sizing: border-box;
+  }
+
+  .statNumber {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .statLabel {
+    font-size: 9px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 2px;
+    margin-top: 2px;
+  }
+
+  /* ===============================
+     חיפוש + סינונים + כפתור
+  =============================== */
+  .actionsRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin: 18px 0;
+  }
+
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .input {
+    width: 220px;
+    font-size: 13px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+  }
+
+  .filterItem {
+    width: 170px;
+    min-width: 170px;
+  }
+
+  .guideSelectCustom {
+    width: 100%;
+    min-width: 0;
+    font-size: 13px;
+  }
+
+  .filterLabel {
+    font-size: 12px;
+  }
+
+  .addBtn {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  /* ===============================
+     טבלה
+  =============================== */
+  .tableWrapper {
+    width: 90%;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .table {
+    min-width: 850px;
+  }
+
+  th,
+  td {
+    font-size: 12px;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  /* ===============================
+     מודאל
+  =============================== */
+  .modalOverlay {
+    padding: 28px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: 22px;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 768px) {
+  .page {
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  .topBar {
+    margin-bottom: 16px;
+  }
+
+  /* ===============================
+     סטטיסטיקות
+  =============================== */
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(5, 52px);
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin: 12px auto;
+  }
+
+  .statBox {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    min-height: 52px;
+    max-height: 52px;
+    box-sizing: border-box;
+  }
+
+  .statNumber {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .statLabel {
+    font-size: 6.5px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 2px;
+    margin-top: 1px;
+  }
+
+  /* ===============================
+     חיפוש + סינונים
+  =============================== */
+  .actionsRow {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .input {
+    width: 150px;
+    min-width: 0;
+    font-size: 12px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+  }
+
+  .filterItem {
+    width: 120px;
+    min-width: 120px;
+  }
+
+  .guideSelectCustom {
+    width: 100%;
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .filterLabel {
+    display: none;
+  }
+
+  .addBtn {
+    width: 100%;
+    font-size: 12px;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  /* ===============================
+     טבלה
+  =============================== */
+  .tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .table {
+    min-width: 760px;
+    border-radius: 12px;
+  }
+
+  th,
+  td {
+    font-size: 11px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .actions button svg {
+    font-size: 14px;
+  }
+
+  /* ===============================
+     מודאל
+  =============================== */
+  .modalOverlay {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 310px;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+
+  .modal h2 {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .modal input,
+  .modal select,
+  .modal textarea {
+    font-size: 13px;
+    padding: 9px;
+    box-sizing: border-box;
+  }
+
+  .btnRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btnRow button {
+    width: 100%;
+  }
+
+  .inlineMsg {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .actionsRow {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .filters {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .guideSelectCustom {
+    width: 160px;
+    min-width: 160px;
+  }
+
+  .addBtn {
+    align-self: flex-start;
+    width: auto;
+    white-space: nowrap;
+  }
+}
