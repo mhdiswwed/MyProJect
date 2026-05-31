@@ -22,7 +22,7 @@ router.get("/:userId", (req, res) => {
     SELECT
       t.task_id,
       t.task_type,
-      t.status,
+    tw.status,
         t.report_id,
       t.start_time,
       t.cancel_reason,
@@ -60,21 +60,21 @@ router.get("/:userId", (req, res) => {
 
    ORDER BY
   CASE
-    WHEN t.status = 'בטיפול' THEN 1
-    WHEN t.status = 'פתוחה' THEN 2
-    WHEN t.status = 'בוצעה' THEN 3
-    WHEN t.status = 'בוטלה' THEN 4
+  WHEN tw.status = 'בטיפול' THEN 1
+WHEN tw.status = 'פתוחה' THEN 2
+WHEN tw.status = 'בוצעה' THEN 3
+WHEN tw.status = 'בוטלה' THEN 4
   END,
 
   -- פתוחות לפי זמן סיום קרוב
   CASE 
-    WHEN t.status = 'פתוחה' THEN t.due_time
+    WHEN tw.status = 'פתוחה' THEN t.due_time
     ELSE NULL
   END ASC,
 
   -- בטיפול לפי התחלה
   CASE 
-    WHEN t.status = 'בטיפול' THEN te.start_time
+   WHEN tw.status = 'בטיפול' THEN te.start_time
     ELSE NULL
   END DESC,
 
@@ -82,7 +82,7 @@ router.get("/:userId", (req, res) => {
   t.created_at DESC
   `;
 
-  db.query(sql, [userId,userId], (err, results) => {
+  db.query(sql, [userId, userId], (err, results) => {
     if (err) {
       console.error("שגיאה בשליפת משימות:", err);
       return res.status(500).json({
@@ -102,7 +102,7 @@ router.get("/:userId", (req, res) => {
  */
 router.post("/start/:taskId", (req, res) => {
   const { taskId } = req.params;
-  const { user_id } = req.body; 
+  const { user_id } = req.body;
 
   const sql = `
     INSERT INTO task_executions
@@ -118,14 +118,15 @@ router.post("/start/:taskId", (req, res) => {
 
     // מעדכן גם סטטוס משימה
     db.query(
-      `UPDATE tasks SET status='בטיפול' WHERE task_id=?`,
-      [taskId]
+      `UPDATE task_workers SET status='בטיפול' WHERE task_id=? AND user_id=?`,
+      [taskId, user_id],
     );
+    // עדכון המשימה הכללית לבטיפול
+    db.query(`UPDATE tasks SET status='בטיפול' WHERE task_id=?`, [taskId]);
 
     res.json({ message: "התחיל" });
   });
 });
-
 
 // ======================
 // 1. סיום ביצוע משימה
@@ -143,16 +144,58 @@ function endExecution(taskId, user_id, callback) {
 // ======================
 // 2. עדכון סטטוס משימה
 // ======================
-function updateTaskStatus(taskId, callback) {
+function updateWorkerStatus(taskId, user_id, callback) {
   const sql = `
-    UPDATE tasks 
-    SET status='בוצעה' 
+    UPDATE task_workers
+    SET status='בוצעה'
+    WHERE task_id=? AND user_id=?
+  `;
+
+  db.query(sql, [taskId, user_id], callback);
+}
+
+// ======================
+// בדיקה אם נשארו עובדים
+// ======================
+function countUnfinishedWorkers(taskId, callback) {
+  const sql = `
+    SELECT COUNT(*) AS remaining
+    FROM task_workers
+    WHERE task_id = ?
+    AND status != 'בוצעה'
+  `;
+
+  db.query(sql, [taskId], (err, results) => {
+    if (err) return callback(err);
+
+    callback(null, results[0].remaining);
+  });
+}
+// ======================
+// עדכון משימה לבוצעה
+// ======================
+function markTaskDone(taskId, callback) {
+  const sql = `
+    UPDATE tasks
+    SET status='בוצעה'
     WHERE task_id=?
   `;
 
   db.query(sql, [taskId], callback);
 }
 
+// ======================
+// עדכון משימה לבטיפול
+// ======================
+function markTaskInProgress(taskId, callback) {
+  const sql = `
+    UPDATE tasks
+    SET status='בטיפול'
+    WHERE task_id=?
+  `;
+
+  db.query(sql, [taskId], callback);
+}
 // ======================
 // 3. שליפת report_id
 // ======================
@@ -198,35 +241,57 @@ router.put("/end/:taskId", (req, res) => {
       return res.status(500).json({ message: "שגיאה בסיום" });
     }
 
-    updateTaskStatus(taskId, (err) => {
+    updateWorkerStatus(taskId, user_id, (err) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ message: "שגיאה בעדכון משימה" });
       }
 
-      getReportId(taskId, (err, reportId) => {
+      countUnfinishedWorkers(taskId, (err, remaining) => {
         if (err) {
           console.error(err);
-          return res.status(500).json({ message: "שגיאה בבדיקת דוח" });
+          return res.status(500).json({ message: "שגיאה בבדיקת עובדים" });
         }
 
-        if (reportId) {
-          updateReport(reportId, (err) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ message: "שגיאה בעדכון דוח" });
-            }
-
-            return res.json({ message: "המשימה והדוח עודכנו" });
+        if (remaining > 0) {
+          markTaskInProgress(taskId, () => {
+            return res.json({
+              message: "הביצוע נשמר, ממתינים לשאר העובדים",
+            });
           });
         } else {
-          return res.json({ message: "המשימה הסתיימה" });
+          markTaskDone(taskId, (err) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "שגיאה בעדכון משימה" });
+            }
+
+            getReportId(taskId, (err, reportId) => {
+              if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "שגיאה בבדיקת דוח" });
+              }
+
+              if (!reportId) {
+                return res.json({ message: "כל העובדים סיימו" });
+              }
+
+              updateReport(reportId, (err) => {
+                if (err) {
+                  console.error(err);
+                  return res.status(500).json({ message: "שגיאה בעדכון דוח" });
+                }
+
+                return res.json({
+                  message: "כל העובדים סיימו והדוח עודכן",
+                });
+              });
+            });
+          });
         }
       });
     });
   });
 });
-
-
 
 module.exports = router;
