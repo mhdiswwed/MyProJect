@@ -146,8 +146,9 @@ tr.cancel_reject_reason,
 tr.cancel_admin_response,
 
 t.trail_name,
-t.price_per_person,
-t.price_per_vehicle,
+tr.booking_price_per_person AS price_per_person,
+tr.booking_price_per_vehicle AS price_per_vehicle,
+COALESCE(tr.booking_vat_rate, ss.setting_value) AS vat_rate,
 
 /* מדריך מקורי */
 g.full_name AS guide_name,
@@ -169,6 +170,10 @@ ON tr.request_id = grp.request_id
 /* טבלת הדרכות (הסטטוס) */
 LEFT JOIN guidances gd
 ON grp.group_id = gd.group_id
+
+/*מע''ם של הגדרות המערכת*/
+LEFT JOIN system_settings ss
+ON ss.setting_name = 'vat'
 
 /* מדריך מקורי */
 LEFT JOIN users g
@@ -215,7 +220,9 @@ ORDER BY
 // ======================
 // חישוב מחירים לבקשה אחת
 // ======================
-function calculatePrices(r, VAT_RATE) {
+function calculatePrices(r) {
+  const VAT_RATE = Number(r.vat_rate || 0) / 100;
+
   const pricePerPerson = Number(r.price_per_person || 0);
   const pricePerVehicle = Number(r.price_per_vehicle || 0);
 
@@ -238,7 +245,9 @@ function calculatePrices(r, VAT_RATE) {
     vatAmount,
     totalWithVat,
     pricePerPersonWithVat: Number((pricePerPerson * (1 + VAT_RATE)).toFixed(2)),
-    pricePerVehicleWithVat: Number((pricePerVehicle * (1 + VAT_RATE)).toFixed(2)),
+    pricePerVehicleWithVat: Number(
+      (pricePerVehicle * (1 + VAT_RATE)).toFixed(2),
+    ),
   };
 }
 
@@ -299,23 +308,17 @@ function buildResponse(r, prices) {
 router.get("/:userId", (req, res) => {
   const userId = req.params.userId;
 
-  getVatRate((err, VAT_RATE) => {
+  getUserRequests(userId, (err, results) => {
     if (err) {
-      return res.status(500).json({ message: "שגיאה בשליפת מע״מ" });
+      return res.status(500).json(err);
     }
 
-    getUserRequests(userId, (err, results) => {
-      if (err) {
-        return res.status(500).json(err);
-      }
-
-      const data = results.map((r) => {
-        const prices = calculatePrices(r, VAT_RATE);
-        return buildResponse(r, prices);
-      });
-
-      res.json(data);
+    const data = results.map((r) => {
+      const prices = calculatePrices(r);
+      return buildResponse(r, prices);
     });
+
+    res.json(data);
   });
 });
 

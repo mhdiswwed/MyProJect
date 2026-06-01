@@ -37,7 +37,11 @@ margin-top: 18px;
   padding: 25px 0;
   font-size: 20px;
 }
-
+.link svg {
+  width: 15px;
+  height:15px;
+  flex-shrink: 0;
+}
 /* ================================
    Links
 ================================ */

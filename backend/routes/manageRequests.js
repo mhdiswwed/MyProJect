@@ -630,21 +630,25 @@ function validateInput(body) {
  */
 function getRequest(requestId, res, cb) {
   const sql = `
-    SELECT tr.*, t.trail_name, t.price_per_person,
-           t.price_per_vehicle, t.duration_minutes
+    SELECT
+      tr.*,
+      t.trail_name,
+      t.trail_type,
+      t.duration_minutes
     FROM trip_requests tr
     JOIN trails t ON tr.trail_id = t.trail_id
-    WHERE tr.request_id = ? LIMIT 1
+    WHERE tr.request_id = ?
+    LIMIT 1
   `;
 
   db.query(sql, [requestId], (err, rows) => {
     if (err) return res.status(500).json({ message: "שגיאה בשליפה" });
-    if (!rows.length) return res.status(404).json({ message: "הבקשה לא נמצאה" });
+    if (!rows.length)
+      return res.status(404).json({ message: "הבקשה לא נמצאה" });
 
     cb(rows[0]);
   });
 }
-
 
 /**
  * =========================================
@@ -790,8 +794,8 @@ function buildInvoice(request, body, groupId, res) {
          
               const participants = Number(request.number_of_participants || 0);
               const vehicles = Number(request.number_of_vehicles || 0);
-              const pricePerPerson = Number(request.price_per_person || 0);
-              const pricePerVehicle = Number(request.price_per_vehicle || 0);
+           const pricePerPerson = Number(request.booking_price_per_person || 0);
+           const pricePerVehicle = Number(request.booking_price_per_vehicle || 0);
 
               const participantsTotal = participants * pricePerPerson;
               const vehiclesTotal = vehicles * pricePerVehicle;
@@ -827,7 +831,7 @@ function buildInvoice(request, body, groupId, res) {
                 VAT,
               );
 
-              saveInvoice(groupId, file, res);
+              saveInvoice(groupId, file, res, request.request_id, VAT);
             } catch (error) {
               console.error(error);
               rollback(res, "שגיאה ביצירת PDF");
@@ -844,22 +848,29 @@ function buildInvoice(request, body, groupId, res) {
  * שמירת חשבונית
  * =========================================
  */
-function saveInvoice(groupId, file, res) {
+function saveInvoice(groupId, file, res, requestId, VAT) {
   db.query(
     "UPDATE groups SET invoice_file=? WHERE group_id=?",
     [file, groupId],
     (err) => {
-
       if (err) return rollback(res, "שגיאה בשמירת חשבונית");
 
-      db.commit(() => {
-        res.json({
-          message: "הבקשה אושרה בהצלחה",
-          group_id: groupId,
-          invoice_file: file
-        });
-      });
-    }
+      db.query(
+        "UPDATE trip_requests SET booking_vat_rate=? WHERE request_id=?",
+        [VAT * 100, requestId],
+        (err) => {
+          if (err) return rollback(res, "שגיאה בשמירת המע״מ");
+
+          db.commit(() => {
+            res.json({
+              message: "הבקשה אושרה בהצלחה",
+              group_id: groupId,
+              invoice_file: file,
+            });
+          });
+        },
+      );
+    },
   );
 }
 
@@ -1102,11 +1113,17 @@ router.put("/approveCancel/:requestId", (req, res) => {
  */
 function fetchRequestById(requestId, cb) {
   const sql = `
-    SELECT tr.*, t.*
+    SELECT
+      tr.*,
+      t.trail_name,
+      t.trail_type,
+      t.duration_minutes
     FROM trip_requests tr
     JOIN trails t ON tr.trail_id = t.trail_id
-    WHERE tr.request_id = ? LIMIT 1
+    WHERE tr.request_id = ?
+    LIMIT 1
   `;
+
   db.query(sql, [requestId], (e, r) => cb(e, r?.[0]));
 }
 

@@ -370,25 +370,53 @@ function isValidTime(trip_date, trip_time) {
 
 // שומר בקשה במסד
 function insertRequest(data, callback) {
-  const sql = `
-    INSERT INTO trip_requests
-    (trip_date, trip_time, number_of_participants, number_of_vehicles, trail_id, user_id, guide_id, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'ממתין')
+  const trailSql = `
+    SELECT price_per_person, price_per_vehicle
+    FROM trails
+    WHERE trail_id = ?
   `;
 
-  db.query(
-    sql,
-    [
-      data.trip_date,
-      data.trip_time,
-      Number(data.number_of_participants),
-      Number(data.number_of_vehicles) || 0,
-      data.trail_id,
-      data.user_id,
-      data.guide_id,
-    ],
-    callback
-  );
+  db.query(trailSql, [data.trail_id], (err, trailRows) => {
+    if (err || !trailRows.length) {
+      return callback(err || new Error("המסלול לא נמצא"));
+    }
+
+    const pricePerPerson = Number(trailRows[0].price_per_person || 0);
+    const pricePerVehicle = Number(trailRows[0].price_per_vehicle || 0);
+
+    const sql = `
+      INSERT INTO trip_requests
+      (
+        trip_date,
+        trip_time,
+        number_of_participants,
+        number_of_vehicles,
+        trail_id,
+        user_id,
+        guide_id,
+        booking_price_per_person,
+        booking_price_per_vehicle,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ממתין')
+    `;
+
+    db.query(
+      sql,
+      [
+        data.trip_date,
+        data.trip_time,
+        Number(data.number_of_participants),
+        Number(data.number_of_vehicles) || 0,
+        data.trail_id,
+        data.user_id,
+        data.guide_id,
+        pricePerPerson,
+        pricePerVehicle,
+      ],
+      callback,
+    );
+  });
 }
 
 

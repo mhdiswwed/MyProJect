@@ -46,8 +46,9 @@ const getGroupSql = `
 SELECT 
 g.*,
 t.trail_name,
-t.price_per_person,
-t.price_per_vehicle,
+tr.booking_price_per_person AS price_per_person,
+tr.booking_price_per_vehicle AS price_per_vehicle,
+tr.booking_vat_rate,
 
 
 tr.number_of_participants,
@@ -87,32 +88,7 @@ if (!fs.existsSync(invoicesDir)) {
   fs.mkdirSync(invoicesDir, { recursive: true });
 }
 
-/**
- * ------------------------------------------------
- * שליפת המע״מ מהמערכת
- * ------------------------------------------------
- */
-function getVatRate(callback) {
-  const sql = `
-    SELECT setting_value
-    FROM system_settings
-    WHERE setting_name = 'vat'
-    LIMIT 1
-  `;
 
-  db.query(sql, (err, rows) => {
-    if (err) {
-      return callback(err);
-    }
-
-    if (!rows.length) {
-      return callback(new Error("לא נמצא ערך מע״מ במערכת"));
-    }
-
-    const vat = Number(rows[0].setting_value) / 100;
-    callback(null, vat);
-  });
-}
 
 /* =====================================================
    שליפת כל ההדרכות
@@ -502,25 +478,21 @@ async function getGroupData(group_id, res) {
  * עושה: מחשבת מחירים ומע״מ
  * מחזירה: ממשיכה ליצירת PDF
  */
-function createNewInvoice(groupData, group_id, res) {
-  getVatRate(async (err, vatRate) => {
-    if (err) {
-      return res.status(500).json({ message: "שגיאה במסד הנתונים" });
-    }
+async function createNewInvoice(groupData, group_id, res) {
+  try {
+    const vatRate = Number(groupData.booking_vat_rate || 0) / 100;
 
     const prices = calculatePrices(groupData, vatRate);
 
-    try {
-      const fileName = await createInvoicePDF(
-        { ...groupData, ...prices },
-        vatRate
-      );
+    const fileName = await createInvoicePDF(
+      { ...groupData, ...prices },
+      vatRate,
+    );
 
-      saveInvoice(group_id, fileName, res);
-    } catch (error) {
-      res.status(500).json({ message: "שגיאה ביצירת חשבונית" });
-    }
-  });
+    saveInvoice(group_id, fileName, res);
+  } catch (error) {
+    res.status(500).json({ message: "שגיאה ביצירת חשבונית" });
+  }
 }
 
 

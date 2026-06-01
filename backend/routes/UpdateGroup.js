@@ -44,8 +44,9 @@ const getGroupSql = `
 SELECT 
 g.*,
 t.trail_name,
-t.price_per_person,
-t.price_per_vehicle,
+tr.booking_price_per_person AS price_per_person,
+tr.booking_price_per_vehicle AS price_per_vehicle,
+tr.booking_vat_rate,
 
 
 tr.number_of_participants,
@@ -85,32 +86,7 @@ if (!fs.existsSync(invoicesDir)) {
   fs.mkdirSync(invoicesDir, { recursive: true });
 }
 
-/**
- * ------------------------------------------------
- * שליפת המע״מ מהמערכת
- * ------------------------------------------------
- */
-function getVatRate(callback) {
-  const sql = `
-    SELECT setting_value
-    FROM system_settings
-    WHERE setting_name = 'vat'
-    LIMIT 1
-  `;
 
-  db.query(sql, (err, rows) => {
-    if (err) {
-      return callback(err);
-    }
-
-    if (!rows.length) {
-      return callback(new Error("לא נמצא ערך מע״מ במערכת"));
-    }
-
-    const vat = Number(rows[0].setting_value) / 100;
-    callback(null, vat);
-  });
-}
 
 // =========================
 // המרת שעה לדקות
@@ -290,12 +266,7 @@ async function changeGuideAndUpdateInvoice(group_id, guide_id, reason) {
   const groupData = results[0];
 
   // שליפת אחוז מע״מ (המרה ל-Promise)
-  const vatRate = await new Promise((resolve, reject) => {
-    getVatRate((err, rate) => {
-      if (err) reject(err);
-      else resolve(rate);
-    });
-  });
+ const vatRate = Number(groupData.booking_vat_rate || 0) / 100;
 
   // יצירת חשבונית PDF חדשה
 const fileName = await createInvoicePDF(groupData, vatRate);
