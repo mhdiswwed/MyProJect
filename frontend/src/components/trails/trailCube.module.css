@@ -618,10 +618,22 @@
 @media (max-width: 768px) {
 
   :root {
-    --cube-w: 230px;
-    --cube-h: 185px;
+    --cube-w: 295px;
+    --cube-h: 250px;
   }
 
+    .scene {
+    perspective: 1600px;
+    overflow: visible;
+  }
+
+  .cube {
+    transform-style: preserve-3d;
+  }
+
+  .cubeFace {
+    backface-visibility: hidden;
+  }
   .cubeUi {
     display: flex;
 margin-top: 15px;
@@ -702,12 +714,15 @@ margin-top: 15px;
 
   margin: 0 !important;
 }
-  .imgSlot {
-    flex: 1;
 
-    min-height: 0;
-  }
+.cubeFace {
+  padding: 14px;
+  gap: 10px;
+}
 
+.imgSlot {
+  flex: 1;
+}
   .soundBtn {
     width: 37px;
     height: 30px;

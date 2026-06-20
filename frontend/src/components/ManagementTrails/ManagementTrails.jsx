@@ -657,7 +657,7 @@ export default function ManagementTrails() {
                 placeholder="שם מסלול"
                 onChange={handleChange}
               />
-              /* סוג המסלול במודאל */
+             { /* סוג המסלול במודאל */}
               <Select
                 className={styles.guideSelectCustom}
                 classNamePrefix="react-select"
@@ -684,7 +684,7 @@ export default function ManagementTrails() {
                   }))
                 }
               />
-              /*  שדה רמת הקושי במודאל */
+              {/*  שדה רמת הקושי במודאל */}
               <Select
                 className={styles.guideSelectCustom}
                 classNamePrefix="react-select"

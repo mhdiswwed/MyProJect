@@ -22,18 +22,23 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { PiCheckerboardBold } from "react-icons/pi";
 import Select from "react-select";
 // ================= ICONS =================
-const userIcon = L.divIcon({
-  html: `
-    <div class="${styles.userMarker}">
-      <div class="${styles.userMarkerInner}">
-        ➤
+// יוצר אייקון משתמש שמסתובב לפי כיוון התנועה
+const createUserIcon = (heading) =>
+  L.divIcon({
+    html: `
+      <div class="${styles.userMarker}">
+        <div
+          class="${styles.userMarkerInner}"
+          style="transform: rotate(${heading}deg);"
+        >
+          ➤
+        </div>
       </div>
-    </div>
-  `,
-  className: "custom-div-icon",
-  iconSize: [40, 40],
-  iconAnchor: [20, 20],
-});
+    `,
+    className: "custom-div-icon",
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  });
 
 const startIcon = L.divIcon({
   html: `
@@ -81,6 +86,16 @@ export default function TrailNavigation({ user }) {
   const [reportMsg, setReportMsg] = useState({ type: "", text: "" });
   // מביא מהשרת את מזהה הקבוצה הפעילה של המשתמש במסלול ושומר אותו ב-state
   const [groupId, setGroupId] = useState(null);
+  // שומר את כיוון התנועה (מצפן) של המשתמש
+  const [heading, setHeading] = useState(0);
+  // שומר את נקודות המסלול מה־GPX
+  const [gpxPoints, setGpxPoints] = useState([]);
+
+  // שומר את הנקודה האחרונה במסלול כדי לא לחזור אחורה
+  const [routeIndex, setRouteIndex] = useState(0);
+
+  // שומר את המיקום המוצמד למסלול
+  const [snappedPosition, setSnappedPosition] = useState(null);
 
   //=====================================
   //שולף מהשרת את מזהה הקבוצה הפעילה של המשתמש במסלול ושומר אותו ב-state
@@ -119,7 +134,31 @@ export default function TrailNavigation({ user }) {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         setGpsError(false);
+        // שומר את המיקום הנוכחי
         setPosition([pos.coords.latitude, pos.coords.longitude]);
+        // מעדכן כיוון רק כשהמשתמש באמת בתנועה כדי למנוע סיבובים אקראיים
+        // מחשב כיוון קדימה לפי המסלול ולא לפי מצפן הטלפון
+        if (gpxPoints.length > 1) {
+          const current = [pos.coords.latitude, pos.coords.longitude];
+
+          let nearestIndex = routeIndex;
+
+          for (let i = routeIndex; i < gpxPoints.length; i++) {
+            if (
+              distance(current, gpxPoints[i]) <
+              distance(current, gpxPoints[nearestIndex])
+            ) {
+              nearestIndex = i;
+            }
+          }
+
+          const nextIndex = Math.min(nearestIndex + 3, gpxPoints.length - 1);
+
+          setRouteIndex(nearestIndex);
+          setHeading(bearing(gpxPoints[nearestIndex], gpxPoints[nextIndex]));
+          // מצמיד את הסמן לנקודה הקרובה במסלול כמו ב־Waze
+          setSnappedPosition(gpxPoints[nearestIndex]);
+        }
       },
       () => {
         setGpsError(true);
@@ -132,7 +171,7 @@ export default function TrailNavigation({ user }) {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  }, [gpxPoints, routeIndex]);
 
   /* =====================================
      שליחת דיווח - בדיקות כמו בשרת (וגם)
@@ -231,12 +270,20 @@ export default function TrailNavigation({ user }) {
       <MapContainer center={[32.95, 35.35]} zoom={15} className={styles.map}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {trail.gpx_file && <GPXLayer fileName={trail.gpx_file} />}
+        {/* טוען את קובץ ה־GPX ושומר את נקודות המסלול */}
+        {trail.gpx_file && (
+          <GPXLayer fileName={trail.gpx_file} setGpxPoints={setGpxPoints} />
+        )}
 
         {position && (
           <>
-            <Marker position={position} icon={userIcon} />
-            <AutoCenter position={position} />
+            {/* מציג את המשתמש על המסלול ולא על מיקום ה־GPS הגולמי */}
+            <Marker
+              position={snappedPosition || position}
+              icon={createUserIcon(heading)}
+            />
+
+            <AutoCenter position={snappedPosition || position} />
           </>
         )}
       </MapContainer>
@@ -351,7 +398,7 @@ export default function TrailNavigation({ user }) {
 }
 
 /* ================= GPX Layer ================= */
-function GPXLayer({ fileName }) {
+function GPXLayer({ fileName, setGpxPoints }) {
   const map = useMap();
 
   useEffect(() => {
@@ -374,6 +421,13 @@ function GPXLayer({ fileName }) {
 
       // כל נקודות המסלול
       const points = xml.getElementsByTagName("trkpt");
+      // שומר את נקודות ה־GPX כדי לחשב כיוון קדימה לפי המסלול
+      const parsedPoints = Array.from(points).map((p) => [
+        parseFloat(p.getAttribute("lat")),
+        parseFloat(p.getAttribute("lon")),
+      ]);
+
+      setGpxPoints(parsedPoints);
 
       if (!points.length) return;
 
@@ -405,7 +459,7 @@ function GPXLayer({ fileName }) {
     return () => {
       map.removeLayer(gpx);
     };
-  }, [fileName, map]);
+  }, [fileName, map, setGpxPoints]);
 
   return null;
 }
