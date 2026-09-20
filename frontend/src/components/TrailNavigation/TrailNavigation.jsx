@@ -126,6 +126,7 @@ export default function TrailNavigation({ user }) {
      GPS בזמן אמת
   ===================================== */
   useEffect(() => {
+    //כאן בודקים אם שירות המיקום קיים בדפדפן.
     if (!navigator.geolocation) {
       setGpsError(true);
       return;
@@ -137,6 +138,7 @@ export default function TrailNavigation({ user }) {
         // שומר את המיקום הנוכחי
         setPosition([pos.coords.latitude, pos.coords.longitude]);
         // מעדכן כיוון רק כשהמשתמש באמת בתנועה כדי למנוע סיבובים אקראיים
+        
         // מחשב כיוון קדימה לפי המסלול ולא לפי מצפן הטלפון
         if (gpxPoints.length > 1) {
           const current = [pos.coords.latitude, pos.coords.longitude];
