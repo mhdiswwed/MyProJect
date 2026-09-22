@@ -179,9 +179,8 @@ async function getUpcomingTasks(fromDate, toDate) {
     values.push(fromDate, toDate);
   } else {
     query += `
-      WHERE start_time >= NOW()
-      AND start_time <= DATE_ADD(NOW(), INTERVAL 2 DAY)
-    `;
+    WHERE start_time >= NOW()
+  `;
   }
 
   query += `
